@@ -1,0 +1,61 @@
+experiment_name: efficientnet_b0_ce_baseline
+seed: 42
+output_dir: outputs/efficientnet_b0_ce_baseline
+
+classes:
+  - akiec
+  - bcc
+  - bkl
+  - df
+  - mel
+  - nv
+  - vasc
+
+paths:
+  root_dir: .
+  csv_file: data/metadata/skin_metadata.csv
+
+model:
+  name: tf_efficientnet_b0
+  pretrained: true  
+  num_classes: 7
+  dropout: 0.2
+
+train:
+  image_size: 224
+  batch_size: 8
+  num_workers: 0
+  epochs: 30
+  amp: true
+  grad_clip: 1.0
+  early_stopping_patience: 6
+
+optimizer:
+  name: adamw
+  lr: 0.0003
+  weight_decay: 0.0001
+
+scheduler:
+  name: cosine
+  min_lr: 1.0e-6
+
+loss:
+  name: weighted_cross_entropy
+  focal_gamma: 2.0
+
+sampling:
+  use_weighted_sampler: true
+
+augmentation:
+  train:
+    hflip: 0.5
+    vflip: 0.0
+    rotation: 20
+    color_jitter: 0.2
+    random_erasing: 0.1
+  eval:
+    center_crop: false
+
+metric:
+  monitor: macro_f1
+  mode: max

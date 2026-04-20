@@ -1,0 +1,44 @@
+experiment_name: resnet50
+seed: 42
+output_dir: outputs/resnet50
+classes: [akiec, bcc, bkl, df, mel, nv, vasc]
+paths:
+  root_dir: .
+  csv_file: data/metadata/skin_metadata.csv
+model:
+  name: resnet50
+  pretrained: true
+  num_classes: 7
+  dropout: 0.2
+train:
+  image_size: 224
+  batch_size: 16
+  num_workers: 4
+  epochs: 15
+  amp: true
+  grad_clip: 1.0
+  early_stopping_patience: 5
+optimizer:
+  name: adamw
+  lr: 0.0003
+  weight_decay: 0.0001
+scheduler:
+  name: cosine
+  min_lr: 1.0e-6
+loss:
+  name: cross_entropy
+  focal_gamma: 2.0
+sampling:
+  use_weighted_sampler: false
+augmentation:
+  train:
+    hflip: 0.5
+    vflip: 0.0
+    rotation: 20
+    color_jitter: 0.2
+    random_erasing: 0.1
+  eval:
+    center_crop: false
+metric:
+  monitor: macro_f1
+  mode: max
