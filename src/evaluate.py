@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import argparse
+import numpy as np
 import pandas as pd
 import torch
 from torch.utils.data import DataLoader
@@ -13,7 +14,12 @@ from src.models.losses import build_loss
 from src.utils.config import load_config
 from src.utils.io import ensure_dir, save_json
 from src.utils.metrics import compute_classification_metrics
-from src.utils.plots import plot_confusion_matrices
+from src.utils.plots import (
+    plot_confusion_matrices,
+    plot_roc_curves,
+    plot_per_class_f1,
+    plot_sensitivity_specificity,
+)
 
 
 def parse_args():
@@ -54,10 +60,14 @@ def main():
     model.load_state_dict(checkpoint['model_state_dict'])
 
     criterion = build_loss(cfg['loss'], class_weights=class_weights, device=device)
-    loss, y_true, y_pred, paths = evaluate_one_epoch(model, loader, criterion, device=device, amp=amp)
-    metrics = compute_classification_metrics(y_true, y_pred, class_names)
+    loss, y_true, y_pred, paths, probs = evaluate_one_epoch(model, loader, criterion, device=device, amp=amp)
+
+    probs_np = probs.numpy()
+    metrics = compute_classification_metrics(y_true, y_pred, class_names, y_prob=probs_np)
     metrics['loss'] = float(loss)
+
     save_json(output_dir / f'{args.split}_metrics_from_eval.json', metrics)
+
     plot_confusion_matrices(
        metrics['confusion_matrix'],
        class_names,
@@ -65,11 +75,46 @@ def main():
        output_dir / f'{args.split}_confusion_matrix_normalized_from_eval.png',
     )
 
+    plot_per_class_f1(
+        metrics['per_class_metrics'],
+        output_dir / f'{args.split}_per_class_f1_from_eval.png',
+    )
+
+    plot_sensitivity_specificity(
+        metrics['per_class_metrics'],
+        output_dir / f'{args.split}_sensitivity_specificity_from_eval.png',
+    )
+
+    if 'roc_curves' in metrics and metrics['roc_curves']:
+        plot_roc_curves(
+            metrics['roc_curves'],
+            output_dir / f'{args.split}_roc_curves_from_eval.png',
+        )
+
+    # Predictions with probabilities
     pred_df = pd.DataFrame({'image_path': paths, 'y_true': y_true, 'y_pred': y_pred})
+    pred_df['true_name'] = pred_df['y_true'].map({i: name for i, name in enumerate(class_names)})
+    pred_df['pred_name'] = pred_df['y_pred'].map({i: name for i, name in enumerate(class_names)})
+    pred_df['correct'] = pred_df['y_true'] == pred_df['y_pred']
+    for i, name in enumerate(class_names):
+        pred_df[f'prob_{name}'] = probs_np[:, i].round(6)
     pred_df.to_csv(output_dir / f'{args.split}_predictions_from_eval.csv', index=False)
 
-    print(f"{args.split} accuracy: {metrics['accuracy']:.4f}")
-    print(f"{args.split} macro F1: {metrics['macro_f1']:.4f}")
+    print(f"\n{'=' * 60}")
+    print(f"  {args.split.upper()} Evaluation Results")
+    print(f"{'=' * 60}")
+    print(f"  Accuracy:     {metrics['accuracy']:.4f}")
+    print(f"  Macro F1:     {metrics['macro_f1']:.4f}")
+    print(f"  Weighted F1:  {metrics['weighted_f1']:.4f}")
+    print(f"  Cohen Kappa:  {metrics['cohen_kappa']:.4f}")
+    print(f"  MCC:          {metrics['mcc']:.4f}")
+    if 'auc_macro' in metrics:
+        print(f"  AUC (macro):  {metrics['auc_macro']:.4f}")
+    print()
+    for pcm in metrics['per_class_metrics']:
+        auc_str = f"  AUC={pcm.get('auc', 0):.3f}" if 'auc' in pcm else ''
+        print(f"    {pcm['class_name']:>6s}: F1={pcm['f1']:.3f}  P={pcm['precision']:.3f}  R={pcm['recall']:.3f}{auc_str}  (n={pcm['support']})")
+    print(f"{'=' * 60}")
 
 
 if __name__ == '__main__':
