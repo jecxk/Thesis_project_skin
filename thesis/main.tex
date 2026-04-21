@@ -1,0 +1,208 @@
+\documentclass[11pt,a4paper]{report}
+
+% ============== Page Setup ==============
+\usepackage[a4paper,top=2.5cm,bottom=2.5cm,left=2.5cm,right=2.5cm]{geometry}
+
+% ============== Packages ==============
+\usepackage{graphicx}
+\usepackage{float}
+\usepackage{tikz}
+\usetikzlibrary{calc}
+\usepackage{setspace}
+\usepackage[nottoc]{tocbibind}
+\usepackage{acronym}
+\usepackage{booktabs}
+\usepackage{multirow}
+\usepackage{amsmath}
+\usepackage{amssymb}
+\usepackage{caption}
+\usepackage{subcaption}
+\usepackage[hidelinks]{hyperref}
+\usepackage[backend=biber,style=ieee]{biblatex}
+\addbibresource{references.bib}
+
+% ============== Typography / Spacing ==============
+\setstretch{1.15}
+\setlength{\parskip}{6pt}
+\setlength{\parindent}{0pt}
+
+% ============== Custom Commands ==============
+\newcommand{\figwidth}{0.85\textwidth}
+
+\begin{document}
+
+% ======================= COVER PAGE ==========================
+\begin{titlepage}
+\thispagestyle{empty}
+\centering
+\begin{tikzpicture}[remember picture, overlay]
+  \draw[line width=0.8pt]
+    ($(current page.north west) + (2cm,-2cm)$)
+    rectangle
+    ($(current page.south east) + (-2cm,2cm)$);
+\end{tikzpicture}
+
+{\bfseries\large UNIVERSITY OF SCIENCE AND TECHNOLOGY OF HANOI\par}
+\vspace{4pt}
+{\bfseries\large DEPARTMENT OF INFORMATION AND COMMUNICATION TECHNOLOGY\par}
+
+\vspace{2.4cm}
+\IfFileExists{figures/logo.png}{
+  \includegraphics[width=6cm]{figures/logo.png}\par
+}{
+  \vspace*{3.5cm}
+}
+\vspace{1.8cm}
+
+{\bfseries\Large BACHELOR'S THESIS REPORT\par}
+\vspace{10pt}
+{\bfseries\Large A Comparative Evaluation of Deep Models for Skin Lesion Classification on Public Dermoscopy Datasets\par}
+
+\vspace{2.0cm}
+\begin{tabular}{@{}rl@{}}
+\textbf{Submitted by:} & Nguyen Trong Bach -- 23BI14057\\[10pt]
+\textbf{Internal Supervisor:} & Dr. Nghiem Thi Phuong\\[8pt]
+\textbf{External Supervisor:} & Dr. Vu Trong Sinh\\
+\end{tabular}
+
+\vfill
+{\large February 26, 2026\par}
+\end{titlepage}
+
+% ======================= ACKNOWLEDGEMENTS ==========================
+\chapter*{Acknowledgements}
+\addcontentsline{toc}{chapter}{Acknowledgements}
+
+First and foremost, I would like to express my sincere gratitude to my external supervisor, Dr.~Vu Trong Sinh, for his invaluable guidance, continuous support, and immense knowledge. His practical insights into medical imaging have been instrumental in shaping the direction of this research.
+
+I am deeply thankful to my internal supervisor, Dr.~Nghiem Thi Phuong, for her unwavering encouragement, patience, and academic mentorship throughout my time at the University of Science and Technology of Hanoi. Her constructive feedback has significantly improved the quality of this thesis.
+
+My heartfelt thanks go to my girlfriend for standing by my side during the long nights of debugging and training models. Her emotional support and understanding have been a profound source of motivation for me.
+
+Lastly, I want to express my deepest appreciation to my family. To my parents, thank you for your unconditional love, sacrifices, and for always believing in my potential. I dedicate this milestone to you.
+
+% ======================= ABSTRACT ==========================
+\chapter*{Abstract}
+\addcontentsline{toc}{chapter}{Abstract}
+
+Skin cancer, particularly melanoma, is one of the most fatal forms of cancer worldwide. Early and accurate detection is crucial for improving patient survival rates. In recent years, deep learning has shown remarkable success in assisting dermatologists by automatically classifying skin lesions from dermoscopy images. However, models often struggle with severe class imbalance and the nuanced visual similarities between different types of skin diseases.
+
+This thesis presents a comprehensive comparative evaluation of state-of-the-art deep learning architectures for multi-class skin lesion classification using the public ISIC 2018 dataset. We investigate both Convolutional Neural Networks (EfficientNet-B0, ResNet50, DenseNet121) and a Vision Transformer (Swin-Tiny). An optimized training pipeline was developed incorporating Mixup, CutMix, Label Smoothing, and Weighted Random Sampling to address class imbalance and overfitting.
+
+The optimized EfficientNet-B0 achieved the best individual accuracy of 88.36\% with a macro F1-score of 0.831. A soft-voting ensemble of all four models further improved performance to 89.49\% accuracy and 0.980 macro AUC. Grad-CAM visualizations confirmed that models attend to clinically relevant lesion regions. An ablation study quantified the contribution of each regularization technique. This study highlights trade-offs between architectural paradigms and proposes a robust pipeline for automated dermoscopic diagnosis.
+
+% ======================= TOC / LOF / LOT ==========================
+\tableofcontents
+\listoffigures
+\listoftables
+
+% ======================= LIST OF ABBREVIATIONS ==========================
+\chapter*{List of Abbreviations}
+\addcontentsline{toc}{chapter}{List of Abbreviations}
+
+\begin{acronym}[ISIC]
+\acro{AUC}{Area Under the ROC Curve}
+\acro{BCC}{Basal Cell Carcinoma}
+\acro{CNN}{Convolutional Neural Network}
+\acro{DF}{Dermatofibroma}
+\acro{ISIC}{International Skin Imaging Collaboration}
+\acro{MCC}{Matthews Correlation Coefficient}
+\acro{MEL}{Melanoma}
+\acro{NV}{Melanocytic Nevus}
+\acro{ROC}{Receiver Operating Characteristic}
+\acro{ViT}{Vision Transformer}
+\acro{XAI}{Explainable Artificial Intelligence}
+\end{acronym}
+
+% ======================= CHAPTER 1 ==========================
+\chapter{Introduction}
+
+\section{Background and Motivation}
+
+Skin cancer is globally recognized as one of the most prevalent and life-threatening forms of cancer. According to the World Health Organization, the incidence of both non-melanoma and melanoma skin cancers has been increasing steadily over the past decades. Melanoma, while representing only a small fraction of skin cancer cases, is responsible for the vast majority of skin cancer-related deaths due to its rapid metastasis. However, if detected and treated in its early stages, the five-year survival rate for melanoma patients exceeds 99\%.
+
+Dermoscopy is a non-invasive imaging technique that magnifies the surface of the skin, allowing dermatologists to observe morphological structures invisible to the naked eye. While dermoscopy significantly improves diagnostic accuracy compared to standard clinical evaluation, interpreting these images remains highly subjective and requires extensive specialized training. The visual similarities between benign lesions (such as melanocytic nevi) and malignant ones (such as melanoma) often lead to misdiagnoses, even among experienced practitioners.
+
+To mitigate human error and reduce the workload of medical professionals, deep learning has been widely adopted in medical imaging. Convolutional Neural Networks (CNNs) have historically dominated the field of computer vision, demonstrating human-level performance in classifying skin lesions. More recently, Vision Transformers (ViTs) have emerged as a powerful alternative, utilizing self-attention mechanisms to capture global context within an image. Despite these advancements, training robust models for clinical application remains challenging. Medical datasets, including the widely used ISIC archives, are notorious for severe class imbalance---where benign cases vastly outnumber malignant ones. Without proper intervention, deep learning models tend to overfit to the majority classes while ignoring rare, critical diseases.
+
+\section{Problem Statement}
+
+The primary challenge in automated skin lesion classification lies in developing a model that not only achieves high overall accuracy but also maintains high sensitivity across all disease classes, particularly the minority and clinically dangerous ones like melanoma. A naive approach to training on the ISIC 2018 dataset inevitably leads to a biased model that simply predicts the majority class for most inputs.
+
+Furthermore, the medical domain demands a degree of interpretability; black-box models that provide predictions without justification are difficult to integrate into clinical workflows. Clinicians need to understand \textit{why} a model classified a lesion as melanoma in order to trust its recommendation.
+
+Therefore, the core problem addressed in this thesis is: \textit{How can we design an optimized, regularized training pipeline that maximizes the diagnostic performance of deep learning architectures on highly imbalanced skin lesion datasets, and how do modern CNNs compare against Vision Transformers in this specific context?}
+
+\section{Objectives}
+
+To address the aforementioned challenges, this thesis outlines the following key objectives:
+\begin{enumerate}
+    \item \textbf{Develop an Optimized Training Pipeline:} Implement advanced data augmentation (Mixup, CutMix, random resized crops) and sampling strategies (Weighted Random Sampler) to combat severe class imbalance and prevent model overfitting.
+    \item \textbf{Conduct a Comparative Analysis:} Systematically train and evaluate four deep learning architectures---EfficientNet-B0, ResNet50, DenseNet121, and Swin-Tiny---assessing their trade-offs in terms of accuracy, F1-score, computational efficiency, and AUC.
+    \item \textbf{Ensure Model Interpretability:} Apply Grad-CAM to generate heatmaps that visualize the regions contributing to the models' decisions, ensuring alignment with dermatological features.
+    \item \textbf{Perform Ablation Studies:} Isolate and quantify the performance contribution of individual regularization techniques to validate the proposed methodology.
+    \item \textbf{Explore Ensemble Methods:} Combine predictions from all four architectures using soft voting to investigate whether architectural diversity leads to improved diagnostic performance.
+\end{enumerate}
+
+\section{Thesis Structure}
+
+The remainder of this report is organized as follows:
+\begin{itemize}
+    \item \textbf{Chapter 2 -- Literature Review:} Explores related work on deep learning for skin cancer classification.
+    \item \textbf{Chapter 3 -- Methodology:} Details the dataset, architectures, optimization techniques, and evaluation metrics.
+    \item \textbf{Chapter 4 -- Experiments and Results:} Presents comparative analysis, Grad-CAM interpretations, ensemble results, and ablation study findings.
+    \item \textbf{Chapter 5 -- Conclusion and Future Work:} Summarizes contributions and proposes future directions.
+\end{itemize}
+
+
+% ======================= CHAPTER 2 ==========================
+\chapter{Literature Review}
+
+\section{Skin Lesion Classification with Deep Learning}
+
+The application of deep learning to dermatological image analysis has gained significant momentum since the landmark study by Esteva et al.~(2017), which demonstrated that a CNN trained on clinical images could match the diagnostic accuracy of board-certified dermatologists. This work, based on the Inception-v3 architecture, proved that transfer learning from large-scale datasets (ImageNet) could effectively compensate for the relatively small size of medical image datasets.
+
+Subsequent research has focused on the ISIC Challenge datasets, which have become the de facto benchmark for skin lesion classification. The ISIC 2018 Challenge (Task 3) introduced a seven-class classification problem, requiring models to distinguish between Melanocytic Nevus (NV), Melanoma (MEL), Benign Keratosis (BKL), Basal Cell Carcinoma (BCC), Actinic Keratosis (AKIEC), Vascular Lesion (VASC), and Dermatofibroma (DF). This multi-class formulation is considerably more challenging than the binary melanoma-vs-benign task, as it demands fine-grained visual discrimination between diseases that share similar morphological characteristics.
+
+\section{Evolution of Architectures}
+
+\subsection{Residual Networks (ResNet)}
+He et al.~(2016) introduced residual connections, enabling the training of substantially deeper networks by addressing the vanishing gradient problem. ResNet50, with its 50-layer architecture and approximately 25.6 million parameters, remains a widely used baseline in medical image analysis due to its robust feature extraction capabilities and well-understood behavior.
+
+\subsection{Dense Connectivity (DenseNet)}
+Huang et al.~(2017) proposed DenseNet, where each layer receives feature maps from all preceding layers. This dense connectivity pattern promotes feature reuse, reduces the number of parameters compared to equivalently deep ResNets, and strengthens gradient flow. DenseNet121, with approximately 8 million parameters, has shown particular promise in medical imaging tasks where data efficiency is critical.
+
+\subsection{Compound Scaling (EfficientNet)}
+Tan and Le~(2019) introduced EfficientNet, which jointly scales network depth, width, and input resolution using a compound scaling coefficient. EfficientNet-B0, despite having only 5.3 million parameters, achieves competitive accuracy with much larger models. This efficiency makes it particularly attractive for deployment in resource-constrained clinical environments.
+
+\subsection{Vision Transformers and Swin Transformer}
+Dosovitskiy et al.~(2021) adapted the Transformer architecture from natural language processing to computer vision. Unlike CNNs, Vision Transformers process images as sequences of patches and use self-attention to model global dependencies. However, standard ViTs require extremely large training datasets. Liu et al.~(2021) addressed this limitation with the Swin Transformer, which introduces a hierarchical structure with shifted windows, reducing computational complexity from quadratic to linear with respect to image size. Swin-Tiny, with approximately 28 million parameters, offers a balance between the global modeling capacity of Transformers and practical computational requirements.
+
+\section{Handling Class Imbalance in Medical Datasets}
+
+Class imbalance is a fundamental challenge in medical image classification. In the ISIC 2018 dataset, melanocytic nevi constitute approximately 67\% of all samples, while dermatofibroma and vascular lesions represent less than 2\% combined. Several strategies have been proposed to address this:
+
+\textbf{Sampling strategies:} Oversampling minority classes or undersampling majority classes during training. Weighted Random Sampling assigns higher selection probability to underrepresented classes, ensuring that each mini-batch contains a balanced class distribution without discarding valuable data.
+
+\textbf{Loss function modifications:} Focal Loss (Lin et al., 2017) down-weights the contribution of well-classified examples, focusing training on hard, misclassified samples. Label Smoothing (Szegedy et al., 2016) prevents the model from becoming overconfident by replacing hard one-hot targets with soft probability distributions.
+
+\textbf{Data augmentation:} Mixup (Zhang et al., 2018) creates virtual training samples by linearly interpolating pairs of images and their labels. CutMix (Yun et al., 2019) extends this concept by cutting and pasting rectangular patches between training images, forcing the model to attend to less discriminative parts of the image. Both techniques have been shown to significantly improve generalization in imbalanced settings.
+
+\section{Explainability in Medical AI}
+
+The deployment of AI in clinical settings requires not only high accuracy but also interpretability. Grad-CAM (Selvaraju et al., 2017) produces visual explanations by computing the gradient of the target class score with respect to the feature maps of the last convolutional layer. The resulting heatmap highlights regions that most strongly influence the model's prediction, enabling clinicians to verify that the model is attending to pathologically relevant features rather than spurious correlations such as image artifacts or ruler markings.
+
+\section{Comparison with State-of-the-Art}
+
+In the original ISIC 2018 Challenge (Task 3), top-performing teams achieved balanced multi-class accuracies in the range of 85\% to 88\% (Tschandl et al., 2018). These early systems primarily relied on deep ensembles of heavily augmented, traditional CNN architectures like ResNet and Inception. As demonstrated in this thesis, our proposed framework---utilizing a soft-voting mechanism across four diverse modern architectures (EfficientNet-B0, ResNet50, DenseNet121, Swin-Tiny) trained with an optimized regularization recipe (Mixup, CutMix, Label Smoothing, and Weighted Sampling)---achieves an overall accuracy of 89.49\% and a macro AUC of 0.980 on the same dataset. This performance surpasses the original challenge baselines, demonstrating the significant strides made in both architectural design (such as Vision Transformers and compound scaling) and robust training methodologies for highly imbalanced medical datasets over recent years.
+
+
+% ======================= Include remaining chapters ==========================
+\input{chapter3}
+\input{chapter4}
+\input{chapter5}
+
+% ======================= REFERENCES ==========================
+\printbibliography[title={References}]
+
+\end{document}

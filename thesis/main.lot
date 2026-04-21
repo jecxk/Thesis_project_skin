@@ -1,0 +1,13 @@
+\addvspace {10\p@ }
+\addvspace {10\p@ }
+\addvspace {10\p@ }
+\contentsline {table}{\numberline {3.1}{\ignorespaces Class distribution of the ISIC 2018 dataset.}}{14}{table.caption.7}%
+\contentsline {table}{\numberline {3.2}{\ignorespaces Summary of the four evaluated architectures.}}{16}{table.caption.9}%
+\contentsline {table}{\numberline {3.3}{\ignorespaces Hyperparameter configuration for each model.}}{18}{table.caption.10}%
+\addvspace {10\p@ }
+\contentsline {table}{\numberline {4.1}{\ignorespaces Test-set performance comparison of the four evaluated architectures. Best values are highlighted in \textbf {bold}.}}{20}{table.caption.11}%
+\contentsline {table}{\numberline {4.2}{\ignorespaces Per-class F1-scores and AUC values for each model on the test set.}}{21}{table.caption.12}%
+\contentsline {table}{\numberline {4.3}{\ignorespaces Comparison of individual models versus the ensemble on the test set.}}{26}{table.caption.17}%
+\contentsline {table}{\numberline {4.4}{\ignorespaces Per-class performance of the ensemble versus the best individual model (EfficientNet-B0).}}{27}{table.caption.19}%
+\contentsline {table}{\numberline {4.5}{\ignorespaces Ablation study results on EfficientNet-B0. Each row shows the effect of removing one component from the full pipeline. $\Delta $ indicates the change relative to the full model.}}{29}{table.caption.22}%
+\addvspace {10\p@ }
