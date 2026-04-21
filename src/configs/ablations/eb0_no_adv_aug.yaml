@@ -1,0 +1,75 @@
+# ============================================================================
+# ABLATION #3: Bỏ Data Augmentation nâng cao
+# ============================================================================
+# So với bản gốc, file này CHỈ khác ở:
+#   - random_resized_crop: false    (gốc: true)
+#   - gaussian_blur: 0.0            (gốc: 0.1)
+#   - vflip: 0.0                    (gốc: 0.5)
+#   - rotation: 20                  (gốc: 90)
+#   - color_jitter: 0.2             (gốc: 0.25)
+#
+# Mục đích: Chứng minh augmentation nâng cao giúp model robust hơn.
+# Nếu kết quả GIẢM → model cần "thấy" ảnh biến dạng để học tốt hơn.
+# ============================================================================
+
+experiment_name: ablation_no_adv_aug
+seed: 42
+output_dir: outputs/ablation_no_adv_aug
+
+classes: [akiec, bcc, bkl, df, mel, nv, vasc]
+
+paths:
+  root_dir: .
+  csv_file: data/metadata/skin_metadata.csv
+
+model:
+  name: tf_efficientnet_b0
+  pretrained: true
+  num_classes: 7
+  dropout: 0.3
+
+train:
+  image_size: 224
+  batch_size: 16
+  num_workers: 0
+  epochs: 50
+  amp: true
+  grad_clip: 1.0
+  early_stopping_patience: 12
+  mixup_alpha: 0.2
+  cutmix_alpha: 1.0
+  mixup_cutmix_prob: 0.5
+
+optimizer:
+  name: adamw
+  lr: 0.0003
+  weight_decay: 0.001
+
+scheduler:
+  name: cosine_warmup
+  min_lr: 1.0e-6
+  warmup_epochs: 3
+
+loss:
+  name: cross_entropy
+  label_smoothing: 0.1
+
+sampling:
+  use_weighted_sampler: true
+
+augmentation:
+  train:
+    hflip: 0.5
+    # === THAY ĐỔI: Chỉ giữ augmentation cơ bản ===
+    vflip: 0.0
+    rotation: 20
+    color_jitter: 0.2
+    random_erasing: 0.1
+    random_resized_crop: false
+    gaussian_blur: 0.0
+  eval:
+    center_crop: false
+
+metric:
+  monitor: macro_f1
+  mode: max
