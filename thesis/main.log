@@ -1,4 +1,4 @@
-This is pdfTeX, Version 3.141592653-2.6-1.40.29 (MiKTeX 26.2) (preloaded format=pdflatex 2026.3.13)  22 APR 2026 00:41
+This is pdfTeX, Version 3.141592653-2.6-1.40.29 (MiKTeX 26.2) (preloaded format=pdflatex 2026.3.13)  27 APR 2026 19:33
 entering extended mode
  restricted \write18 enabled.
  %&-line parsing enabled.
@@ -986,7 +986,7 @@ Package biblatex Info: ... file 'main.bbl' found.
  (main.bbl)
 Package biblatex Info: Reference section=0 on input line 32.
 Package biblatex Info: Reference segment=0 on input line 32.
-<figures/logo.png, id=206, 140.525pt x 70.2625pt>
+<figures/logo.png, id=214, 140.525pt x 70.2625pt>
 File: figures/logo.png Graphic file (type png)
 <use figures/logo.png>
 Package pdftex.def Info: figures/logo.png  used on input line 54.
@@ -1041,91 +1041,147 @@ the best in-di-vid-ual model (EfficientNet-
 
 ]
 
-LaTeX Warning: Hyper reference `acro:AUC' on page 7 undefined on input line 104
+LaTeX Warning: Hyper reference `acro:AKIEC' on page 7 undefined on input line 1
+04.
+
+
+LaTeX Warning: Hyper reference `acro:AKIEC' on page 7 undefined on input line 1
+04.
+
+
+LaTeX Warning: Hyper reference `acro:AUC' on page 7 undefined on input line 105
 .
 
 
-LaTeX Warning: Hyper reference `acro:AUC' on page 7 undefined on input line 104
+LaTeX Warning: Hyper reference `acro:AUC' on page 7 undefined on input line 105
 .
 
 
-LaTeX Warning: Hyper reference `acro:BCC' on page 7 undefined on input line 105
+LaTeX Warning: Hyper reference `acro:BCC' on page 7 undefined on input line 106
 .
 
 
-LaTeX Warning: Hyper reference `acro:BCC' on page 7 undefined on input line 105
+LaTeX Warning: Hyper reference `acro:BCC' on page 7 undefined on input line 106
 .
 
 
-LaTeX Warning: Hyper reference `acro:CNN' on page 7 undefined on input line 106
+LaTeX Warning: Hyper reference `acro:BKL' on page 7 undefined on input line 107
 .
 
 
-LaTeX Warning: Hyper reference `acro:CNN' on page 7 undefined on input line 106
+LaTeX Warning: Hyper reference `acro:BKL' on page 7 undefined on input line 107
 .
 
 
-LaTeX Warning: Hyper reference `acro:DF' on page 7 undefined on input line 107.
-
-
-
-LaTeX Warning: Hyper reference `acro:DF' on page 7 undefined on input line 107.
-
-
-
-LaTeX Warning: Hyper reference `acro:ISIC' on page 7 undefined on input line 10
-8.
-
-
-LaTeX Warning: Hyper reference `acro:ISIC' on page 7 undefined on input line 10
-8.
-
-
-LaTeX Warning: Hyper reference `acro:MCC' on page 7 undefined on input line 109
+LaTeX Warning: Hyper reference `acro:CNN' on page 7 undefined on input line 108
 .
 
 
-LaTeX Warning: Hyper reference `acro:MCC' on page 7 undefined on input line 109
+LaTeX Warning: Hyper reference `acro:CNN' on page 7 undefined on input line 108
 .
 
 
-LaTeX Warning: Hyper reference `acro:MEL' on page 7 undefined on input line 110
+LaTeX Warning: Hyper reference `acro:DF' on page 7 undefined on input line 109.
+
+
+
+LaTeX Warning: Hyper reference `acro:DF' on page 7 undefined on input line 109.
+
+
+
+LaTeX Warning: Hyper reference `acro:FP16' on page 7 undefined on input line 11
+0.
+
+
+LaTeX Warning: Hyper reference `acro:FP16' on page 7 undefined on input line 11
+0.
+
+
+LaTeX Warning: Hyper reference `acro:Grad-CAM' on page 7 undefined on input lin
+e 111.
+
+
+LaTeX Warning: Hyper reference `acro:Grad-CAM' on page 7 undefined on input lin
+e 111.
+
+
+LaTeX Warning: Hyper reference `acro:ISIC' on page 7 undefined on input line 11
+2.
+
+
+LaTeX Warning: Hyper reference `acro:ISIC' on page 7 undefined on input line 11
+2.
+
+
+LaTeX Warning: Hyper reference `acro:MCC' on page 7 undefined on input line 113
 .
 
 
-LaTeX Warning: Hyper reference `acro:MEL' on page 7 undefined on input line 110
+LaTeX Warning: Hyper reference `acro:MCC' on page 7 undefined on input line 113
 .
 
 
-LaTeX Warning: Hyper reference `acro:NV' on page 7 undefined on input line 111.
-
-
-
-LaTeX Warning: Hyper reference `acro:NV' on page 7 undefined on input line 111.
-
-
-
-LaTeX Warning: Hyper reference `acro:ROC' on page 7 undefined on input line 112
+LaTeX Warning: Hyper reference `acro:MEL' on page 7 undefined on input line 114
 .
 
 
-LaTeX Warning: Hyper reference `acro:ROC' on page 7 undefined on input line 112
+LaTeX Warning: Hyper reference `acro:MEL' on page 7 undefined on input line 114
 .
 
 
-LaTeX Warning: Hyper reference `acro:ViT' on page 7 undefined on input line 113
+LaTeX Warning: Hyper reference `acro:NAS' on page 7 undefined on input line 115
 .
 
 
-LaTeX Warning: Hyper reference `acro:ViT' on page 7 undefined on input line 113
+LaTeX Warning: Hyper reference `acro:NAS' on page 7 undefined on input line 115
 .
 
 
-LaTeX Warning: Hyper reference `acro:XAI' on page 7 undefined on input line 114
+LaTeX Warning: Hyper reference `acro:NV' on page 7 undefined on input line 116.
+
+
+
+LaTeX Warning: Hyper reference `acro:NV' on page 7 undefined on input line 116.
+
+
+
+LaTeX Warning: Hyper reference `acro:ROC' on page 7 undefined on input line 117
 .
 
 
-LaTeX Warning: Hyper reference `acro:XAI' on page 7 undefined on input line 114
+LaTeX Warning: Hyper reference `acro:ROC' on page 7 undefined on input line 117
+.
+
+
+LaTeX Warning: Hyper reference `acro:TTA' on page 7 undefined on input line 118
+.
+
+
+LaTeX Warning: Hyper reference `acro:TTA' on page 7 undefined on input line 118
+.
+
+
+LaTeX Warning: Hyper reference `acro:VASC' on page 7 undefined on input line 11
+9.
+
+
+LaTeX Warning: Hyper reference `acro:VASC' on page 7 undefined on input line 11
+9.
+
+
+LaTeX Warning: Hyper reference `acro:ViT' on page 7 undefined on input line 120
+.
+
+
+LaTeX Warning: Hyper reference `acro:ViT' on page 7 undefined on input line 120
+.
+
+
+LaTeX Warning: Hyper reference `acro:XAI' on page 7 undefined on input line 121
+.
+
+
+LaTeX Warning: Hyper reference `acro:XAI' on page 7 undefined on input line 121
 .
 
 [7
@@ -1138,73 +1194,73 @@ Chapter 1.
 Chapter 2.
 [11
 
-] [12] (chapter3.tex [13]
+] [12] [13] (chapter3.tex [14]
 Chapter 3.
-<figures/class_distribution.png, id=380, 858.92896pt x 424.9476pt>
+<figures/class_distribution.png, id=466, 858.92896pt x 424.9476pt>
 File: figures/class_distribution.png Graphic file (type png)
 <use figures/class_distribution.png>
 Package pdftex.def Info: figures/class_distribution.png  used on input line 35.
 
 (pdftex.def)             Requested size: 386.96027pt x 191.4451pt.
-[14
+[15
 
-] [15 <./figures/class_distribution.png>] [16] [17] [18]) (chapter4.tex
-[19]
+] [16 <./figures/class_distribution.png>] [17] [18] [19]) (chapter4.tex
+[20]
 Chapter 4.
-[20
+[21
 
 ]
-<figures/eb0_training_history.png, id=428, 1727.253pt x 372.1905pt>
+<figures/eb0_training_history.png, id=539, 1727.253pt x 372.1905pt>
 File: figures/eb0_training_history.png Graphic file (type png)
 <use figures/eb0_training_history.png>
 Package pdftex.def Info: figures/eb0_training_history.png  used on input line 7
 3.
 (pdftex.def)             Requested size: 523.52794pt x 112.81088pt.
-<figures/rn50_training_history.png, id=429, 1727.253pt x 372.1905pt>
+<figures/rn50_training_history.png, id=540, 1727.253pt x 372.1905pt>
 File: figures/rn50_training_history.png Graphic file (type png)
 <use figures/rn50_training_history.png>
 Package pdftex.def Info: figures/rn50_training_history.png  used on input line 
 80.
 (pdftex.def)             Requested size: 523.52794pt x 112.81088pt.
- [21]
-<figures/dn121_training_history.png, id=434, 1727.253pt x 372.1905pt>
+ [22]
+<figures/dn121_training_history.png, id=545, 1727.253pt x 372.1905pt>
 File: figures/dn121_training_history.png Graphic file (type png)
 <use figures/dn121_training_history.png>
 Package pdftex.def Info: figures/dn121_training_history.png  used on input line
  91.
 (pdftex.def)             Requested size: 523.52794pt x 112.81088pt.
-<figures/swin_training_history.png, id=435, 1727.253pt x 372.1905pt>
+<figures/swin_training_history.png, id=546, 1727.253pt x 372.1905pt>
 File: figures/swin_training_history.png Graphic file (type png)
 <use figures/swin_training_history.png>
 Package pdftex.def Info: figures/swin_training_history.png  used on input line 
 98.
 (pdftex.def)             Requested size: 523.52794pt x 112.81088pt.
- [22 <./figures/eb0_training_history.png> <./figures/rn50_training_history.png>
+ [23 <./figures/eb0_training_history.png> <./figures/rn50_training_history.png>
  <./figures/dn121_training_history.png> <./figures/swin_training_history.png>]
-<figures/eb0_confusion_matrix.png, id=446, 629.11035pt x 570.57166pt>
+<figures/eb0_confusion_matrix.png, id=557, 629.11035pt x 570.57166pt>
 File: figures/eb0_confusion_matrix.png Graphic file (type png)
 <use figures/eb0_confusion_matrix.png>
 Package pdftex.def Info: figures/eb0_confusion_matrix.png  used on input line 1
 18.
 (pdftex.def)             Requested size: 409.71692pt x 371.5985pt.
-<figures/rn50_confusion_matrix.png, id=447, 629.11035pt x 570.57166pt>
+<figures/rn50_confusion_matrix.png, id=558, 629.11035pt x 570.57166pt>
 File: figures/rn50_confusion_matrix.png Graphic file (type png)
 <use figures/rn50_confusion_matrix.png>
 Package pdftex.def Info: figures/rn50_confusion_matrix.png  used on input line 
 125.
 (pdftex.def)             Requested size: 409.71692pt x 371.5985pt.
- [23]
+ [24]
 Overfull \vbox (118.08572pt too high) has occurred while \output is active []
 
 
-[24 <./figures/eb0_confusion_matrix.png> <./figures/rn50_confusion_matrix.png>]
-<figures/dn121_confusion_matrix.png, id=459, 629.11035pt x 570.57166pt>
+[25 <./figures/eb0_confusion_matrix.png> <./figures/rn50_confusion_matrix.png>]
+<figures/dn121_confusion_matrix.png, id=570, 629.11035pt x 570.57166pt>
 File: figures/dn121_confusion_matrix.png Graphic file (type png)
 <use figures/dn121_confusion_matrix.png>
 Package pdftex.def Info: figures/dn121_confusion_matrix.png  used on input line
  136.
 (pdftex.def)             Requested size: 409.71692pt x 371.5985pt.
-<figures/swin_confusion_matrix.png, id=460, 629.11035pt x 570.57166pt>
+<figures/swin_confusion_matrix.png, id=571, 629.11035pt x 570.57166pt>
 File: figures/swin_confusion_matrix.png Graphic file (type png)
 <use figures/swin_confusion_matrix.png>
 Package pdftex.def Info: figures/swin_confusion_matrix.png  used on input line 
@@ -1214,40 +1270,40 @@ Package pdftex.def Info: figures/swin_confusion_matrix.png  used on input line
 Overfull \vbox (118.08572pt too high) has occurred while \output is active []
 
 
-[25 <./figures/dn121_confusion_matrix.png> <./figures/swin_confusion_matrix.png
+[26 <./figures/dn121_confusion_matrix.png> <./figures/swin_confusion_matrix.png
 >]
-<figures/ensemble_confusion_matrix.png, id=469, 629.11035pt x 570.57166pt>
+<figures/ensemble_confusion_matrix.png, id=581, 629.11035pt x 570.57166pt>
 File: figures/ensemble_confusion_matrix.png Graphic file (type png)
 <use figures/ensemble_confusion_matrix.png>
 Package pdftex.def Info: figures/ensemble_confusion_matrix.png  used on input l
 ine 177.
 (pdftex.def)             Requested size: 209.41534pt x 189.926pt.
-<figures/ensemble_roc_curves.png, id=470, 642.11896pt x 569.84895pt>
+<figures/ensemble_roc_curves.png, id=582, 642.11896pt x 569.84895pt>
 File: figures/ensemble_roc_curves.png Graphic file (type png)
 <use figures/ensemble_roc_curves.png>
 Package pdftex.def Info: figures/ensemble_roc_curves.png  used on input line 18
 2.
 (pdftex.def)             Requested size: 209.41534pt x 185.84216pt.
- [26 <./figures/ensemble_confusion_matrix.png> <./figures/ensemble_roc_curves.p
+ [27 <./figures/ensemble_confusion_matrix.png> <./figures/ensemble_roc_curves.p
 ng>]
-<figures/gradcam_class_grid.png, id=479, 1076.823pt x 1608.0075pt>
+<figures/gradcam_class_grid.png, id=591, 1076.823pt x 1608.0075pt>
 File: figures/gradcam_class_grid.png Graphic file (type png)
 <use figures/gradcam_class_grid.png>
 Package pdftex.def Info: figures/gradcam_class_grid.png  used on input line 216
 .
 (pdftex.def)             Requested size: 455.24411pt x 679.7996pt.
- [27]
+ [28]
 Overfull \vbox (27.81653pt too high) has occurred while \output is active []
 
 
-[28 <./figures/gradcam_class_grid.png>]
-<figures/gradcam_mel_sample.png, id=490, 1392.28156pt x 298.4751pt>
+[29 <./figures/gradcam_class_grid.png>]
+<figures/gradcam_mel_sample.png, id=602, 1392.28156pt x 298.4751pt>
 File: figures/gradcam_mel_sample.png Graphic file (type png)
 <use figures/gradcam_mel_sample.png>
 Package pdftex.def Info: figures/gradcam_mel_sample.png  used on input line 232
 .
 (pdftex.def)             Requested size: 386.96027pt x 82.95306pt.
- [29 <./figures/gradcam_mel_sample.png>]) (chapter5.tex [30]
+ [30 <./figures/gradcam_mel_sample.png>]) (chapter5.tex [31]
 Chapter 5.
 
 Overfull \hbox (7.53714pt too wide) in paragraph at lines 11--12
@@ -1255,19 +1311,17 @@ Overfull \hbox (7.53714pt too wide) in paragraph at lines 11--12
 r/m/n/10.95 span-ning three CNN fam-i-lies (EfficientNet-
  []
 
-[31
+[32
 
-]
-Overfull \hbox (11.1965pt too wide) in paragraph at lines 50--51
+] [33]
+Overfull \hbox (11.1965pt too wide) in paragraph at lines 57--58
 []\OT1/cmr/bx/n/10.95 Knowledge dis-til-la-tion: \OT1/cmr/m/n/10.95 Trans-fer t
 he knowl-edge from the en-sem-ble into a sin-gle lightweight
  []
 
-[32])
+) [34] [35
 
-LaTeX Warning: Empty bibliography on input line 206.
-
-[33] (main.aux)
+] [36] [37] (main.aux)
  ***********
 LaTeX2e <2025-11-01>
 L3 programming layer <2026-01-19>
@@ -1277,32 +1331,35 @@ L3 programming layer <2026-01-19>
 LaTeX Warning: There were undefined references.
 
 Package rerunfilecheck Info: File `main.out' has not changed.
-(rerunfilecheck)             Checksum: B145B4FC76EFF25C083B617FCB4D5103;8216.
+(rerunfilecheck)             Checksum: DC07808A2862CC2969CECD708710EBC5;8656.
 Package logreq Info: Writing requests to 'main.run.xml'.
 \openout1 = `main.run.xml'.
 
  ) 
 Here is how much of TeX's memory you used:
- 30547 strings out of 467867
- 568480 string characters out of 5432764
- 1389516 words of memory out of 5000000
- 58855 multiletter control sequences out of 15000+600000
- 635954 words of font info for 70 fonts, out of 8000000 for 9000
+ 30942 strings out of 467867
+ 579051 string characters out of 5432764
+ 1394115 words of memory out of 5000000
+ 59196 multiletter control sequences out of 15000+600000
+ 638144 words of font info for 79 fonts, out of 8000000 for 9000
  1141 hyphenation exceptions out of 8191
- 84i,9n,104p,979b,807s stack positions out of 10000i,1000n,20000p,200000b,200000s
+ 84i,9n,104p,1098b,1548s stack positions out of 10000i,1000n,20000p,200000b,200000s
  <C:\Users\Admin\AppData\Local\MiKTeX\fonts/pk/ljfour/jknappen/ec/dpi600\tcrm
 1095.pk><D:/Miktek_real/fonts/type1/public/amsfonts/cm/cmbx10.pfb><D:/Miktek_re
 al/fonts/type1/public/amsfonts/cm/cmbx12.pfb><D:/Miktek_real/fonts/type1/public
 /amsfonts/cm/cmex10.pfb><D:/Miktek_real/fonts/type1/public/amsfonts/cm/cmmi10.p
 fb><D:/Miktek_real/fonts/type1/public/amsfonts/cm/cmmi8.pfb><D:/Miktek_real/fon
-ts/type1/public/amsfonts/cm/cmr10.pfb><D:/Miktek_real/fonts/type1/public/amsfon
-ts/cm/cmr12.pfb><D:/Miktek_real/fonts/type1/public/amsfonts/cm/cmr8.pfb><D:/Mik
-tek_real/fonts/type1/public/amsfonts/cm/cmsy10.pfb><D:/Miktek_real/fonts/type1/
-public/amsfonts/cm/cmsy8.pfb><D:/Miktek_real/fonts/type1/public/amsfonts/cm/cmt
-i10.pfb><D:/Miktek_real/fonts/type1/public/amsfonts/cm/cmtt10.pfb>
-Output written on main.pdf (34 pages, 14724653 bytes).
+ts/type1/public/amsfonts/cm/cmmi9.pfb><D:/Miktek_real/fonts/type1/public/amsfon
+ts/cm/cmr10.pfb><D:/Miktek_real/fonts/type1/public/amsfonts/cm/cmr12.pfb><D:/Mi
+ktek_real/fonts/type1/public/amsfonts/cm/cmr6.pfb><D:/Miktek_real/fonts/type1/p
+ublic/amsfonts/cm/cmr8.pfb><D:/Miktek_real/fonts/type1/public/amsfonts/cm/cmr9.
+pfb><D:/Miktek_real/fonts/type1/public/amsfonts/cm/cmsy10.pfb><D:/Miktek_real/f
+onts/type1/public/amsfonts/cm/cmsy8.pfb><D:/Miktek_real/fonts/type1/public/amsf
+onts/cm/cmsy9.pfb><D:/Miktek_real/fonts/type1/public/amsfonts/cm/cmti10.pfb><D:
+/Miktek_real/fonts/type1/public/amsfonts/cm/cmtt10.pfb>
+Output written on main.pdf (38 pages, 14817598 bytes).
 PDF statistics:
- 602 PDF objects out of 1000 (max. 8388607)
- 129 named destinations out of 1000 (max. 500000)
- 483 words of extra memory for PDF output out of 10000 (max. 10000000)
+ 789 PDF objects out of 1000 (max. 8388607)
+ 177 named destinations out of 1000 (max. 500000)
+ 499 words of extra memory for PDF output out of 10000 (max. 10000000)
 

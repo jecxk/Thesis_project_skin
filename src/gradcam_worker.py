@@ -8,6 +8,9 @@ import os
 # Important for Windows PyTorch
 os.environ['KMP_DUPLICATE_LIB_OK'] = 'True'
 
+# Add parent directory to sys.path so 'src' can be found when run as a subprocess
+sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
+
 from src.models.build_model import build_model
 from src.utils.config import load_config
 from src.utils.grad_cam import GradCAM, get_target_layer
@@ -49,6 +52,8 @@ def main():
     image_path = sys.argv[1]
     model_name = sys.argv[2]
     target_class_idx = int(sys.argv[3])
+    if target_class_idx == -1:
+        target_class_idx = None
     output_path = sys.argv[4]
     
     DEVICE = 'cpu'
@@ -82,19 +87,9 @@ def main():
         grayscale_cam, _, _ = cam(img_t, target_class_idx)
         cam.release()
         
-        # Resize heatmap safely using PIL
-        heatmap_pil = Image.fromarray(np.uint8(255 * grayscale_cam[0])).resize((img_size, img_size), Image.Resampling.BILINEAR)
-        heatmap_resized = np.array(heatmap_pil) / 255.0
-        
-        # Apply colormap using Matplotlib
-        cmap = plt.get_cmap('jet')
-        colored_heatmap = cmap(heatmap_resized)[:, :, :3]  # RGB in [0, 1]
-        colored_heatmap = np.uint8(255 * colored_heatmap)
-        
-        # Blend
+        # Use existing overlay function which handles resizing and colormaps correctly via OpenCV
         img_arr = np.array(image_pil.resize((img_size, img_size)))
-        overlay = np.float32(colored_heatmap) * 0.5 + np.float32(img_arr) * 0.5
-        cam_image = np.clip(overlay, 0, 255).astype(np.uint8)
+        cam_image = GradCAM.overlay(img_arr, grayscale_cam, alpha=0.5)
         
         # Save output
         out_img = Image.fromarray(cam_image)

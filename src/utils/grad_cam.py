@@ -101,6 +101,19 @@ class GradCAM:
         # ReLU — only positive contributions
         cam = F.relu(cam)
 
+        # Suppress border artifacts caused by asymmetric SAME-padding
+        # in architectures like EfficientNet. The outermost ring of small
+        # feature maps (≤14×14) can accumulate spurious gradient energy
+        # due to padding misalignment during the backward pass.  Zeroing
+        # the border is safe for well-behaved architectures (ResNet, DenseNet,
+        # Swin) whose borders are naturally near zero.
+        h_cam, w_cam = cam.shape
+        if h_cam <= 14 and w_cam <= 14:
+            cam[0, :] = 0
+            cam[-1, :] = 0
+            cam[:, 0] = 0
+            cam[:, -1] = 0
+
         # Normalize to [0, 1]
         cam = cam - cam.min()
         if cam.max() > 0:

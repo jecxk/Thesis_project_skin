@@ -6,38 +6,45 @@
 This thesis presented a systematic comparative evaluation of four deep learning architectures for multi-class skin lesion classification on the ISIC 2018 dataset. The key contributions of this work are:
 
 \begin{enumerate}
-    \item \textbf{An optimized training pipeline} that effectively addresses the severe class imbalance (58:1 ratio) inherent in dermatological datasets through a combination of Weighted Random Sampling, Mixup, CutMix, and Label Smoothing. This pipeline demonstrated consistent effectiveness across all four architectures, eliminating overfitting in every case.
+    \item \textbf{An optimized training pipeline} that effectively addresses the severe class imbalance (58:1 ratio) inherent in dermatological datasets through a combination of Weighted Random Sampling~\cite{buda2018systematic}, Mixup~\cite{zhang2018mixup}, CutMix~\cite{yun2019cutmix}, and Label Smoothing~\cite{szegedy2016rethinking}. This pipeline demonstrated consistent effectiveness across all four architectures, eliminating overfitting in every case.
     
-    \item \textbf{A comprehensive architectural comparison} spanning three CNN families (EfficientNet-B0, ResNet50, DenseNet121) and one Vision Transformer (Swin-Tiny). The results revealed that EfficientNet-B0 achieves the best individual performance (88.36\% accuracy, 0.831 macro F1) with the fewest parameters (5.3M), while Swin-Tiny provides the best probability calibration (0.960 AUC) but suffers from limited data availability.
+    \item \textbf{A comprehensive architectural comparison} spanning three CNN families (EfficientNet-B0~\cite{tan2019efficientnet}, ResNet50~\cite{he2016deep}, DenseNet121~\cite{huang2017densely}) and one Vision Transformer (Swin-Tiny~\cite{liu2021swin}). The results revealed that EfficientNet-B0 achieves the best individual performance (88.36\% accuracy, 0.831 macro F1) with the fewest parameters (5.3M), while Swin-Tiny provides the best probability calibration (0.960 AUC) but suffers from limited data availability.
     
-    \item \textbf{A soft-voting ensemble} that leverages architectural diversity to boost performance to 89.49\% accuracy and 0.980 macro AUC, surpassing all individual models and demonstrating the complementary nature of CNNs and Transformers.
+    \item \textbf{A soft-voting ensemble}~\cite{ganaie2022ensemble} that leverages architectural diversity to boost performance to 89.49\% accuracy and 0.980 macro AUC, surpassing all individual models and demonstrating the complementary nature of CNNs and Transformers.
     
-    \item \textbf{Grad-CAM interpretability analysis} confirming that all models attend to clinically relevant lesion features, a critical requirement for any AI system intended for medical deployment.
+    \item \textbf{Grad-CAM interpretability analysis}~\cite{selvaraju2017grad} confirming that all models attend to clinically relevant lesion features, a critical requirement for any AI system intended for medical deployment.
     
     \item \textbf{An ablation study} quantifying the individual contribution of each regularization technique, providing empirical evidence for the design decisions underlying the pipeline.
+    
+    \item \textbf{A web-based diagnostic prototype} implemented as an interactive application using Streamlit, allowing users to upload dermoscopy images and receive real-time ensemble predictions with Grad-CAM visualizations. This prototype demonstrates the feasibility of deploying the trained models in a clinical support workflow.
 \end{enumerate}
 
 \section{Key Findings}
 
 The experimental results yielded several insights with practical implications:
 
-\textbf{Efficiency matters:} EfficientNet-B0, despite being 5$\times$ smaller than ResNet50 and Swin-Tiny, consistently outperformed them on hard-classification metrics. This challenges the notion that larger models necessarily produce better results, particularly in data-constrained medical imaging scenarios.
+\textbf{Efficiency matters:} EfficientNet-B0, despite being 5$\times$ smaller than ResNet50 and Swin-Tiny, consistently outperformed them on hard-classification metrics. This challenges the notion that larger models necessarily produce better results, particularly in data-constrained medical imaging scenarios~\cite{tan2019efficientnet}.
 
-\textbf{CNNs vs. Transformers:} An interesting inverse relationship was observed between accuracy and AUC across the four models. CNNs (particularly EfficientNet) excelled at discrete classification, while the Transformer (Swin-Tiny) produced better-calibrated probabilities. This suggests that in clinical applications where probability ranking is more important than binary decisions (e.g., triage systems), Transformers may be preferred despite lower accuracy.
+\textbf{CNNs vs. Transformers:} An interesting inverse relationship was observed between accuracy and AUC across the four models. CNNs (particularly EfficientNet) excelled at discrete classification, while the Transformer (Swin-Tiny) produced better-calibrated probabilities. This suggests that in clinical applications where probability ranking is more important than binary decisions (e.g., triage systems), Transformers may be preferred despite lower accuracy. This observation is consistent with recent findings that training recipe improvements may matter more than architectural choice~\cite{liu2022convnext}.
 
 \textbf{Melanoma remains the hardest class:} Across all models and the ensemble, melanoma (MEL) consistently achieved the lowest F1-scores, reflecting the genuine clinical difficulty of distinguishing early-stage melanoma from benign nevi. This highlights the need for continued research into melanoma-specific feature learning.
 
-\textbf{Ensembles are effective:} The simple averaging of probability distributions from four models provided a meaningful improvement across all metrics, with the most notable gain in AUC (+2.8\%). This improvement comes at no additional training cost, requiring only inference from multiple models.
+\textbf{Ensembles are effective:} The simple averaging of probability distributions from four models provided a meaningful improvement across all metrics, with the most notable gain in AUC (+2.8\%). This improvement comes at no additional training cost, requiring only inference from multiple models~\cite{ganaie2022ensemble}.
+
+\textbf{Label Smoothing reveals an accuracy--calibration tradeoff:} The ablation study revealed that removing label smoothing \textit{increased} AUC while decreasing F1-score, suggesting that label smoothing~\cite{muller2019does} improves discrete classification at the slight expense of probability ranking sharpness---a nuanced tradeoff not commonly discussed in the literature.
 
 \section{Limitations}
 
 This study has several limitations that should be acknowledged:
 
 \begin{itemize}
-    \item \textbf{Single dataset:} All experiments were conducted on ISIC 2018. Cross-dataset evaluation on ISIC 2019/2020 or private clinical datasets would strengthen the generalizability claims.
-    \item \textbf{Fixed image resolution:} All models used $224 \times 224$ input resolution. Higher resolutions (e.g., $384 \times 384$) may capture finer details relevant for subtle lesions but would increase computational cost.
+    \item \textbf{Single dataset:} All experiments were conducted on ISIC 2018~\cite{codella2019skin}. Cross-dataset evaluation on ISIC 2019/2020 or private clinical datasets would strengthen the generalizability claims.
+    \item \textbf{Fixed image resolution:} All models used $224 \times 224$ input resolution. Higher resolutions (e.g., $384 \times 384$) may capture finer details relevant for subtle lesions but would increase computational cost~\cite{tan2021efficientnetv2}.
     \item \textbf{No external clinical validation:} The models were not evaluated by practicing dermatologists in a clinical workflow, which would be necessary before any real-world deployment.
-    \item \textbf{Limited Transformer exploration:} Only Swin-Tiny was evaluated. Larger Swin variants or other ViT architectures (e.g., DeiT, BEiT) might perform differently.
+    \item \textbf{Limited Transformer exploration:} Only Swin-Tiny was evaluated. Larger Swin variants or other ViT architectures (e.g., DeiT~\cite{touvron2021deit}, ConvNeXt~\cite{liu2022convnext}) might perform differently.
+    \item \textbf{No Test-Time Augmentation (TTA):} Although a TTA module was implemented in the codebase, all reported metrics use single-pass inference to ensure consistency across model comparisons. TTA could potentially boost accuracy by 1--2\% without retraining.
+    \item \textbf{Small test sets for rare classes:} The test set contains only 17 samples for Dermatofibroma and 22 for Vascular Lesions. Per-class metrics for these classes carry high variance and should be interpreted with caution.
+    \item \textbf{No statistical significance testing:} Model comparisons are based on point estimates from a single train/test split. Bootstrap confidence intervals or McNemar's test would provide stronger evidence for claimed performance differences.
 \end{itemize}
 
 \section{Future Work}
@@ -45,9 +52,11 @@ This study has several limitations that should be acknowledged:
 Several promising directions for future research emerge from this study:
 
 \begin{itemize}
-    \item \textbf{Web-based deployment:} Develop an interactive web application (using Streamlit or Gradio) that allows clinicians to upload dermoscopy images and receive real-time predictions with Grad-CAM visualizations.
     \item \textbf{Test-Time Augmentation (TTA):} Apply multiple augmentations during inference and average the predictions, potentially boosting accuracy by 1--2\% without retraining.
+    \item \textbf{Threshold optimization:} Tune per-class decision thresholds using validation set ROC analysis to maximize sensitivity for clinically critical classes (e.g., melanoma), trading specificity for higher recall where false negatives carry severe consequences.
     \item \textbf{Knowledge distillation:} Transfer the knowledge from the ensemble into a single lightweight model suitable for mobile or edge deployment.
-    \item \textbf{Self-supervised pretraining:} Leverage large unlabeled dermoscopy image collections to pretrain models using contrastive learning (e.g., SimCLR, DINO) before fine-tuning on the labeled ISIC data.
-    \item \textbf{Multi-task learning:} Jointly predict diagnosis and segmentation masks, as lesion boundary information may improve classification accuracy.
+    \item \textbf{Self-supervised pretraining:} Leverage large unlabeled dermoscopy image collections to pretrain models using contrastive learning (e.g., DINO~\cite{caron2021dino}) before fine-tuning on the labeled ISIC data.
+    \item \textbf{Multi-task learning:} Jointly predict diagnosis and segmentation masks~\cite{hasan2020dsnet}, as lesion boundary information may improve classification accuracy.
+    \item \textbf{Cross-dataset evaluation:} Validate the trained models on ISIC 2019/2020 and external clinical datasets to assess generalizability beyond the HAM10000 distribution~\cite{tschandl2018ham10000}.
+    \item \textbf{Model calibration analysis:} Apply temperature scaling and reliability diagrams to formally assess whether predicted probabilities match true class frequencies, a requirement for clinical decision support systems.
 \end{itemize}

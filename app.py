@@ -225,7 +225,7 @@ def main():
             
             with col1:
                 st.markdown("### Original Image")
-                st.image(image, use_container_width=True, caption="Uploaded Dermoscopy Image")
+                st.image(image, width='stretch', caption="Uploaded Dermoscopy Image")
                 
             with col2:
                 st.markdown("### Ensemble Prediction Analysis")
@@ -271,9 +271,9 @@ def main():
             with cam_col1:
                 try:
                     with st.spinner(f"Generating Grad-CAM using {selected_cam_model} (loading fresh weights to ensure stability)..."):
-                        cam_img = generate_gradcam(image, selected_cam_model, pred_idx)
+                        cam_img = generate_gradcam(image, selected_cam_model, -1)
                     
-                    st.image(cam_img, use_container_width=True, caption=f"Grad-CAM Heatmap ({selected_cam_model})")
+                    st.image(cam_img, width='stretch', caption=f"Grad-CAM Heatmap ({selected_cam_model})")
                 except Exception as cam_err:
                     import traceback
                     st.error(f"Error generating Grad-CAM: {str(cam_err)}")

@@ -27,9 +27,9 @@ Swin-Tiny       & 0.8490 & 0.7855 & \textbf{0.9600} & 0.7157 & 0.7150 \\
 \end{tabular}
 \end{table}
 
-EfficientNet-B0 achieved the highest accuracy (88.36\%) and macro F1-score (0.831) among all individual models, despite being the smallest architecture with only 5.3M parameters. This result underscores the effectiveness of compound scaling: EfficientNet achieves superior feature extraction with significantly fewer parameters than ResNet50 (25.6M) or Swin-Tiny (28M).
+EfficientNet-B0 achieved the highest accuracy (88.36\%) and macro F1-score (0.831) among all individual models, despite being the smallest architecture with only 5.3M parameters. This result underscores the effectiveness of compound scaling~\cite{tan2019efficientnet}: EfficientNet achieves superior feature extraction with significantly fewer parameters than ResNet50 (25.6M) or Swin-Tiny (28M).\footnote{The relatively high test cross-entropy loss (0.75) observed for all models is an expected artifact of label smoothing training~\cite{muller2019does}: since the models are trained with soft targets ($\epsilon=0.1$), they learn to output maximum confidence $\approx 1 - \epsilon + \epsilon/C \approx 0.93$ rather than 1.0, resulting in higher raw loss values that do not reflect degraded classification quality.}
 
-An intriguing pattern emerges when comparing accuracy against AUC. While EfficientNet-B0 leads in hard-classification metrics (accuracy, F1), Swin-Tiny achieves the highest AUC (0.960). This suggests that the self-attention mechanism of Transformers produces better-calibrated probability distributions, even though its discrete classification decisions are slightly less accurate on this relatively small dataset. This finding is consistent with the literature suggesting that Vision Transformers require larger datasets to fully exploit their modeling capacity.
+An intriguing pattern emerges when comparing accuracy against AUC. While EfficientNet-B0 leads in hard-classification metrics (accuracy, F1), Swin-Tiny achieves the highest AUC (0.960). This suggests that the self-attention mechanism of Transformers~\cite{dosovitskiy2021image} produces better-calibrated probability distributions, even though its discrete classification decisions are slightly less accurate on this relatively small dataset. This finding is consistent with the literature suggesting that Vision Transformers require larger datasets to fully exploit their modeling capacity~\cite{touvron2021deit}.
 
 \subsection{Per-Class Analysis}
 
@@ -59,9 +59,9 @@ Several important observations can be drawn from this per-class analysis:
 
 \textbf{Melanoma (MEL)} remains the most challenging class across all models, with F1-scores ranging from 0.625 (Swin-Tiny) to 0.695 (EfficientNet-B0). This difficulty arises from melanoma's morphological overlap with benign keratosis (BKL) and melanocytic nevi (NV). However, melanoma AUC values range from 0.913 to 0.930, indicating that models can rank melanoma cases with reasonable confidence even when the hard classification threshold is suboptimal.
 
-\textbf{Dermatofibroma (DF)} achieves remarkably high F1-scores (0.800--0.938) despite being the rarest class with only 17 test samples. This suggests that DF has distinctive visual features that are well-captured by transfer learning, and that the Weighted Random Sampler effectively compensates for its scarcity.
+\textbf{Dermatofibroma (DF)} achieves remarkably high F1-scores (0.800--0.938) despite being the rarest class with only 17 test samples. This suggests that DF has distinctive visual features that are well-captured by transfer learning, and that the Weighted Random Sampler effectively compensates for its scarcity. However, these results should be interpreted with caution: with only 17 test samples, a single additional misclassification would reduce the F1-score by approximately 0.06, making these estimates sensitive to individual predictions.
 
-\textbf{Vascular Lesion (VASC)} is consistently well-classified, with F1-scores between 0.880 and 0.955 and near-perfect AUC values. The distinctive red-purple coloration of vascular lesions provides strong discriminative signals for all architectures.
+\textbf{Vascular Lesion (VASC)} is consistently well-classified, with F1-scores between 0.880 and 0.955 and near-perfect AUC values (similarly based on a small test set of 22 samples). The distinctive red-purple coloration of vascular lesions provides strong discriminative signals for all architectures.
 
 \subsection{Training Dynamics}
 
@@ -144,12 +144,12 @@ Figure~\ref{fig:confusion_matrices} presents the normalized confusion matrices f
     \caption{Swin-Tiny}
 \end{subfigure}
 \caption[]{Normalized confusion matrices for all four models on the test set (continued).}
-\end{figure}
+    \end{figure}
 
 
-\section{Ensemble Results}
+    \section{Ensemble Results}
 
-A soft-voting ensemble combining all four models achieved the best overall performance, as shown in Table~\ref{tab:ensemble_results}.
+A soft-voting ensemble~\cite{ganaie2022ensemble} combining all four models achieved the best overall performance, as shown in Table~\ref{tab:ensemble_results}.
 
 \begin{table}[H]
 \centering
@@ -258,10 +258,10 @@ $-$ Advanced Augmentation& 0.8896 & 0.8204 & \textbf{0.9664} & 0.7772 & $-$0.010
 
 The ablation results presented in Table~\ref{tab:ablation} provide strong empirical justification for the proposed training pipeline. The key findings are:
 
-\textbf{Mixup and CutMix are the most critical components.} Removing these spatial and label-mixing regularizations resulted in the most severe performance degradation, causing a massive drop of 4.5\% in Macro F1. Without the synthetic examples generated by Mixup and CutMix, the model quickly memorized the rare classes during training and failed to generalize to the test set, leading to early overfitting.
+\textbf{Mixup and CutMix are the most critical components.} Removing these spatial and label-mixing regularizations~\cite{zhang2018mixup,yun2019cutmix} resulted in the most severe performance degradation, causing a massive drop of 4.5\% in Macro F1. Without the synthetic examples generated by Mixup and CutMix, the model quickly memorized the rare classes during training and failed to generalize to the test set, leading to early overfitting.
 
-\textbf{Label Smoothing prevents overconfidence.} Removing Label Smoothing caused a 3.1\% drop in Macro F1. In skin lesion classification, borders between classes like Melanoma and Nevi are highly ambiguous. Label smoothing acts as a soft margin, preventing the model from becoming overly confident in ambiguous predictions and improving the separation of classes.
+\textbf{Label Smoothing prevents overconfidence.} Removing Label Smoothing~\cite{szegedy2016rethinking,muller2019does} caused a 3.1\% drop in Macro F1. Interestingly, removing label smoothing \textit{increased} the AUC from 0.952 to 0.967, suggesting that while label smoothing improves hard classification decisions by preventing overconfident predictions, it slightly reduces the sharpness of the probability ranking. In skin lesion classification, borders between classes like Melanoma and Nevi are highly ambiguous. Label smoothing acts as a soft margin, preventing the model from becoming overly confident in ambiguous predictions and improving the separation of classes.
 
-\textbf{Weighted Random Sampler is essential for minority classes.} Removing the weighted sampler led to a 2.7\% drop in Macro F1. Without it, the model prioritized the heavily dominant Nevi class (which accounts for over 60\% of the dataset) at the expense of rare but critical classes like Dermatofibroma and Vascular Lesions.
+\textbf{Weighted Random Sampler is essential for minority classes.} Removing the weighted sampler~\cite{buda2018systematic} led to a 2.7\% drop in Macro F1. Without it, the model prioritized the heavily dominant Nevi class (which accounts for over 60\% of the dataset) at the expense of rare but critical classes like Dermatofibroma and Vascular Lesions.
 
-\textbf{Advanced Augmentations slightly hurt Accuracy but improve F1.} Interestingly, removing advanced augmentations (like RandomResizedCrop, Gaussian Blur, etc.) actually increased raw Accuracy to 88.96\% but decreased the Macro F1 score by 1.07\%. This highlights the tradeoff in imbalanced datasets: aggressive augmentation makes the training task harder, slightly reducing the accuracy on the easy majority class, but significantly improves the model's robustness on the harder, less-represented classes.
+\textbf{Advanced Augmentations slightly hurt Accuracy but improve F1.} Interestingly, removing advanced augmentations~\cite{shorten2019survey} (such as RandomResizedCrop, Gaussian Blur, and Random Erasing~\cite{zhong2020random}) actually increased raw Accuracy to 88.96\% but decreased the Macro F1 score by 1.07\%. This highlights the tradeoff in imbalanced datasets: aggressive augmentation makes the training task harder, slightly reducing the accuracy on the easy majority class, but significantly improves the model's robustness on the harder, less-represented classes.
