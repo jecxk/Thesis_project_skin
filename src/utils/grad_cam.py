@@ -14,7 +14,6 @@ import cv2
 import numpy as np
 import torch
 import torch.nn.functional as F
-from PIL import Image
 
 
 class GradCAM:
@@ -36,10 +35,10 @@ class GradCAM:
         self._forward_hook = target_layer.register_forward_hook(self._save_activation)
         self._backward_hook = target_layer.register_full_backward_hook(self._save_gradient)
 
-    def _save_activation(self, module, input, output):
+    def _save_activation(self, _module, _input, output):
         self.activations = output.detach()
 
-    def _save_gradient(self, module, grad_input, grad_output):
+    def _save_gradient(self, _module, _grad_input, grad_output):
         self.gradients = grad_output[0].detach()
 
     @torch.enable_grad()
@@ -101,14 +100,12 @@ class GradCAM:
         # ReLU — only positive contributions
         cam = F.relu(cam)
 
-        # Suppress border artifacts caused by asymmetric SAME-padding
-        # in architectures like EfficientNet. The outermost ring of small
-        # feature maps (≤14×14) can accumulate spurious gradient energy
-        # due to padding misalignment during the backward pass.  Zeroing
-        # the border is safe for well-behaved architectures (ResNet, DenseNet,
-        # Swin) whose borders are naturally near zero.
+        # Suppress border artifacts caused by asymmetric SAME-padding.
+        # Only apply on very small feature maps (≤7×7) where border pixels
+        # represent a disproportionately large spatial area after upsampling.
+        # For larger maps the border effect is negligible.
         h_cam, w_cam = cam.shape
-        if h_cam <= 14 and w_cam <= 14:
+        if h_cam <= 7 and w_cam <= 7:
             cam[0, :] = 0
             cam[-1, :] = 0
             cam[:, 0] = 0
@@ -175,8 +172,12 @@ def get_target_layer(model, model_name: str) -> torch.nn.Module:
     name_lower = model_name.lower()
 
     if 'efficientnet' in name_lower:
-        # EfficientNet: last conv block before global pool
-        return model.conv_head
+        # EfficientNet: last InvertedResidual block (320-ch, 7×7).
+        # Avoid bn2 (BatchNormAct2d + SiLU): SiLU zeroes ~half of BN-normalised
+        # values, leaving only ~18% of pixels with meaningful activation and
+        # producing nearly-uniform (blue) heatmaps.  blocks[-1][-1] retains
+        # the full spatial structure from the 3×3 depthwise conv.
+        return model.blocks[-1][-1]
 
     if 'resnet' in name_lower:
         # ResNet: last residual block

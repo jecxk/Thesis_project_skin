@@ -1,7 +1,7 @@
 % ======================= CHAPTER 3: METHODOLOGY ==========================
 \chapter{Methodology}
 
-This chapter describes the experimental setup in detail, including the dataset characteristics, the selected model architectures, the optimization techniques employed, and the evaluation metrics used to assess model performance.
+The following sections detail the dataset, model architectures, training procedure, and evaluation protocol. Design decisions are explained where they are non-obvious; hyperparameters are given explicitly so that the experiments can be reproduced.
 
 \section{Dataset: ISIC 2018 Challenge}
 
@@ -28,7 +28,7 @@ DF    & Dermatofibroma             &    81 &    17 &    17 \\
 \end{tabular}
 \end{table}
 
-The dataset exhibits a severe class imbalance, with NV constituting 66.9\% of the training samples while DF and VASC together represent only 2.6\%. This imbalance ratio of approximately 58:1 (NV to DF) poses a significant challenge for training unbiased classifiers. The data was split into training (70\%), validation (15\%), and test (15\%) sets with stratified sampling to preserve class proportions.
+Nevi dominate the dataset, constituting 66.9\% of training samples; Dermatofibroma and Vascular Lesion together account for just 2.6\%, a 58:1 ratio that corrupts naive training toward the majority class. All experiments use a stratified 70/15/15 split that preserves these proportions across training, validation, and test sets.
 
 \begin{figure}[H]
 \centering
@@ -75,7 +75,7 @@ Swin-Tiny       & 28.0 & ViT & Shifted Window Attention & 0.30 \\
 
 \section{Training Pipeline}
 
-An optimized training pipeline was developed to maximize model generalization and address the challenges of class imbalance. The pipeline integrates multiple complementary techniques, each targeting a specific aspect of the training process.
+The training pipeline was built around one central problem: the 58:1 class imbalance. Four techniques address this from different angles---sampling, data augmentation, label target modification, and regularisation---and their individual contributions are quantified in the ablation study in Chapter~4.
 
 \subsection{Weighted Random Sampling}
 
@@ -106,7 +106,7 @@ where $\lambda \sim \text{Beta}(\alpha, \alpha)$ with $\alpha = 0.2$.
 \end{equation}
 where $M$ is a binary mask indicating the cut region and $\lambda$ equals the ratio of the unmasked area. The CutMix alpha was set to 1.0.
 
-These augmentations force the model to learn from mixed signals, discouraging memorization and encouraging smoother decision boundaries.
+Both techniques force the model to learn from ambiguous mixed signals. With only 81 Dermatofibroma training images, plain cross-entropy training memorises those examples within a few epochs; Mixup and CutMix prevent that by ensuring no training example has a hard one-hot label.
 
 \subsection{Label Smoothing}
 
@@ -115,15 +115,15 @@ Standard one-hot encoded labels assign a probability of 1.0 to the correct class
 y_{\text{smooth}} = (1 - \epsilon) \cdot y_{\text{one-hot}} + \frac{\epsilon}{C}
 \label{eq:label_smooth}
 \end{equation}
-where $\epsilon = 0.1$ is the smoothing factor and $C = 7$ is the number of classes. This technique prevents the model from becoming overconfident in its predictions, which improves calibration and AUC scores.
+where $\epsilon = 0.1$ is the smoothing factor and $C = 7$ is the number of classes. This prevents the model from assigning probability 1.0 to any class, which improves calibration and, as the ablation in Chapter~4 shows, macro F1-score---though at a small cost to AUC sharpness.
 
 \subsection{Optimization and Scheduling}
 
-All models were trained using the AdamW optimizer~\cite{loshchilov2019decoupled}, which decouples weight decay from the gradient update, leading to better generalization compared to standard Adam. A cosine annealing schedule with linear warmup~\cite{loshchilov2017sgdr} was employed:
+All models were trained with AdamW~\cite{loshchilov2019decoupled}, which separates weight decay from the adaptive gradient scaling. Standard Adam absorbs weight decay into its per-parameter learning rates, reducing its effective regularisation strength; AdamW applies it as a constant multiplicative penalty regardless of gradient history, which translates to better generalisation on held-out data. The learning rate follows a cosine annealing schedule with linear warmup~\cite{loshchilov2017sgdr}:
 
 \begin{itemize}
-    \item \textbf{Warmup phase} (first 3--5 epochs): The learning rate increases linearly from a near-zero value to the target learning rate, preventing early instability when the randomly initialized classification head produces large gradients.
-    \item \textbf{Cosine decay phase} (remaining epochs): The learning rate decreases following a cosine curve to a minimum value of $1 \times 10^{-6}$, allowing the model to settle into a flat minimum of the loss landscape.
+    \item \textbf{Warmup phase} (first 3--5 epochs): The learning rate rises linearly from near zero to the target value. This prevents the randomly initialised classification head from producing large gradients that destabilise the pretrained feature extractor in the first few updates.
+    \item \textbf{Cosine decay phase} (remaining epochs): The learning rate decreases along a cosine curve to a minimum of $1 \times 10^{-6}$, allowing the model to settle into a broad, flat region of the loss landscape rather than oscillating around a sharp minimum.
 \end{itemize}
 
 \subsection{Data Augmentation}
@@ -138,7 +138,7 @@ Beyond Mixup and CutMix, the following standard augmentations were applied durin
     \item Random Erasing ($p=0.1$)
 \end{itemize}
 
-All images were resized to $224 \times 224$ pixels and normalized using ImageNet mean and standard deviation values~\cite{deng2009imagenet}. A batch size of 16 was selected to accommodate GPU memory constraints when running all four architectures (including the 28M-parameter Swin-Tiny) under identical conditions with mixed-precision training, ensuring a fair and consistent comparison across all experiments.
+All images were resized to $224 \times 224$ and normalised with ImageNet mean and standard deviation~\cite{deng2009imagenet}. Batch size was fixed at 16 for all models. This was dictated by the 28M-parameter Swin-Tiny under mixed-precision training; keeping the batch size identical across all architectures ensures that any performance differences reflect the models themselves rather than optimisation dynamics.
 
 \begin{table}[H]
 \centering
@@ -163,30 +163,30 @@ Label Smoothing      & 0.1   & 0.1   & 0.1    & 0.1 \\
 
 \section{Evaluation Metrics}
 
-Given the severe class imbalance, accuracy alone is an insufficient measure of model performance. A model that simply predicts NV for every input would achieve approximately 67\% accuracy. Therefore, we report a comprehensive set of metrics:
+Accuracy alone is a misleading metric here: a classifier that predicts Melanocytic Nevus for every input achieves 67\% accuracy while detecting nothing clinically useful. The following metrics are therefore reported alongside accuracy:
 
 \begin{itemize}
-    \item \textbf{Macro F1-Score:} The unweighted mean of per-class F1-scores, giving equal importance to all classes regardless of their frequency. This is our primary selection metric.
-    \item \textbf{Area Under the ROC Curve (AUC):} Measures the model's ability to discriminate between classes across all possible decision thresholds. A macro-averaged AUC close to 1.0 indicates excellent probability calibration.
-    \item \textbf{Cohen's Kappa ($\kappa$):} Measures agreement between predicted and true labels, correcting for chance agreement. Values above 0.6 indicate substantial agreement.
-    \item \textbf{Matthews Correlation Coefficient (MCC):} A balanced measure that accounts for all four entries of the confusion matrix (TP, TN, FP, FN), considered the most informative single metric for imbalanced classification.
-    \item \textbf{Per-class Sensitivity and Specificity:} Sensitivity (recall) measures the proportion of actual positives correctly identified, while specificity measures the proportion of actual negatives correctly identified. Both are critical in medical diagnostics.
+    \item \textbf{Macro F1-Score:} The unweighted mean of per-class F1-scores. This is the primary model selection criterion because it gives equal weight to all seven classes regardless of how many samples each has.
+    \item \textbf{Macro AUC:} The area under the one-vs-rest ROC curve, averaged across classes. AUC measures probability ranking quality independent of the decision threshold, making it sensitive to how well the model separates classes in continuous probability space.
+    \item \textbf{Cohen's Kappa ($\kappa$):} Agreement between predicted and true labels corrected for the level of agreement expected by chance. Values above 0.6 are conventionally interpreted as substantial agreement.
+    \item \textbf{Matthews Correlation Coefficient (MCC):} A single-number summary that accounts for all entries of the confusion matrix. Unlike F1, MCC penalises imbalanced predictions symmetrically across true positives, true negatives, false positives, and false negatives.
+    \item \textbf{Per-class Sensitivity and Specificity:} Reported in confusion matrix form. In medical diagnostics, sensitivity (true positive rate) and specificity (true negative rate) carry different clinical costs: a missed melanoma is worse than a false alarm, so sensitivity for the MEL class is of particular interest.
 \end{itemize}
 
 \section{Ensemble Strategy}
 
-After training all four models independently, we constructed an ensemble using soft voting. For each test sample, the softmax probability vectors from all four models were averaged element-wise, and the final prediction was taken as the class with the highest averaged probability:
+After training all four models independently, a soft-voting ensemble was constructed by averaging the softmax probability vectors element-wise across models and taking the class with the highest averaged probability:
 
 \begin{equation}
 \hat{y} = \arg\max_c \frac{1}{M} \sum_{m=1}^{M} p_m(c \mid x)
 \label{eq:ensemble}
 \end{equation}
 
-where $M=4$ is the number of models and $p_m(c \mid x)$ is the probability assigned to class $c$ by model $m$. This approach leverages the complementary strengths of different architectures: CNNs provide strong local feature extraction while the Transformer captures global spatial relationships.
+where $M=4$ is the number of models and $p_m(c \mid x)$ is the probability assigned to class $c$ by model $m$. No additional weights or learned combination are used---the four models are treated as equally reliable. The motivation is that models with different inductive biases (local convolutional kernels versus global window attention) make errors in different regions of the input space, and simple averaging cancels some of that error without requiring a held-out set for weight fitting.
 
 \section{Model Interpretability with Grad-CAM}
 
-To ensure that the trained models attend to clinically meaningful regions, Gradient-weighted Class Activation Mapping (Grad-CAM)~\cite{selvaraju2017grad} was applied. Given a target class $c$, Grad-CAM computes the gradient of the class score $y^c$ with respect to the feature maps $A^k$ of the last convolutional layer:
+To verify that the trained models attend to the lesion rather than background artefacts, Grad-CAM~\cite{selvaraju2017grad} was applied to all four architectures on held-out test images. Given a target class $c$, Grad-CAM computes the gradient of the class score $y^c$ with respect to the feature maps $A^k$ of the target layer:
 
 \begin{equation}
 \alpha_k^c = \frac{1}{Z} \sum_i \sum_j \frac{\partial y^c}{\partial A_{ij}^k}

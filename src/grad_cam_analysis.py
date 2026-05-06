@@ -49,7 +49,7 @@ MODELS = [
     {
         'name': 'Swin-Tiny',
         'config': 'src/configs/swin_tiny_v3.yaml',
-        'checkpoint': 'outputs/swin_tiny_v3/best.pth',
+        'checkpoint': 'outputs/swin_tiny_v3(main)/best.pth',
     },
 ]
 

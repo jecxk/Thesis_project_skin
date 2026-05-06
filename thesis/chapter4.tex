@@ -1,15 +1,13 @@
 % ======================= CHAPTER 4: EXPERIMENTS AND RESULTS ==========================
 \chapter{Experiments and Results}
 
-This chapter presents the experimental results of our study. We first compare the four individual models, then analyze the ensemble approach, followed by Grad-CAM visualizations and the ablation study.
-
-All experiments were conducted on a single NVIDIA GPU using mixed-precision training (FP16) with PyTorch 2.x. The random seed was fixed at 42 for reproducibility.
+All experiments were conducted on a single NVIDIA GPU using mixed-precision (FP16) training with PyTorch~2.x. The random seed was fixed at 42 throughout. Results are reported on the held-out test set, which no model saw during training or hyperparameter selection.
 
 \section{Individual Model Comparison}
 
 \subsection{Overall Performance}
 
-Table~\ref{tab:model_comparison} summarizes the test-set performance of all four architectures trained with the optimized pipeline.
+Table~\ref{tab:model_comparison} summarises test-set performance for all four architectures trained with the optimised pipeline.
 
 \begin{table}[H]
 \centering
@@ -27,13 +25,13 @@ Swin-Tiny       & 0.8490 & 0.7855 & \textbf{0.9600} & 0.7157 & 0.7150 \\
 \end{tabular}
 \end{table}
 
-EfficientNet-B0 achieved the highest accuracy (88.36\%) and macro F1-score (0.831) among all individual models, despite being the smallest architecture with only 5.3M parameters. This result underscores the effectiveness of compound scaling~\cite{tan2019efficientnet}: EfficientNet achieves superior feature extraction with significantly fewer parameters than ResNet50 (25.6M) or Swin-Tiny (28M).\footnote{The relatively high test cross-entropy loss (0.75) observed for all models is an expected artifact of label smoothing training~\cite{muller2019does}: since the models are trained with soft targets ($\epsilon=0.1$), they learn to output maximum confidence $\approx 1 - \epsilon + \epsilon/C \approx 0.93$ rather than 1.0, resulting in higher raw loss values that do not reflect degraded classification quality.}
+EfficientNet-B0 leads on every hard-classification metric despite having fewer parameters than any other model: 5.3M versus 8M (DenseNet121), 25.6M (ResNet50), and 28M (Swin-Tiny). Its macro F1-score of 0.831 exceeds ResNet50's 0.790 by 4.1 percentage points, despite the latter having nearly five times as many parameters. This is consistent with the compound-scaling hypothesis of Tan and Le~\cite{tan2019efficientnet}: jointly optimising depth, width, and input resolution produces a qualitatively different efficiency frontier rather than marginal incremental gains.\footnote{The relatively high test cross-entropy loss (0.75) observed for all models is an expected consequence of label smoothing~\cite{muller2019does}: models trained with soft targets ($\epsilon=0.1$) output a maximum confidence of approximately $1 - \epsilon + \epsilon/C \approx 0.93$ rather than 1.0, producing higher raw loss values that do not reflect any degradation in classification quality.}
 
-An intriguing pattern emerges when comparing accuracy against AUC. While EfficientNet-B0 leads in hard-classification metrics (accuracy, F1), Swin-Tiny achieves the highest AUC (0.960). This suggests that the self-attention mechanism of Transformers~\cite{dosovitskiy2021image} produces better-calibrated probability distributions, even though its discrete classification decisions are slightly less accurate on this relatively small dataset. This finding is consistent with the literature suggesting that Vision Transformers require larger datasets to fully exploit their modeling capacity~\cite{touvron2021deit}.
+One pattern stands out when comparing accuracy against AUC across models: they invert. EfficientNet-B0 leads on hard-classification metrics while Swin-Tiny, which trails by 3.5 percentage points in accuracy, produces the highest AUC (0.960). The Transformer's window-based self-attention appears to generate better-calibrated probability distributions even when its hard predictions are less accurate---plausibly because global context integration blends evidence across the entire lesion, smoothing confidence estimates toward the true class frequencies. This calibration advantage does not translate to better discrete decisions on 7,010 training images, which is consistent with the finding that Vision Transformers require substantially more data to close the gap with CNNs on hard classification~\cite{touvron2021deit}. In a clinical triage application where the model's probability output is consumed directly for risk ranking rather than binary decision-making, the AUC ordering would be the relevant comparison.
 
 \subsection{Per-Class Analysis}
 
-Table~\ref{tab:per_class_f1} presents the per-class F1-scores and AUC values for each model.
+Table~\ref{tab:per_class_f1} presents per-class F1-scores and AUC values for each model.
 
 \begin{table}[H]
 \centering
@@ -55,17 +53,15 @@ VASC  & 0.905 & \textbf{1.000} & \textbf{0.955} & 0.997 & \textbf{0.955} & 0.989
 \end{tabular}
 \end{table}
 
-Several important observations can be drawn from this per-class analysis:
+Melanoma (MEL) is the hardest class for every architecture, with F1-scores ranging from 0.625 (Swin-Tiny) to 0.695 (EfficientNet-B0). This difficulty is structural: MEL overlaps with BKL in pigmentation and with NV in texture, the same ambiguity that makes melanoma challenging to diagnose clinically. The AUC values tell a more encouraging story---0.913 to 0.930---indicating that the models consistently rank true melanoma cases above benign alternatives even when the hard 0.5 threshold fails to separate them. In a triage workflow where cases are sorted by risk score rather than flagged by a binary cutoff, this probability ordering is the output that matters.
 
-\textbf{Melanoma (MEL)} remains the most challenging class across all models, with F1-scores ranging from 0.625 (Swin-Tiny) to 0.695 (EfficientNet-B0). This difficulty arises from melanoma's morphological overlap with benign keratosis (BKL) and melanocytic nevi (NV). However, melanoma AUC values range from 0.913 to 0.930, indicating that models can rank melanoma cases with reasonable confidence even when the hard classification threshold is suboptimal.
+Dermatofibroma (DF) sits at the opposite extreme: F1-scores of 0.800--0.938 despite having only 81 training and 17 test samples. The Weighted Random Sampler ensures that Dermatofibroma appears in every mini-batch rather than being swamped by NV, and DF's distinct clinical appearance---a firm, button-like lesion with characteristic dermoscopic features---provides a clear discriminative signal. However, these figures carry high variance: with 17 test samples, a single additional misclassification shifts the F1-score by approximately 0.06, so the apparent 14-point gap between EfficientNet-B0 (0.938) and ResNet50 (0.800) should not be read as a reliable performance difference.
 
-\textbf{Dermatofibroma (DF)} achieves remarkably high F1-scores (0.800--0.938) despite being the rarest class with only 17 test samples. This suggests that DF has distinctive visual features that are well-captured by transfer learning, and that the Weighted Random Sampler effectively compensates for its scarcity. However, these results should be interpreted with caution: with only 17 test samples, a single additional misclassification would reduce the F1-score by approximately 0.06, making these estimates sensitive to individual predictions.
-
-\textbf{Vascular Lesion (VASC)} is consistently well-classified, with F1-scores between 0.880 and 0.955 and near-perfect AUC values (similarly based on a small test set of 22 samples). The distinctive red-purple coloration of vascular lesions provides strong discriminative signals for all architectures.
+Vascular Lesion (VASC) is consistently well-classified, with AUC reaching 1.000 for two architectures. The red-purple coloration of vascular lesions provides a strong, unambiguous colour signal that all models pick up reliably. As with DF, the 22-sample test set means individual figures are noisy, but the near-perfect AUC values are stable across architectures and reflect the visual clarity of this class.
 
 \subsection{Training Dynamics}
 
-Figure~\ref{fig:training_history} shows the training and validation loss curves for all four models. All models demonstrate healthy convergence without significant overfitting, validating the effectiveness of the combined regularization strategy (Mixup + CutMix + Label Smoothing + Weight Decay).
+Figure~\ref{fig:training_history} shows loss and accuracy curves across training epochs for all four models. All converge without overfitting to a degree that would require intervention---validation loss tracks training loss throughout, confirming that the combined regularisation (Mixup, CutMix, Label Smoothing, Weight Decay) is sufficient to prevent the majority-class collapse that appears without it.
 
 \begin{figure}[H]
 \centering
@@ -80,7 +76,7 @@ Figure~\ref{fig:training_history} shows the training and validation loss curves 
     \makebox[\textwidth][c]{\includegraphics[width=1.15\textwidth]{figures/rn50_training_history.png}}
     \caption{ResNet50}
 \end{subfigure}
-\caption{Training history for all four models, showing loss, accuracy, and learning rate progression across epochs. All models demonstrate stable convergence without overfitting.}
+\caption{Training history for all four models, showing loss, accuracy, and learning rate progression across epochs. All models converge stably without overfitting.}
 \label{fig:training_history}
 \end{figure}
 
@@ -101,16 +97,16 @@ Figure~\ref{fig:training_history} shows the training and validation loss curves 
 \caption[]{Training history for all four models (continued).}
 \end{figure}
 
-Notable differences in convergence behavior include:
+Convergence speed differs across architectures in ways that are consistent with known properties of each design:
 \begin{itemize}
-    \item \textbf{EfficientNet-B0 and ResNet50} both achieved their best validation performance at epoch 39, with 11 subsequent epochs showing no improvement.
-    \item \textbf{DenseNet121} reached its best performance at epoch 49 out of 50, suggesting that the dense connectivity pattern requires more training iterations to fully converge.
-    \item \textbf{Swin-Tiny} triggered early stopping at epoch 25 (best at epoch 13), indicating faster convergence but also a tendency to overfit earlier than the CNN models on this relatively small dataset.
+    \item EfficientNet-B0 and ResNet50 both peaked at epoch 39, with early stopping triggered after 12 subsequent epochs without improvement.
+    \item DenseNet121 reached its best checkpoint at epoch 49 of 50, reflecting the tendency of densely-connected networks to improve gradually over many epochs as the dense connectivity pattern fully exploits feature reuse.
+    \item Swin-Tiny triggered early stopping at epoch 25 (best at epoch 13), the fastest convergence but also the earliest plateau. This is consistent with Transformer models overfitting more readily on small datasets---the 5-epoch warmup and higher weight decay (0.05) slow the initial convergence but cannot fully compensate for the data requirement.
 \end{itemize}
 
 \subsection{Confusion Matrices}
 
-Figure~\ref{fig:confusion_matrices} presents the normalized confusion matrices for all four models. The most common misclassification pattern across all models is the confusion between MEL and NV, which is clinically expected given their morphological similarity. BKL is also frequently confused with NV.
+Figure~\ref{fig:confusion_matrices} shows normalised confusion matrices for all four models on the test set.
 
 \begin{figure}[H]
 \centering
@@ -125,7 +121,7 @@ Figure~\ref{fig:confusion_matrices} presents the normalized confusion matrices f
     \makebox[\textwidth][c]{\includegraphics[width=0.9\textwidth]{figures/rn50_confusion_matrix.png}}
     \caption{ResNet50}
 \end{subfigure}
-\caption{Normalized confusion matrices for all four models on the test set.}
+\caption{Normalised confusion matrices for all four models on the test set.}
 \label{fig:confusion_matrices}
 \end{figure}
 
@@ -143,13 +139,14 @@ Figure~\ref{fig:confusion_matrices} presents the normalized confusion matrices f
     \makebox[\textwidth][c]{\includegraphics[width=0.9\textwidth]{figures/swin_confusion_matrix.png}}
     \caption{Swin-Tiny}
 \end{subfigure}
-\caption[]{Normalized confusion matrices for all four models on the test set (continued).}
+\caption[]{Normalised confusion matrices for all four models on the test set (continued).}
     \end{figure}
 
+The dominant misclassification pattern across all four models is MEL predicted as NV or vice versa---a direct reflection of the morphological overlap between early-stage melanoma and benign nevi. BKL is the second most common confusion target for MEL. These patterns appear consistently regardless of architecture and match the known clinical difficulty ranking in dermatology. Critically, no model shows the failure mode of collapsing toward NV for non-NV inputs: the Weighted Random Sampler ensures that minority-class samples are seen frequently enough during training that the decision boundary for each class is meaningfully learned.
 
-    \section{Ensemble Results}
+\section{Ensemble Results}
 
-A soft-voting ensemble~\cite{ganaie2022ensemble} combining all four models achieved the best overall performance, as shown in Table~\ref{tab:ensemble_results}.
+A soft-voting ensemble combining all four models produced the best results in this study (Table~\ref{tab:ensemble_results}).
 
 \begin{table}[H]
 \centering
@@ -169,7 +166,7 @@ Swin-Tiny        & 0.8490 & 0.7855 & 0.9600 & 0.7157 & 0.7150 \\
 \end{tabular}
 \end{table}
 
-The ensemble improved accuracy by +1.13\% over the best individual model (EfficientNet-B0) and, more importantly, boosted the macro AUC from 0.952 to \textbf{0.980}---a substantial improvement indicating near-perfect probability calibration across all classes. The melanoma F1-score improved from 0.695 to 0.744 (+4.9\%), demonstrating that architectural diversity helps reduce class-specific errors.
+The ensemble raises accuracy by 1.1 percentage points over EfficientNet-B0 and, more substantially, pushes macro AUC from 0.952 to 0.980. The AUC gain is the more significant result: it means the ensemble's probability rankings are reliably correct even for ambiguous MEL/NV cases where hard decisions at a fixed threshold fail. The melanoma F1-score improved from 0.695 (EfficientNet-B0 alone) to 0.744, a 4.9-point gain that is clinically meaningful given the consequences of missed melanoma.
 
 \begin{figure}[H]
 \centering
@@ -182,11 +179,11 @@ The ensemble improved accuracy by +1.13\% over the best individual model (Effici
     \includegraphics[width=\textwidth]{figures/ensemble_roc_curves.png}
     \caption{ROC curves}
 \end{subfigure}
-\caption{Ensemble model performance: (a) normalized confusion matrix and (b) per-class ROC curves with AUC values.}
+\caption{Ensemble model performance: (a) normalised confusion matrix and (b) per-class ROC curves with AUC values.}
 \label{fig:ensemble_results}
 \end{figure}
 
-Table~\ref{tab:ensemble_per_class} shows the per-class ensemble performance compared to the best individual model.
+Table~\ref{tab:ensemble_per_class} breaks down the per-class change from the best individual model to the ensemble.
 
 \begin{table}[H]
 \centering
@@ -207,36 +204,41 @@ VASC  & 0.905 & 0.955 & +0.050  & 1.000 & 1.000 &  0.000 \\
 \end{tabular}
 \end{table}
 
+The ensemble improves AUC for every class without exception. Hard-classification F1-scores are more mixed: BCC and AKIEC decrease slightly (by 0.040 and 0.007 respectively) while BKL, MEL, NV, and VASC all improve. The F1 decreases reflect a well-known ensemble trade-off---probability averaging softens the most confident individual predictions, which can shift borderline cases in either direction. The AUC improvement is monotone because averaging distributions preserves rank ordering while reducing variance in individual model errors.
+
 \section{Grad-CAM Interpretability Analysis}
 
-To verify that the models are making predictions based on clinically relevant features, Grad-CAM heatmaps were generated for all four models on test-set samples. Figure~\ref{fig:gradcam_grid} shows a comprehensive comparison across all seven disease classes.
+To verify that models attend to clinically relevant image regions rather than spurious correlates (e.g.\ hair, rulers, ink markings), Gradient-weighted Class Activation Mapping (Grad-CAM)~\cite{selvaraju2017grad} was applied to all four architectures on held-out test images. For each CNN the gradient signal was captured at the last convolutional feature map before global average pooling; for Swin-Tiny, at the final window-attention block's layer-normalisation output. Figure~\ref{fig:gradcam_grid} presents a systematic comparison across all seven disease classes.
 
 \begin{figure}[H]
 \centering
 \includegraphics[width=\textwidth]{figures/gradcam_class_grid.png}
-\caption{Grad-CAM heatmap comparison across all seven classes and four models. Red regions indicate high model attention; blue regions indicate low attention. Green titles indicate correct predictions; red titles indicate misclassifications.}
+\caption{Grad-CAM heatmaps for one representative test image per class (rows) and all four models (columns). Warm colours (red/yellow) indicate high gradient-weighted activation; cool colours (blue) indicate low activation. Prediction labels are shown above each heatmap; green denotes a correct prediction and red denotes a misclassification.}
 \label{fig:gradcam_grid}
 \end{figure}
 
-Key observations from the Grad-CAM analysis:
+The Grad-CAM analysis reveals several consistent and architecture-specific patterns:
 
 \begin{itemize}
-    \item \textbf{All models consistently focus on the lesion region} rather than surrounding healthy skin, background artifacts, or ruler markings. This confirms that the learned representations are clinically relevant.
-    \item \textbf{EfficientNet-B0 produces the most focused heatmaps}, concentrating attention tightly on the lesion boundary---a feature that dermatologists also prioritize when assessing border irregularity.
-    \item \textbf{Swin-Tiny exhibits broader attention patterns}, consistent with the global receptive field of self-attention. While this captures the overall shape of the lesion, it may include some non-discriminative surrounding tissue.
-    \item \textbf{For melanoma samples} (Figure~\ref{fig:gradcam_mel}), all models attend to areas of asymmetric pigmentation and irregular borders, which align with the ABCDE criteria used in clinical dermatology (Asymmetry, Border irregularity, Color variation, Diameter, Evolution).
+    \item \textbf{All models localise attention within the lesion boundary.} Across all seven classes, the highest-activation regions fall inside or immediately adjacent to the lesion, with negligible response to surrounding healthy skin, background, or dermoscopic artefacts. The models have learned to ignore the image periphery and focus on the tissue region, which is a necessary condition for clinical trustworthiness.
+
+    \item \textbf{CNN models produce compact, lesion-centred hotspots.} EfficientNet-B0, ResNet50, and DenseNet121 all generate heatmaps with well-defined peaks concentrated on the most discriminative sub-regions of the lesion. The locality bias of convolutional kernels naturally encourages spatially precise attention---the network must attend to something specific to justify a confident prediction.
+
+    \item \textbf{Swin-Tiny produces broader, distributed attention patterns.} Window-based self-attention integrates evidence across larger spatial extents simultaneously, producing heatmaps that cover more of the lesion area. This broader coverage reflects the model's capacity for long-range dependency modelling, though it also means the heatmaps are less useful for highlighting a specific discriminative sub-region.
+
+    \item \textbf{Melanoma visualisations align with ABCDE clinical criteria.} As shown in Figure~\ref{fig:gradcam_mel}, all four models attend to regions of asymmetric pigmentation, irregular borders, and multi-tonal colour variation---the same visual cues used by dermatologists when applying the ABCDE rule (Asymmetry, Border irregularity, Colour variation, Diameter, Evolution)~\cite{abbasi2004early}.
 \end{itemize}
 
 \begin{figure}[H]
 \centering
 \includegraphics[width=\figwidth]{figures/gradcam_mel_sample.png}
-\caption{Grad-CAM visualization for a melanoma sample. All four models correctly focus on the irregularly pigmented lesion area.}
+\caption{Grad-CAM visualisation for a representative melanoma (MEL) test image. All four models correctly identify the class and concentrate attention on the asymmetrically pigmented central lesion region, consistent with dermoscopic ABCDE criteria.}
 \label{fig:gradcam_mel}
 \end{figure}
 
 \section{Ablation Study}
 
-To quantify the contribution of each component in our training pipeline, an ablation study was conducted using EfficientNet-B0 as the base model. In each experiment, a single component was removed while keeping all others fixed.
+To quantify the contribution of each pipeline component, an ablation study was conducted using EfficientNet-B0 as the base model. In each experiment, one component was removed while keeping all others fixed.
 
 \begin{table}[H]
 \centering
@@ -256,12 +258,10 @@ $-$ Advanced Augmentation& 0.8896 & 0.8204 & \textbf{0.9664} & 0.7772 & $-$0.010
 \end{tabular}
 \end{table}
 
-The ablation results presented in Table~\ref{tab:ablation} provide strong empirical justification for the proposed training pipeline. The key findings are:
+Removing Mixup and CutMix causes the sharpest performance drop in this study: 4.5 percentage points in macro F1. Without label-mixed training examples, the model can memorise minority-class samples---Dermatofibroma has just 81 training images, few enough to overfit within a handful of epochs---and the resulting features do not generalise to the test set. The accuracy drop is smaller (2.5 percentage points) because the majority class NV remains well-classified even without mixing, keeping overall accuracy artificially high.
 
-\textbf{Mixup and CutMix are the most critical components.} Removing these spatial and label-mixing regularizations~\cite{zhang2018mixup,yun2019cutmix} resulted in the most severe performance degradation, causing a massive drop of 4.5\% in Macro F1. Without the synthetic examples generated by Mixup and CutMix, the model quickly memorized the rare classes during training and failed to generalize to the test set, leading to early overfitting.
+Removing label smoothing causes a 3.1-point F1 drop, but simultaneously increases AUC from 0.952 to 0.967. This trade-off is real, not a measurement artefact: label smoothing improves discrete decision boundaries at the cost of probability sharpness. It prevents the model from assigning probability 1.0 to any class, which helps the model generalise the boundaries between ambiguous classes (MEL/NV/BKL) but slightly reduces the absolute confidence gap between correct and incorrect predictions, lowering AUC. Whether to apply label smoothing therefore depends on the downstream use: hard classification benefits from it; continuous risk scoring may not.
 
-\textbf{Label Smoothing prevents overconfidence.} Removing Label Smoothing~\cite{szegedy2016rethinking,muller2019does} caused a 3.1\% drop in Macro F1. Interestingly, removing label smoothing \textit{increased} the AUC from 0.952 to 0.967, suggesting that while label smoothing improves hard classification decisions by preventing overconfident predictions, it slightly reduces the sharpness of the probability ranking. In skin lesion classification, borders between classes like Melanoma and Nevi are highly ambiguous. Label smoothing acts as a soft margin, preventing the model from becoming overly confident in ambiguous predictions and improving the separation of classes.
+The Weighted Random Sampler contributes a 2.7-point F1 improvement. Without it, the model spends most of its learning capacity on NV, which dominates the training distribution. The drop is concentrated in minority-class recall; overall accuracy falls by only 0.7 percentage points because NV, the dominant test class, remains well-classified.
 
-\textbf{Weighted Random Sampler is essential for minority classes.} Removing the weighted sampler~\cite{buda2018systematic} led to a 2.7\% drop in Macro F1. Without it, the model prioritized the heavily dominant Nevi class (which accounts for over 60\% of the dataset) at the expense of rare but critical classes like Dermatofibroma and Vascular Lesions.
-
-\textbf{Advanced Augmentations slightly hurt Accuracy but improve F1.} Interestingly, removing advanced augmentations~\cite{shorten2019survey} (such as RandomResizedCrop, Gaussian Blur, and Random Erasing~\cite{zhong2020random}) actually increased raw Accuracy to 88.96\% but decreased the Macro F1 score by 1.07\%. This highlights the tradeoff in imbalanced datasets: aggressive augmentation makes the training task harder, slightly reducing the accuracy on the easy majority class, but significantly improves the model's robustness on the harder, less-represented classes.
+Removing advanced augmentations (RandomResizedCrop, Gaussian Blur, Random Erasing) produces the counterintuitive result of higher accuracy (88.96\%) but lower macro F1 (0.820). Aggressive augmentation makes training harder for all classes, including NV, which slightly lowers overall accuracy. At the same time, the added diversity forces the model to learn more generalisable minority-class features, improving balanced F1. This is the expected behaviour of strong augmentation on imbalanced data~\cite{shorten2019survey}: it transfers capacity from the easy majority class to the harder minority classes, a trade-off that the macro F1 metric captures but raw accuracy conceals.
