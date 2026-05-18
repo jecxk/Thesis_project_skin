@@ -25,3 +25,24 @@ data/processed/
 
 .DS_Store
 Thumbs.db
+
+# LaTeX build artefacts
+*.aux
+*.bcf
+*.bbl
+*.blg
+*.lof
+*.log
+*.lot
+*.out
+*.toc
+*.nav
+*.snm
+*.run.xml
+*.fls
+*.fdb_latexmk
+*.synctex.gz
+
+# Local Claude / IDE / backup files
+.claude/
+*.bak

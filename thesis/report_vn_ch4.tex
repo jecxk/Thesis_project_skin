@@ -1,0 +1,164 @@
+\chapter{Thí nghiệm và Kết quả}
+
+Tất cả thí nghiệm được thực hiện trên một GPU NVIDIA duy nhất sử dụng huấn luyện nửa chính xác (FP16) với PyTorch 2.x. Hạt giống ngẫu nhiên cố định ở 42. Kết quả trên tập kiểm tra giữ lại.
+
+\section{So sánh Mô hình Đơn lẻ}
+
+\begin{table}[H]
+\centering
+\caption{So sánh hiệu suất trên tập kiểm tra. Giá trị tốt nhất được in \textbf{đậm}.}
+\begin{tabular}{lccccc}
+\toprule
+\textbf{Mô hình} & \textbf{Accuracy} & \textbf{Macro F1} & \textbf{AUC} & \textbf{MCC} & \textbf{Kappa} \\
+\midrule
+EfficientNet-B0 & \textbf{0,8836} & \textbf{0,8311} & 0,9522 & \textbf{0,7721} & \textbf{0,7710} \\
+ResNet50        & 0,8603 & 0,7902 & 0,9565 & 0,7310 & 0,7309 \\
+DenseNet121     & 0,8543 & 0,7967 & 0,9587 & 0,7209 & 0,7206 \\
+Swin-Tiny       & 0,8490 & 0,7855 & \textbf{0,9600} & 0,7157 & 0,7150 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+EfficientNet-B0 dẫn đầu mọi chỉ số phân loại cứng mặc dù có ít tham số nhất (5,3M). Macro F1 đạt 0,831 vượt trội ResNet50 (0,790) tới 4,1 điểm phần trăm. Một mẫu hình nổi bật: accuracy và AUC \textbf{đảo ngược} giữa các mô hình. EfficientNet-B0 dẫn đầu về accuracy trong khi Swin-Tiny tạo AUC cao nhất (0,960). Cơ chế tự chú ý dựa trên cửa sổ tạo phân phối xác suất được hiệu chỉnh tốt hơn ngay cả khi dự đoán cứng kém chính xác hơn.
+
+\subsection{Phân tích Theo Lớp}
+
+Melanoma (MEL) là lớp khó nhất cho mọi kiến trúc, F1 từ 0,625 đến 0,695. MEL chồng lấp với BKL về sắc tố và NV về kết cấu --- cùng sự nhập nhằng trong chẩn đoán lâm sàng. Dermatofibroma (DF) đạt F1 cao (0,800--0,938) dù chỉ có 81 mẫu huấn luyện, nhờ đặc trưng hình thái rõ ràng. Vascular Lesion (VASC) được phân loại tốt liên tục với AUC đạt 1,000 cho hai kiến trúc.
+
+\subsection{Động lực Huấn luyện}
+
+\begin{figure}[H]
+\centering
+\begin{subfigure}{\textwidth}
+    \makebox[\textwidth][c]{\includegraphics[width=1.15\textwidth]{figures/eb0_training_history.png}}
+    \caption{EfficientNet-B0}
+\end{subfigure}
+\vspace{0.6cm}
+\begin{subfigure}{\textwidth}
+    \makebox[\textwidth][c]{\includegraphics[width=1.15\textwidth]{figures/rn50_training_history.png}}
+    \caption{ResNet50}
+\end{subfigure}
+\caption{Lịch sử huấn luyện: loss, accuracy và tốc độ học qua các epoch.}
+\end{figure}
+
+\begin{figure}[H]
+\centering
+\begin{subfigure}{\textwidth}
+    \makebox[\textwidth][c]{\includegraphics[width=1.15\textwidth]{figures/dn121_training_history.png}}
+    \caption{DenseNet121}
+\end{subfigure}
+\vspace{0.6cm}
+\begin{subfigure}{\textwidth}
+    \makebox[\textwidth][c]{\includegraphics[width=1.15\textwidth]{figures/swin_training_history.png}}
+    \caption{Swin-Tiny}
+\end{subfigure}
+\caption{Lịch sử huấn luyện (tiếp theo).}
+\end{figure}
+
+EfficientNet-B0 và ResNet50 đạt đỉnh tại epoch 39. DenseNet121 đạt checkpoint tốt nhất tại epoch 49/50. Swin-Tiny kích hoạt dừng sớm tại epoch 25 (tốt nhất tại epoch 13) --- mô hình Transformer dễ quá khớp hơn trên tập dữ liệu nhỏ.
+
+\subsection{Ma trận Nhầm lẫn}
+
+\begin{figure}[H]
+\centering
+\begin{subfigure}{\textwidth}
+    \makebox[\textwidth][c]{\includegraphics[width=0.9\textwidth]{figures/eb0_confusion_matrix.png}}
+    \caption{EfficientNet-B0}
+\end{subfigure}
+\vspace{0.6cm}
+\begin{subfigure}{\textwidth}
+    \makebox[\textwidth][c]{\includegraphics[width=0.9\textwidth]{figures/rn50_confusion_matrix.png}}
+    \caption{ResNet50}
+\end{subfigure}
+\caption{Ma trận nhầm lẫn chuẩn hóa trên tập kiểm tra.}
+\end{figure}
+
+\begin{figure}[H]
+\centering
+\begin{subfigure}{\textwidth}
+    \makebox[\textwidth][c]{\includegraphics[width=0.9\textwidth]{figures/dn121_confusion_matrix.png}}
+    \caption{DenseNet121}
+\end{subfigure}
+\vspace{0.6cm}
+\begin{subfigure}{\textwidth}
+    \makebox[\textwidth][c]{\includegraphics[width=0.9\textwidth]{figures/swin_confusion_matrix.png}}
+    \caption{Swin-Tiny}
+\end{subfigure}
+\caption{Ma trận nhầm lẫn chuẩn hóa (tiếp theo).}
+\end{figure}
+
+Mẫu phân loại sai chiếm ưu thế trên cả bốn mô hình là MEL bị dự đoán thành NV hoặc ngược lại. Không mô hình nào sụp đổ về lớp NV cho đầu vào không phải NV.
+
+\section{Kết quả Ensemble}
+
+\begin{table}[H]
+\centering
+\caption{So sánh mô hình đơn lẻ và ensemble trên tập kiểm tra.}
+\begin{tabular}{lccccc}
+\toprule
+\textbf{Mô hình} & \textbf{Accuracy} & \textbf{Macro F1} & \textbf{AUC} & \textbf{MCC} & \textbf{Kappa} \\
+\midrule
+EfficientNet-B0  & 0,8836 & 0,8311 & 0,9522 & 0,7721 & 0,7710 \\
+ResNet50         & 0,8603 & 0,7902 & 0,9565 & 0,7310 & 0,7309 \\
+DenseNet121      & 0,8543 & 0,7967 & 0,9587 & 0,7209 & 0,7206 \\
+Swin-Tiny        & 0,8490 & 0,7855 & 0,9600 & 0,7157 & 0,7150 \\
+\midrule
+\textbf{Ensemble (4 mô hình)} & \textbf{0,8949} & \textbf{0,8446} & \textbf{0,9802} & \textbf{0,7956} & \textbf{0,7949} \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+Ensemble nâng accuracy thêm 1,1 điểm phần trăm, đẩy Macro AUC từ 0,952 lên 0,980. F1 melanoma cải thiện từ 0,695 lên 0,744 (+4,9 điểm).
+
+\begin{figure}[H]
+\centering
+\begin{subfigure}{0.46\textwidth}
+    \includegraphics[width=\textwidth]{figures/ensemble_confusion_matrix.png}
+    \caption{Ma trận nhầm lẫn}
+\end{subfigure}
+\hfill
+\begin{subfigure}{0.46\textwidth}
+    \includegraphics[width=\textwidth]{figures/ensemble_roc_curves.png}
+    \caption{Đường cong ROC}
+\end{subfigure}
+\caption{Hiệu suất mô hình ensemble: (a) ma trận nhầm lẫn chuẩn hóa và (b) đường cong ROC theo lớp.}
+\end{figure}
+
+Ensemble cải thiện AUC cho \textbf{mọi lớp} không có ngoại lệ.
+
+\section{Phân tích Grad-CAM}
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=\textwidth]{figures/gradcam_class_grid.png}
+\caption{Bản đồ nhiệt Grad-CAM cho một ảnh kiểm tra đại diện mỗi lớp (hàng) và cả bốn mô hình (cột). Màu nóng (đỏ/vàng) = kích hoạt cao; màu lạnh (xanh) = kích hoạt thấp.}
+\end{figure}
+
+Kết quả: (1) Tất cả mô hình định vị chú ý trong ranh giới tổn thương. (2) CNN tạo điểm nóng gọn, tập trung. (3) Swin-Tiny tạo mẫu chú ý rộng hơn. (4) Trực quan hóa MEL phù hợp với tiêu chí ABCDE lâm sàng.
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=\figwidth]{figures/gradcam_mel_sample.png}
+\caption{Grad-CAM cho ảnh melanoma đại diện. Cả bốn mô hình tập trung vào vùng sắc tố bất đối xứng, phù hợp với tiêu chí dermoscopy ABCDE.}
+\end{figure}
+
+\section{Nghiên cứu Loại bỏ (Ablation Study)}
+
+\begin{table}[H]
+\centering
+\caption{Kết quả ablation trên EfficientNet-B0. Mỗi hàng = loại bỏ một thành phần.}
+\begin{tabular}{lccccc}
+\toprule
+\textbf{Cấu hình} & \textbf{Accuracy} & \textbf{Macro F1} & \textbf{AUC} & \textbf{Kappa} & \textbf{$\Delta$ F1}\\
+\midrule
+Pipeline đầy đủ       & \textbf{0,8836} & \textbf{0,8311} & 0,9522 & \textbf{0,7710} & --- \\
+\midrule
+$-$ Mixup / CutMix    & 0,8589 & 0,7860 & 0,9486 & 0,7383 & $-$0,0451 \\
+$-$ Weighted Sampler   & 0,8762 & 0,8041 & 0,9521 & 0,7487 & $-$0,0270 \\
+$-$ Label Smoothing    & 0,8776 & 0,8000 & 0,9674 & 0,7568 & $-$0,0311 \\
+$-$ Adv. Augmentation  & 0,8896 & 0,8204 & \textbf{0,9664} & 0,7772 & $-$0,0107 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\textbf{Mixup/CutMix} ($-$4,5\% F1): quan trọng nhất --- ngăn ghi nhớ mẫu lớp thiểu số. \textbf{Label Smoothing} ($-$3,1\% F1 nhưng +AUC): đánh đổi giữa ranh giới quyết định và độ sắc nét xác suất. \textbf{Weighted Sampler} ($-$2,7\% F1): ngăn thiên vị NV. \textbf{Advanced Aug} ($-$1,1\% F1 nhưng +Accuracy): chuyển năng lực từ lớp dễ sang lớp khó.

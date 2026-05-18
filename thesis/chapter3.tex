@@ -39,7 +39,14 @@ Nevi dominate the dataset, constituting 66.9\% of training samples; Dermatofibro
 
 \section{Model Architectures}
 
-Four architectures were selected to represent a diverse spectrum of modern deep learning approaches: three CNNs and one Vision Transformer. All models were initialized with ImageNet-pretrained weights~\cite{deng2009imagenet} through the \texttt{timm} library~\cite{wightman2019timm} and fine-tuned on the ISIC 2018 dataset.
+Four architectures were selected to represent a diverse spectrum of modern deep learning approaches: three CNNs and one Vision Transformer. All models were initialized with ImageNet-pretrained weights~\cite{deng2009imagenet} through the \texttt{timm} library~\cite{wightman2019timm} and fine-tuned on the ISIC 2018 dataset. Figure~\ref{fig:transfer_learning} illustrates this transfer learning process.
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=\textwidth]{figures/transfer_learning.png}
+\caption{Transfer learning pipeline: pretrained weights from ImageNet are loaded into each architecture, the classification head is replaced to output 7 skin lesion classes, and the entire network is fine-tuned on the ISIC 2018 dataset.}
+\label{fig:transfer_learning}
+\end{figure}
 
 \subsection{EfficientNet-B0}
 
@@ -75,7 +82,14 @@ Swin-Tiny       & 28.0 & ViT & Shifted Window Attention & 0.30 \\
 
 \section{Training Pipeline}
 
-The training pipeline was built around one central problem: the 58:1 class imbalance. Four techniques address this from different angles---sampling, data augmentation, label target modification, and regularisation---and their individual contributions are quantified in the ablation study in Chapter~4.
+The training pipeline was built around one central problem: the 58:1 class imbalance. Four techniques address this from different angles---sampling, data augmentation, label target modification, and regularisation---and their individual contributions are quantified in the ablation study in Chapter~4. Figure~\ref{fig:training_pipeline} provides an overview of the complete pipeline.
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=\textwidth]{figures/training_pipeline.png}
+\caption{Overview of the training pipeline. Input images undergo augmentation (including Mixup/CutMix), pass through the pretrained backbone for feature extraction, and are classified by the output head. The pipeline is optimised with AdamW, cosine learning rate scheduling, and label smoothing.}
+\label{fig:training_pipeline}
+\end{figure}
 
 \subsection{Weighted Random Sampling}
 
@@ -175,7 +189,14 @@ Accuracy alone is a misleading metric here: a classifier that predicts Melanocyt
 
 \section{Ensemble Strategy}
 
-After training all four models independently, a soft-voting ensemble was constructed by averaging the softmax probability vectors element-wise across models and taking the class with the highest averaged probability:
+After training all four models independently, a soft-voting ensemble was constructed by averaging the softmax probability vectors element-wise across models and taking the class with the highest averaged probability. The ensemble architecture is illustrated in Figure~\ref{fig:ensemble_architecture}.
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=\figwidth]{figures/ensemble_architecture.png}
+\caption{Soft-voting ensemble architecture. Each of the four models independently produces a probability vector over 7 classes. These vectors are averaged element-wise, and the class with the highest mean probability is selected as the final prediction.}
+\label{fig:ensemble_architecture}
+\end{figure}
 
 \begin{equation}
 \hat{y} = \arg\max_c \frac{1}{M} \sum_{m=1}^{M} p_m(c \mid x)

@@ -1,0 +1,134 @@
+\documentclass[11pt,a4paper]{report}
+\usepackage[a4paper,top=2.5cm,bottom=2.5cm,left=2.5cm,right=2.5cm]{geometry}
+\usepackage{graphicx}
+\usepackage{float}
+\usepackage{tikz}
+\usetikzlibrary{calc}
+\usepackage{setspace}
+\usepackage{booktabs}
+\usepackage{multirow}
+\usepackage{amsmath}
+\usepackage{amssymb}
+\usepackage{caption}
+\usepackage{subcaption}
+\usepackage[hidelinks]{hyperref}
+\usepackage{fontspec}
+\usepackage{polyglossia}
+\setdefaultlanguage{vietnamese}
+\setmainfont{Times New Roman}
+
+\setstretch{1.15}
+\setlength{\parskip}{6pt}
+\setlength{\parindent}{0pt}
+\newcommand{\figwidth}{0.85\textwidth}
+
+\begin{document}
+
+% ======================= TRANG BÌA ==========================
+\begin{titlepage}
+\thispagestyle{empty}
+\centering
+\begin{tikzpicture}[remember picture, overlay]
+  \draw[line width=0.8pt]
+    ($(current page.north west) + (2cm,-2cm)$)
+    rectangle
+    ($(current page.south east) + (-2cm,2cm)$);
+\end{tikzpicture}
+
+{\bfseries\large ĐẠI HỌC KHOA HỌC VÀ CÔNG NGHỆ HÀ NỘI\par}
+\vspace{4pt}
+{\bfseries\large KHOA CÔNG NGHỆ THÔNG TIN VÀ TRUYỀN THÔNG\par}
+
+\vspace{2.4cm}
+\IfFileExists{figures/logo.png}{
+  \includegraphics[width=6cm]{figures/logo.png}\par
+}{
+  \vspace*{3.5cm}
+}
+\vspace{1.8cm}
+
+{\bfseries\Large BÁO CÁO KHÓA LUẬN TỐT NGHIỆP\par}
+\vspace{10pt}
+{\bfseries\Large Đánh giá So sánh các Mô hình Học sâu cho Bài toán Phân loại Tổn thương Da trên Tập dữ liệu Dermoscopy Công khai\par}
+
+\vspace{2.0cm}
+\begin{tabular}{@{}rl@{}}
+\textbf{Sinh viên thực hiện:} & Nguyễn Trọng Bách -- 23BI14057\\[10pt]
+\textbf{GVHD nội bộ:} & TS. Nghiêm Thị Phương\\[8pt]
+\textbf{GVHD bên ngoài:} & TS. Vũ Trọng Sinh\\
+\end{tabular}
+
+\vfill
+{\large Ngày 26 tháng 2 năm 2026\par}
+\end{titlepage}
+
+% ======================= LỜI CẢM ƠN ==========================
+\chapter*{Lời cảm ơn}
+\addcontentsline{toc}{chapter}{Lời cảm ơn}
+
+Trước hết, tôi xin bày tỏ lòng biết ơn chân thành đến giảng viên hướng dẫn bên ngoài, TS.~Vũ Trọng Sinh, vì những chỉ dẫn vô giá, sự hỗ trợ liên tục và kiến thức sâu rộng của thầy. Những hiểu biết thực tiễn của thầy về hình ảnh y khoa đã đóng vai trò then chốt trong việc định hướng nghiên cứu này.
+
+Tôi vô cùng biết ơn giảng viên hướng dẫn nội bộ, TS.~Nghiêm Thị Phương, vì sự động viên không ngừng, lòng kiên nhẫn và sự dẫn dắt học thuật trong suốt thời gian tôi học tại Đại học Khoa học và Công nghệ Hà Nội. Những phản hồi mang tính xây dựng của cô đã nâng cao đáng kể chất lượng của khóa luận này.
+
+Lời cảm ơn chân thành gửi đến bạn gái tôi vì đã luôn bên cạnh trong những đêm dài gỡ lỗi và huấn luyện mô hình. Sự hỗ trợ tinh thần và thấu hiểu của bạn là nguồn động lực to lớn đối với tôi.
+
+Cuối cùng, tôi muốn bày tỏ lòng biết ơn sâu sắc nhất đến gia đình. Gửi đến bố mẹ, con cảm ơn vì tình yêu vô điều kiện, những hy sinh và vì luôn tin vào tiềm năng của con. Con xin dành cột mốc này cho bố mẹ.
+
+% ======================= TÓM TẮT ==========================
+\chapter*{Tóm tắt}
+\addcontentsline{toc}{chapter}{Tóm tắt}
+
+Ung thư hắc tố (melanoma) chiếm phần lớn số ca tử vong do ung thư da, nhưng lại có tỷ lệ sống sót sau 5 năm trên 99\% nếu được phát hiện sớm. Để chuyển hóa thực tế lâm sàng này thành một công cụ tự động đòi hỏi không chỉ một mô hình có năng lực mà còn cần một quy trình huấn luyện có khả năng xử lý tình trạng mất cân bằng lớp nghiêm trọng vốn đặc trưng của các tập dữ liệu dermoscopy: trong bộ dữ liệu chuẩn ISIC 2018, lớp chiếm ưu thế Melanocytic Nevus vượt trội lớp hiếm nhất, Dermatofibroma, với tỷ lệ gần 60:1.
+
+Khóa luận này đánh giá bốn kiến trúc học sâu --- EfficientNet-B0, ResNet50, DenseNet121 và Swin-Tiny --- trong cùng một pipeline huấn luyện được thiết kế để đối phó với sự mất cân bằng đó. Pipeline kết hợp Lấy mẫu Ngẫu nhiên có Trọng số, tăng cường dữ liệu Mixup và CutMix, làm mượt nhãn, và tối ưu hóa AdamW với lịch trình cosine. Trong bốn mô hình, EfficientNet-B0 cho kết quả đơn lẻ tốt nhất: độ chính xác 88,36\% và chỉ số Macro F1 đạt 0,831, mặc dù có ít tham số hơn bất kỳ kiến trúc cạnh tranh nào. Phương pháp kết hợp biểu quyết mềm (soft-voting ensemble) của cả bốn mạng đã cải thiện hiệu suất lên 89,49\% độ chính xác và 0,980 Macro AUC. Trực quan hóa Grad-CAM xác nhận rằng mọi mô hình đều tập trung vào vùng tổn thương thay vì vùng da xung quanh hoặc nhiễu ảnh. Nghiên cứu loại bỏ thành phần (ablation study) xác định Mixup và CutMix là thành phần huấn luyện quan trọng nhất, với việc loại bỏ chúng gây ra sụt giảm 4,5 điểm phần trăm trong Macro F1.
+
+Công trình cho thấy một pipeline được điều chuẩn cẩn thận có thể thu hẹp phần lớn khoảng cách độ chính xác giữa các kiến trúc nhẹ và kiến trúc dung lượng lớn trên tập dữ liệu y tế hạn chế, và rằng phương pháp kết hợp đa mô hình đơn giản là một chiến lược hiệu quả và thực tiễn cho chẩn đoán tổn thương da đa lớp.
+
+\tableofcontents
+\listoffigures
+\listoftables
+
+% ======================= CHƯƠNG 1 ==========================
+\chapter{Giới thiệu}
+
+\section{Bối cảnh và Động lực}
+
+Ung thư da được Tổ chức Y tế Thế giới công nhận là một trong những dạng ung thư phổ biến và đe dọa tính mạng nhất trên toàn cầu. Theo WHO, tỷ lệ mắc cả ung thư da không phải hắc tố và ung thư hắc tố đã tăng đều đặn trong các thập kỷ qua, với ước tính 2--3 triệu ca ung thư da không phải hắc tố và hơn 130.000 ca ung thư hắc tố được chẩn đoán trên toàn thế giới mỗi năm. Ung thư hắc tố, mặc dù chỉ chiếm một tỷ lệ nhỏ trong các ca ung thư da, nhưng là nguyên nhân gây ra phần lớn các ca tử vong liên quan đến ung thư da do khả năng di căn nhanh chóng. Tuy nhiên, nếu được phát hiện và điều trị ở giai đoạn sớm, tỷ lệ sống sót sau 5 năm của bệnh nhân ung thư hắc tố vượt quá 99\%.
+
+Dermoscopy (soi da) là kỹ thuật chụp ảnh không xâm lấn giúp phóng đại bề mặt da, cho phép bác sĩ da liễu quan sát các cấu trúc hình thái không thể nhìn thấy bằng mắt thường. Mặc dù dermoscopy cải thiện đáng kể độ chính xác chẩn đoán so với đánh giá lâm sàng tiêu chuẩn, việc diễn giải các hình ảnh này vẫn mang tính chủ quan cao và đòi hỏi đào tạo chuyên sâu. Sự tương đồng về mặt hình ảnh giữa các tổn thương lành tính (như nốt ruồi sắc tố) và ác tính (như ung thư hắc tố) thường dẫn đến chẩn đoán sai, ngay cả ở những bác sĩ giàu kinh nghiệm.
+
+Học sâu (deep learning) đã trở thành phương pháp chủ đạo cho phân loại tổn thương tự động. Các mạng CNN là những mô hình đầu tiên chứng minh được hiệu suất ngang tầm bác sĩ da liễu trên ảnh dermoscopy, và gần đây hơn, các mô hình Vision Transformer đã mang khả năng mô hình hóa ngữ cảnh toàn cục đến cùng bài toán. Tuy nhiên, trở ngại thực tế không nằm ở năng lực kiến trúc mà ở chất lượng dữ liệu: tập ISIC 2018, bộ dữ liệu chuẩn cho bài toán này, bị chi phối bởi lớp Melanocytic Nevus đến mức huấn luyện thông thường luôn tạo ra các bộ phân loại dự đoán lớp đa số cho hầu hết các đầu vào mơ hồ, thổi phồng độ chính xác được báo cáo trong khi để các lớp bệnh thiểu số --- bao gồm ung thư hắc tố --- bị phát hiện kém.
+
+\section{Phát biểu Bài toán}
+
+Hai vấn đề cốt lõi trong phân loại tổn thương da tự động là \textbf{mất cân bằng dữ liệu} và \textbf{khả năng giải thích}. Một mô hình được huấn luyện không có can thiệp trên ISIC 2018 sẽ học cách dự đoán Melanocytic Nevus với tần suất áp đảo: nó đạt khoảng 67\% độ chính xác mà hầu như không làm gì hữu ích. Để khôi phục độ nhạy thực sự trên cả bảy lớp, đặc biệt là ung thư hắc tố và các lớp lành tính hiếm hơn, đòi hỏi sự điều chỉnh có chủ đích xuyên suốt pipeline huấn luyện.
+
+Khả năng giải thích cũng quan trọng không kém. Một mô hình hộp đen (black-box) đánh dấu chính xác tổn thương là ung thư hắc tố nhưng mang lại giá trị lâm sàng hạn chế nếu bác sĩ không thể xác minh rằng quyết định dựa trên chính tổn thương thay vì nhiễu ảnh. Trong lĩnh vực đòi hỏi an toàn cao, lý do đằng sau mỗi dự đoán phải có thể kiểm tra được.
+
+Khóa luận này giải quyết cả hai vấn đề: xây dựng và đánh giá một pipeline huấn luyện xử lý rõ ràng sự mất cân bằng lớp, áp dụng Grad-CAM để xác nhận rằng các biểu diễn đã học có cơ sở lâm sàng, và phân lập qua nghiên cứu loại bỏ để xác định thành phần nào trong pipeline đóng vai trò quan trọng nhất.
+
+\section{Mục tiêu}
+
+\begin{enumerate}
+    \item \textbf{Phát triển Pipeline Huấn luyện Tối ưu:} Triển khai các kỹ thuật tăng cường dữ liệu nâng cao (Mixup, CutMix) và chiến lược lấy mẫu (Bộ lấy mẫu Ngẫu nhiên có Trọng số) để đối phó với mất cân bằng lớp nghiêm trọng.
+    \item \textbf{Thực hiện Phân tích So sánh:} Huấn luyện và đánh giá bốn kiến trúc học sâu --- EfficientNet-B0, ResNet50, DenseNet121 và Swin-Tiny.
+    \item \textbf{Đảm bảo Khả năng Giải thích Mô hình:} Áp dụng Grad-CAM để tạo bản đồ nhiệt trực quan hóa các vùng đóng góp vào quyết định của mô hình.
+    \item \textbf{Thực hiện Nghiên cứu Loại bỏ (Ablation Study):} Phân lập và định lượng đóng góp hiệu suất của từng kỹ thuật điều chuẩn.
+    \item \textbf{Khám phá Phương pháp Kết hợp (Ensemble):} Kết hợp dự đoán từ cả bốn kiến trúc sử dụng biểu quyết mềm.
+\end{enumerate}
+
+\section{Cấu trúc Khóa luận}
+
+\begin{itemize}
+    \item \textbf{Chương 2 -- Tổng quan Tài liệu:} Các công trình liên quan về học sâu cho phân loại ung thư da.
+    \item \textbf{Chương 3 -- Phương pháp:} Tập dữ liệu, kiến trúc, kỹ thuật tối ưu hóa và các chỉ số đánh giá.
+    \item \textbf{Chương 4 -- Thí nghiệm và Kết quả:} Phân tích so sánh, Grad-CAM, kết quả ensemble và ablation.
+    \item \textbf{Chương 5 -- Kết luận và Hướng Phát triển.}
+\end{itemize}
+
+\input{report_vn_ch2}
+\input{report_vn_ch3}
+\input{report_vn_ch4}
+\input{report_vn_ch5}
+
+\end{document}

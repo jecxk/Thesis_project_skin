@@ -1,0 +1,37 @@
+\chapter{Tổng quan Tài liệu}
+
+\section{Phân loại Tổn thương Da bằng Học sâu}
+
+Học sâu cho phân loại tổn thương da đã thay đổi đáng kể với nghiên cứu năm 2017 của Esteva và cộng sự, trong đó huấn luyện một mạng CNN Inception-v3 trên 129.450 ảnh lâm sàng và so sánh với 21 bác sĩ da liễu được chứng nhận. Mạng đạt hoặc vượt hiệu suất của bác sĩ da liễu, chứng minh rằng học chuyển giao từ các tập dữ liệu huấn luyện trước quy mô lớn như ImageNet có thể bù đắp cho kích thước tương đối nhỏ của các bộ sưu tập ảnh y khoa. Maron và cộng sự phát hiện rằng CNN liên tục vượt trội so với bác sĩ trung vị trên 100.000 ảnh dermoscopy và 112 bác sĩ da liễu tham gia.
+
+Bài toán đa lớp khó hơn, đòi hỏi phân biệt giữa bảy loại tổn thương chồng lấp về mặt hình ảnh, được chính thức hóa bởi Thử thách ISIC 2018 (Nhiệm vụ 3). Được xây dựng từ bộ sưu tập HAM10000, tập dữ liệu bao gồm: Melanocytic Nevus (NV), Melanoma (MEL), Benign Keratosis (BKL), Basal Cell Carcinoma (BCC), Actinic Keratosis (AKIEC), Vascular Lesion (VASC) và Dermatofibroma (DF). Độ khó không chỉ nằm ở mặt hình ảnh --- MEL và NV chia sẻ các đặc điểm kết cấu, MEL và BKL chia sẻ các mẫu sắc tố --- mà còn ở mặt thống kê: NV chiếm khoảng 67\% mẫu huấn luyện trong khi DF và VASC cộng lại chưa đến 3\%.
+
+\section{Sự Tiến hóa của các Kiến trúc}
+
+\textbf{ResNet} đã giải quyết vấn đề cơ bản của việc huấn luyện mạng rất sâu: nếu không có kết nối tắt (skip connection), gradient biến mất trước khi đến các lớp đầu. Bằng cách thêm đường tắt đồng nhất xung quanh mỗi cặp lớp tích chập, He và cộng sự cho phép gradient đi qua trực tiếp, giúp các mạng 50 lớp có thể huấn luyện ổn định. ResNet50 với 25,6 triệu tham số trở thành mô hình cơ sở phổ biến nhất trong phân loại ảnh y khoa.
+
+\textbf{DenseNet} mở rộng ý tưởng kết nối tắt đến cực điểm logic: mỗi lớp nhận các bản đồ đặc trưng được nối từ \textit{tất cả} các lớp trước trong cùng một khối dày đặc. Việc tái sử dụng này giảm tổng số tham số cần thiết. DenseNet121 đạt hiệu suất cạnh tranh với khoảng 8 triệu tham số.
+
+\textbf{EfficientNet} sử dụng tìm kiếm kiến trúc thần kinh (NAS) để tìm cấu trúc khối cơ sở gọn nhẹ (B0) rồi rút ra quy tắc co giãn hỗn hợp (compound scaling rule) liên hệ chiều sâu, chiều rộng và độ phân giải đầu vào. EfficientNet-B0, với 5,3 triệu tham số, đạt độ chính xác cạnh tranh với các mô hình lớn gấp nhiều lần.
+
+\textbf{Swin Transformer} tái cấu trúc cơ chế tự chú ý: chú ý được tính trong các cửa sổ cục bộ không chồng lấp dịch chuyển giữa các lớp, khôi phục biểu diễn phân cấp đa tỷ lệ của CNN và giảm độ phức tạp từ bậc hai xuống tuyến tính. Swin-Tiny, với 28 triệu tham số, là mô hình lớn nhất trong nghiên cứu này.
+
+Liu và cộng sự đã chứng minh trực tiếp rằng nếu phương pháp huấn luyện chiếm ưu thế so với lựa chọn kiến trúc, thì một EfficientNet được điều chuẩn tốt trên vài nghìn ảnh dermoscopy có thể vượt trội một Swin Transformer thô --- và các thí nghiệm ở Chương 4 cho thấy chính xác kết quả này.
+
+\section{Xử lý Mất cân bằng Lớp trong Tập dữ liệu Y tế}
+
+Buda và cộng sự phát hiện rằng các mini-batch cân bằng lớp --- đạt được thông qua lấy mẫu có trọng số --- liên tục vượt trội so với điều chỉnh trọng số hàm mất mát. Lấy mẫu Ngẫu nhiên có Trọng số gán mỗi mẫu huấn luyện một trọng số tỷ lệ nghịch với tần suất lớp, mà không loại bỏ bất kỳ dữ liệu nào.
+
+Thiết kế hàm mất mát cung cấp đòn bẩy bổ sung. Làm mượt Nhãn (Label Smoothing) thay thế nhãn one-hot bằng phân phối mềm, ngăn mô hình gán xác suất 1,0 cho bất kỳ lớp nào. \textbf{Mixup} trộn tuyến tính các cặp ảnh và nhãn để tạo mẫu ảo, trong khi \textbf{CutMix} dán các vùng cắt hình chữ nhật giữa các ảnh. Cả hai ngăn mô hình ghi nhớ các mẫu lớp thiểu số cụ thể.
+
+\section{Khả năng Giải thích trong AI Y tế}
+
+Sự chấp nhận lâm sàng của một công cụ chẩn đoán AI phụ thuộc vào nhiều yếu tố ngoài độ chính xác. \textbf{Grad-CAM} đáp ứng yêu cầu này bằng cách tính gradient của điểm số lớp mục tiêu đối với bản đồ đặc trưng tích chập cuối cùng, tạo bản đồ nhiệt không gian có trọng số. Đối với phân loại tổn thương da, Grad-CAM hoạt động như bài kiểm tra tính phản chứng: mô hình tập trung vào tổn thương đang chú ý đến đặc điểm mà bác sĩ nhận ra; mô hình tập trung vào nhiễu nền thì không.
+
+\section{Phương pháp Kết hợp trong Hình ảnh Y khoa}
+
+Các phương pháp kết hợp (ensemble) luôn xuất hiện trong các bài nộp đạt thứ hạng cao nhất của ISIC. Biểu quyết mềm --- lấy trung bình vector xác suất thô trước khi lấy argmax --- có tính cạnh tranh với các chiến lược phức tạp hơn trong khi đơn giản hơn nhiều để triển khai. Đối với ứng dụng y tế, ensemble mang thêm lợi ích: phương sai của vector xác suất trung bình phản ánh độ không chắc chắn của dự đoán.
+
+\section{Định vị Công trình Này}
+
+Các bài nộp đạt kết quả cao nhất trong ISIC 2018 gốc đạt 85--88\% accuracy, sử dụng các tập hợp lớn, dữ liệu bên ngoài và tăng cường thời gian kiểm tra mở rộng. Công trình hiện tại thực hiện sự đánh đổi khác: bốn kiến trúc, tập huấn luyện cố định, không có dữ liệu bên ngoài, suy luận đơn lượt --- nhưng đạt 89,49\% accuracy với 0,980 Macro AUC. Nghiên cứu loại bỏ ở Chương 4 cho thấy Mixup, CutMix và lấy mẫu có trọng số chiếm phần lớn sự cải thiện, gợi ý rằng chất lượng quy trình huấn luyện là yếu tố hạn chế chính thay vì lựa chọn kiến trúc.

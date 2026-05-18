@@ -1,0 +1,146 @@
+\chapter{Phương pháp}
+
+\section{Tập dữ liệu: Thử thách ISIC 2018}
+
+Tập dữ liệu sử dụng trong nghiên cứu này là ISIC 2018 Skin Lesion Analysis Towards Melanoma Detection (Nhiệm vụ 3), chứa 10.015 ảnh dermoscopy phân bố trên bảy loại chẩn đoán.
+
+\begin{table}[H]
+\centering
+\caption{Phân bố lớp của tập dữ liệu ISIC 2018.}
+\label{tab:class_distribution_vn}
+\begin{tabular}{llrrr}
+\toprule
+\textbf{Lớp} & \textbf{Tên đầy đủ} & \textbf{Train} & \textbf{Val} & \textbf{Test} \\
+\midrule
+NV    & Nốt ruồi sắc tố           & 4.693 & 1.006 & 1.006 \\
+MEL   & Ung thư hắc tố             &   779 &   167 &   167 \\
+BKL   & Dày sừng lành tính         &   769 &   165 &   165 \\
+BCC   & Ung thư biểu mô tế bào đáy &   360 &    77 &    77 \\
+AKIEC & Dày sừng quang hóa         &   229 &    49 &    49 \\
+VASC  & Tổn thương mạch máu        &    99 &    21 &    22 \\
+DF    & U xơ bì                    &    81 &    17 &    17 \\
+\midrule
+\textbf{Tổng} & & \textbf{7.010} & \textbf{1.502} & \textbf{1.503} \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+NV chiếm 66,9\% mẫu huấn luyện; DF và VASC cộng lại chỉ chiếm 2,6\%, tỷ lệ 58:1. Tất cả thí nghiệm sử dụng phân chia phân tầng 70/15/15 giữ nguyên tỷ lệ các lớp.
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=\figwidth]{figures/class_distribution.png}
+\caption{Phân bố lớp trên các tập huấn luyện, xác thực và kiểm tra. Sự mất cân bằng nghiêm trọng giữa NV và các lớp thiểu số (DF, VASC) thể hiện rõ ràng.}
+\label{fig:class_distribution_vn}
+\end{figure}
+
+\section{Kiến trúc Mô hình}
+
+Bốn kiến trúc được lựa chọn: ba CNN và một Vision Transformer. Tất cả được khởi tạo với trọng số ImageNet pretrained qua thư viện \texttt{timm} và được tinh chỉnh (fine-tune) trên ISIC 2018. Hình~\ref{fig:transfer_learning_vn} minh họa quy trình học chuyển giao này.
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=\textwidth]{figures/transfer_learning.png}
+\caption{Pipeline học chuyển giao: trọng số pretrained từ ImageNet được tải vào mỗi kiến trúc, đầu phân loại được thay thế để xuất 7 lớp tổn thương da, và toàn bộ mạng được tinh chỉnh trên tập ISIC 2018.}
+\label{fig:transfer_learning_vn}
+\end{figure}
+
+\subsection{EfficientNet-B0}
+Mô hình cơ sở của họ EfficientNet, thiết kế bằng Tìm kiếm Kiến trúc Thần kinh (NAS) và co giãn hỗn hợp (compound scaling). Với chỉ 5,3 triệu tham số, đạt độ chính xác cạnh tranh bằng cách tối ưu hóa đồng thời chiều sâu, chiều rộng và độ phân giải. Dropout ($p=0,3$) được thêm trước đầu phân loại.
+
+\subsection{ResNet50}
+50 lớp tổ chức thành bốn giai đoạn phần dư (residual stage). Kết nối tắt (skip connection) cho phép dòng gradient hiệu quả. 25,6 triệu tham số. Dropout ($p=0,3$).
+
+\subsection{DenseNet121}
+121 lớp với kết nối dày đặc: mỗi lớp nhận feature map được nối (concatenate) từ tất cả các lớp trước. Thúc đẩy tái sử dụng đặc trưng, giảm xuống khoảng 8 triệu tham số. Dropout ($p=0,25$).
+
+\subsection{Swin-Tiny}
+Vision Transformer phân cấp xử lý ảnh qua tự chú ý dựa trên cửa sổ dịch chuyển (shifted window). 28 triệu tham số. Tốc độ học thấp hơn ($1\times10^{-4}$), suy giảm trọng số cao hơn (0,05), warmup 5 epoch.
+
+\begin{table}[H]
+\centering
+\caption{Tóm tắt bốn kiến trúc được đánh giá.}
+\begin{tabular}{lrllr}
+\toprule
+\textbf{Mô hình} & \textbf{Tham số (M)} & \textbf{Loại} & \textbf{Đặc trưng chính} & \textbf{Dropout} \\
+\midrule
+EfficientNet-B0 & 5,3  & CNN & Co giãn hỗn hợp  & 0,30 \\
+ResNet50        & 25,6 & CNN & Kết nối phần dư    & 0,30 \\
+DenseNet121     & 8,0  & CNN & Kết nối dày đặc    & 0,25 \\
+Swin-Tiny       & 28,0 & ViT & Chú ý cửa sổ dịch chuyển & 0,30 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\section{Pipeline Huấn luyện}
+
+Pipeline được xây dựng xung quanh vấn đề mất cân bằng lớp 58:1, với bốn kỹ thuật giải quyết từ các góc độ khác nhau. Hình~\ref{fig:training_pipeline_vn} cung cấp tổng quan toàn bộ pipeline.
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=\textwidth]{figures/training_pipeline.png}
+\caption{Tổng quan pipeline huấn luyện. Ảnh đầu vào qua tăng cường dữ liệu (bao gồm Mixup/CutMix), đi qua backbone pretrained để trích xuất đặc trưng, và được phân loại bởi đầu ra. Pipeline được tối ưu với AdamW, lịch trình tốc độ học cosine, và làm mượt nhãn.}
+\label{fig:training_pipeline_vn}
+\end{figure}
+
+\subsection{Lấy mẫu Ngẫu nhiên có Trọng số}
+Mỗi mẫu được gán trọng số tỷ lệ nghịch với tần suất lớp: $w_c = N / (C \cdot n_c)$, đảm bảo mỗi mini-batch xấp xỉ cân bằng lớp.
+
+\subsection{Tăng cường Mixup và CutMix}
+Áp dụng với xác suất bằng nhau ($p=0,5$ mỗi loại). \textbf{Mixup:} $\tilde{x} = \lambda x_i + (1-\lambda) x_j$, $\tilde{y} = \lambda y_i + (1-\lambda) y_j$ với $\lambda \sim \text{Beta}(0,2; 0,2)$. \textbf{CutMix:} thay thế vùng hình chữ nhật của một ảnh bằng vùng tương ứng từ ảnh khác, nhãn theo tỷ lệ diện tích, $\alpha = 1,0$.
+
+\subsection{Làm mượt Nhãn (Label Smoothing)}
+$y_{\text{smooth}} = (1 - \epsilon) \cdot y_{\text{one-hot}} + \epsilon/C$ với $\epsilon = 0,1$, $C = 7$.
+
+\subsection{Tối ưu hóa}
+AdamW với lịch trình giảm cosine và khởi động tuyến tính (warmup 3--5 epoch). Gradient clipping ($\text{max\_norm}=1,0$). Mixed precision (FP16).
+
+\subsection{Tăng cường Dữ liệu}
+Lật ngang/dọc ($p=0,5$), xoay (±90°), biến đổi màu (0,25), cắt xén ngẫu nhiên (0,85--1,0), làm mờ Gaussian ($p=0,1$), xóa ngẫu nhiên ($p=0,1$). Ảnh: $224\times224$, chuẩn hóa ImageNet. Batch size: 16.
+
+\begin{table}[H]
+\centering
+\caption{Cấu hình siêu tham số cho từng mô hình.}
+\begin{tabular}{lcccc}
+\toprule
+\textbf{Siêu tham số} & \textbf{EB0} & \textbf{RN50} & \textbf{DN121} & \textbf{Swin-T} \\
+\midrule
+Tốc độ học        & 3e-4  & 3e-4  & 2,5e-4 & 1e-4 \\
+Suy giảm trọng số & 1e-3  & 1e-3  & 1e-3   & 5e-2 \\
+Epoch khởi động   & 3     & 3     & 3      & 5 \\
+Epoch tối đa      & 50    & 50    & 50     & 50 \\
+Dừng sớm          & 12    & 12    & 12     & 12 \\
+Mixup $\alpha$    & 0,2   & 0,2   & 0,2    & 0,2 \\
+CutMix $\alpha$   & 1,0   & 1,0   & 1,0    & 1,0 \\
+Làm mượt nhãn     & 0,1   & 0,1   & 0,1    & 0,1 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\section{Các Chỉ số Đánh giá}
+
+\begin{itemize}
+    \item \textbf{Macro F1-Score:} Trung bình không trọng số của F1 theo lớp --- tiêu chí lựa chọn mô hình chính.
+    \item \textbf{Macro AUC:} Diện tích dưới đường cong ROC one-vs-rest, trung bình trên các lớp.
+    \item \textbf{Cohen's Kappa ($\kappa$):} Đồng thuận đã hiệu chỉnh cho ngẫu nhiên. Trên 0,6 = đồng thuận đáng kể.
+    \item \textbf{MCC:} Tóm tắt toàn bộ ma trận nhầm lẫn trong một con số.
+    \item \textbf{Độ nhạy và Độ đặc hiệu theo lớp.}
+\end{itemize}
+
+\section{Chiến lược Kết hợp (Ensemble)}
+Hình~\ref{fig:ensemble_arch_vn} minh họa kiến trúc ensemble biểu quyết mềm.
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=\figwidth]{figures/ensemble_architecture.png}
+\caption{Kiến trúc ensemble biểu quyết mềm. Mỗi trong bốn mô hình tạo một vector xác suất trên 7 lớp. Các vector được lấy trung bình theo từng phần tử, và lớp có xác suất trung bình cao nhất được chọn làm dự đoán cuối cùng.}
+\label{fig:ensemble_arch_vn}
+\end{figure}
+
+Công thức: $\hat{y} = \arg\max_c \frac{1}{M} \sum_{m=1}^{M} p_m(c \mid x)$ với $M=4$.
+
+\section{Khả năng Giải thích với Grad-CAM}
+Grad-CAM tính gradient của điểm số lớp $y^c$ đối với feature map $A^k$:
+\begin{equation}
+\alpha_k^c = \frac{1}{Z} \sum_i \sum_j \frac{\partial y^c}{\partial A_{ij}^k}, \quad L_{\text{Grad-CAM}}^c = \text{ReLU}\left(\sum_k \alpha_k^c A^k\right)
+\end{equation}

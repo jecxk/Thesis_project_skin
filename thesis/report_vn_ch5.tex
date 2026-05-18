@@ -1,0 +1,40 @@
+\chapter{Kết luận và Hướng Phát triển}
+
+\section{Tóm tắt Đóng góp}
+
+Khóa luận đã huấn luyện và đánh giá bốn kiến trúc học sâu --- EfficientNet-B0, ResNet50, DenseNet121 và Swin-Tiny --- trên tập ISIC 2018 bảy lớp, với pipeline huấn luyện xây dựng xung quanh tình trạng mất cân bằng 58:1. Bốn thành phần giải quyết mất cân bằng từ các góc độ khác nhau: Lấy mẫu có Trọng số ở mức tải dữ liệu, Mixup và CutMix ở mức tín hiệu huấn luyện, làm mượt nhãn ở mức mục tiêu, và AdamW giảm cosine ở mức tối ưu hóa. Cùng nhau chúng loại bỏ hiện tượng sụp đổ về lớp đa số.
+
+Kết quả bất ngờ nhất là EfficientNet-B0, mô hình nhỏ nhất (5,3M tham số), vượt trội ba mô hình còn lại trên mọi chỉ số phân loại cứng. Khi dữ liệu huấn luyện hạn chế, hiệu quả kiến trúc và phương pháp huấn luyện quan trọng hơn số tham số. Ensemble biểu quyết mềm nâng Macro AUC từ 0,952 lên 0,980 và F1 melanoma từ 0,695 lên 0,744.
+
+Grad-CAM xác nhận mọi mô hình chú ý đến tổn thương, không phải nhiễu nền. Nguyên mẫu Streamlit tương tác chứng minh các mô hình có thể tích hợp vào giao diện hỗ trợ chẩn đoán chức năng.
+
+\section{Các Phát hiện Chính}
+
+\textbf{Sự đảo ngược accuracy--AUC:} CNN tạo quyết định cứng sắc nét hơn, Swin-Tiny tạo phân phối xác suất được hiệu chỉnh tốt hơn. Mô hình phù hợp phụ thuộc vào nhiệm vụ lâm sàng: cờ nhị phân cần F1 cao (EfficientNet-B0), danh sách xếp hạng rủi ro cần AUC cao (Swin-Tiny).
+
+\textbf{Label Smoothing:} Loại bỏ đồng thời tăng AUC (+0,015) và giảm F1 ($-$3,1\%). Đánh đổi giữa độ sắc nét hiệu chỉnh và chất lượng ranh giới quyết định.
+
+\textbf{Melanoma vẫn khó nhất:} F1 ensemble chỉ 0,744 --- phản ánh độ khó lâm sàng thực sự trong phân tách ung thư hắc tố sớm khỏi nốt ruồi lành tính.
+
+\section{Hạn chế}
+
+\begin{itemize}
+    \item \textbf{Tập dữ liệu đơn.} Chỉ ISIC 2018, chưa kiểm tra trên ISIC 2019/2020 hoặc dữ liệu lâm sàng bên ngoài.
+    \item \textbf{Độ phân giải cố định $224 \times 224$.} Độ phân giải cao hơn có thể khôi phục đặc trưng phân biệt tinh tế.
+    \item \textbf{Tập kiểm tra lớp hiếm nhỏ.} 17 DF, 22 VASC --- một phân loại sai dịch chuyển F1 khoảng 0,06.
+    \item \textbf{Không có xác thực lâm sàng.} Chưa đánh giá bởi bác sĩ da liễu thực hành.
+    \item \textbf{Không có kiểm tra ý nghĩa thống kê.} Chỉ ước tính điểm từ một phân chia duy nhất.
+    \item \textbf{Kiến trúc Transformer đơn.} Chỉ Swin-Tiny; các biến thể khác có thể cho kết quả khác.
+\end{itemize}
+
+\section{Hướng Phát triển}
+
+\begin{itemize}
+    \item \textbf{Tăng cường thời gian kiểm tra (TTA):} Lấy trung bình dự đoán trên nhiều phiên bản tăng cường, thường thêm 1--2\% accuracy.
+    \item \textbf{Điều chỉnh ngưỡng theo lớp:} Tối ưu ngưỡng trên đường cong ROC xác thực để tăng độ nhạy melanoma.
+    \item \textbf{Đánh giá xuyên tập dữ liệu:} Kiểm tra trên ISIC 2019/2020 hoặc dữ liệu lâm sàng riêng tư.
+    \item \textbf{Huấn luyện trước tự giám sát:} Phương pháp như DINO trên ảnh dermoscopy không gán nhãn.
+    \item \textbf{Phân loại hỗ trợ phân đoạn:} Dự đoán đồng thời ranh giới tổn thương và nhãn bệnh.
+    \item \textbf{Chưng cất tri thức:} Nén ensemble bốn mô hình thành một mô hình nhẹ duy nhất.
+    \item \textbf{Phân tích hiệu chỉnh chính thức:} Temperature scaling và biểu đồ độ tin cậy.
+\end{itemize}
