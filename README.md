@@ -25,6 +25,8 @@ set of quantitative interpretability metrics. A Streamlit prototype provides a c
 
 ## Headline Results
 
+Single representative seed (42):
+
 | Metric          | EfficientNet-B0 | ResNet50 | DenseNet121 | Swin-Tiny | Ensemble    |
 |-----------------|:---------------:|:--------:|:-----------:|:---------:|:-----------:|
 | Parameters      | 5.3 M           | 25.6 M   | 8.0 M       | 28.0 M    | —           |
@@ -33,7 +35,18 @@ set of quantitative interpretability metrics. A Streamlit prototype provides a c
 | Macro AUC       | 0.952           | 0.957    | 0.959       | 0.960     | **0.980**   |
 | Cohen's Kappa   | 0.771           | 0.731    | 0.721       | 0.715     | —           |
 
-The ensemble achieves SOTA-level performance among image-only methods on ISIC 2018 Task 3.
+Averaged across five independent seeds (\{42, 1337, 2024, 7, 11\}):
+
+| Metric    | EfficientNet-B0 | ResNet50        | DenseNet121     | Swin-Tiny       | Ensemble            |
+|-----------|:---------------:|:---------------:|:---------------:|:---------------:|:-------------------:|
+| Accuracy  | 87.31 ± 1.32 %  | 86.31 ± 0.57 %  | 85.62 ± 2.42 %  | **88.33 ± 1.96 %** | **89.93 ± 0.66 %** |
+| Macro F1  | 0.814 ± 0.022   | 0.792 ± 0.011   | 0.797 ± 0.025   | 0.839 ± 0.030   | **0.852 ± 0.010**   |
+| Macro AUC | 0.965 ± 0.006   | 0.949 ± 0.003   | 0.960 ± 0.004   | 0.966 ± 0.008   | **0.982 ± 0.001**   |
+
+The ensemble achieves SOTA-level performance among image-only methods on
+ISIC 2018 Task 3. McNemar's test (Fisher-combined across the five seeds) confirms
+the ensemble's advantage over every single backbone is statistically significant
+(p < 10⁻⁷ against the strongest single model, p < 10⁻³⁸ against the weakest).
 
 ## Repository Structure
 

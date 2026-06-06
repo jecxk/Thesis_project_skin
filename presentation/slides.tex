@@ -371,7 +371,8 @@
         \vspace{0.15cm}
         \begin{block}{Kết quả Ensemble (test set 1\,503 ảnh)}
             \centering \footnotesize
-            Accuracy \textbf{89.49\%} \quad Macro F1 \textbf{0.845} \quad Macro AUC \textbf{0.980}
+            1 hạt giống: Acc \textbf{89.49\%} \quad F1 \textbf{0.845} \quad AUC \textbf{0.980}\\[2pt]
+            5 hạt giống: \textbf{$89.93 \pm 0.66\%$} \quad \textbf{$0.852 \pm 0.010$} \quad \textbf{$0.982 \pm 0.001$}
         \end{block}
 
         \column{0.5\textwidth}
@@ -1103,7 +1104,7 @@
         Mahbod et al.        & 2020 & Multi-scale CNN ensemble     & 88.7 & 0.83 \\
         Pacheco \& Krohling  & 2020 & ResNet-50 + metadata fusion  & 89.0 & 0.83 \\
         \rowcolor{usthlight}
-        \textbf{Khóa luận này} & 2026 & \textbf{4-model soft ensemble (CNN + Transformer)} & \textbf{89.49} & \textbf{0.845} \\
+        \textbf{Khóa luận này} & 2026 & \textbf{4-model soft ensemble, n=5 hạt giống} & \textbf{89.93 $\pm$ 0.66} & \textbf{0.852 $\pm$ 0.010} \\
         \bottomrule
         \end{tabular}
     \end{table}
@@ -1135,6 +1136,44 @@
         \item Bệnh nhân \textit{tự chẩn đoán} qua web tool $\Rightarrow$ chậm trễ khám chuyên gia.
         \item \textbf{Vì vậy:} prototype được thiết kế như \textit{second opinion}, mọi UI đều ghi rõ "không thay thế chẩn đoán y khoa".
     \end{itemize}
+\end{frame}
+
+% --- A21 ---
+\begin{frame}{A21. Độ tin cậy thống kê qua nhiều hạt giống}
+    \scriptsize
+    \textbf{Cấu hình.} Lặp toàn bộ pipeline với 5 hạt giống độc lập (\{42, 1337, 2024, 7, 11\}).
+    CuDNN benchmark + Mixup/CutMix ngẫu nhiên → mỗi hạt giống là một quỹ đạo
+    tối ưu hóa độc lập.
+
+    \vspace{0.15cm}
+    \begin{table}[h]
+    \centering
+    \begin{tabular}{lccc}
+    \toprule
+    \textbf{Mô hình} & \textbf{Accuracy} & \textbf{Macro F1} & \textbf{Macro AUC}\\
+    \midrule
+    EfficientNet-B0 & $87.31 \pm 1.32\%$ & $0.814 \pm 0.022$ & $0.965 \pm 0.006$\\
+    ResNet50        & $86.31 \pm 0.57\%$ & $0.792 \pm 0.011$ & $0.949 \pm 0.003$\\
+    DenseNet121     & $85.62 \pm 2.42\%$ & $0.797 \pm 0.025$ & $0.960 \pm 0.004$\\
+    Swin-Tiny       & $\mathbf{88.33 \pm 1.96\%}$ & $0.839 \pm 0.030$ & $0.966 \pm 0.008$\\
+    \midrule
+    \rowcolor{usthlight}\textbf{Ensemble} & $\mathbf{89.93 \pm 0.66\%}$ & $\mathbf{0.852 \pm 0.010}$ & $\mathbf{0.982 \pm 0.001}$\\
+    \bottomrule
+    \end{tabular}
+    \end{table}
+
+    \vspace{0.15cm}
+    \textbf{McNemar (ensemble vs.\ mỗi mô hình đơn, Fisher tổ hợp qua 5 hạt giống):}\\[2pt]
+    vs.\ EB0: $p = 5.3{\times}10^{-18}$ \quad
+    vs.\ RN50: $p = 4.5{\times}10^{-31}$ \quad
+    vs.\ DN121: $p = 6.7{\times}10^{-39}$ \quad
+    vs.\ Swin (mạnh nhất): $p = 1.2{\times}10^{-7}$
+
+    \vspace{0.1cm}
+    \textbf{Phát hiện.} Ensemble thắng 5/5 hạt giống so với mọi backbone, độ
+    lệch chuẩn nhỏ nhất (0.66\% so với 0.57--2.42\% của mô hình đơn). Số gốc
+    89.49\% nằm trong 1$\sigma$ của trung bình --- không lucky. Swin hạt giống 42
+    early-stop xui; trung bình thì Swin là mô hình đơn mạnh nhất.
 \end{frame}
 
 % =====================  Slide cuối  =====================

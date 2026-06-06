@@ -128,8 +128,9 @@
 
 \textbf{Kết quả.}
 \begin{itemize}[leftmargin=*]
-  \item Mô hình đơn tốt nhất: EfficientNet-B0 --- Accuracy 88.36\%, Macro F1 0.831.
-  \item \textbf{Ensemble} (soft voting 4 mô hình): Accuracy 89.49\%, Macro F1 0.845, AUC 0.980.
+  \item Mô hình đơn tốt nhất (hạt giống đại diện): EfficientNet-B0 --- Accuracy 88.36\%, Macro F1 0.831.
+  \item \textbf{Ensemble} (soft voting 4 mô hình, hạt giống đại diện): Accuracy 89.49\%, Macro F1 0.845, AUC 0.980.
+  \item \textbf{Ensemble trung bình qua 5 hạt giống ngẫu nhiên}: $89{,}93 \pm 0{,}66\%$ Accuracy, $0{,}852 \pm 0{,}010$ Macro F1, $0{,}982 \pm 0{,}001$ Macro AUC. McNemar test xác nhận ensemble vượt mọi mô hình đơn có ý nghĩa thống kê ($p < 10^{-7}$ so với mô hình mạnh nhất Swin-Tiny).
 \end{itemize}
 
 \textbf{Khả diễn giải.} Grad-CAM (Selvaraju et al., 2017) tạo bản đồ nhiệt cho biết \textit{vùng nào trên ảnh đã ảnh hưởng đến quyết định của mô hình}. Bằng chứng định lượng: \texttt{focus\_ratio} > 0.6 trên cả 4 mô hình --- mô hình thật sự nhìn vào tổn thương chứ không phải nhiễu (lông, bọt gel).
@@ -1065,6 +1066,51 @@ Swin-Tiny                & 28.0M & \textbf{13} & 0.8490 & 0.7855 & \textbf{0.960
 \end{tabular}
 \end{table}
 
+\subsection{Độ tin cậy thống kê (multi-seed)}
+
+Số liệu trên ở 1 hạt giống đại diện (42). Để chứng minh không phải may mắn, ta lặp lại toàn bộ pipeline với 5 hạt giống (\{42, 1337, 2024, 7, 11\}).
+
+\begin{table}[h]
+\centering\small
+\begin{tabular}{lccc}
+\toprule
+\textbf{Mô hình} & \textbf{Accuracy} & \textbf{Macro F1} & \textbf{Macro AUC} \\
+\midrule
+EfficientNet-B0 & $87{,}31 \pm 1{,}32\%$ & $0{,}814 \pm 0{,}022$ & $0{,}965 \pm 0{,}006$ \\
+ResNet50        & $86{,}31 \pm 0{,}57\%$ & $0{,}792 \pm 0{,}011$ & $0{,}949 \pm 0{,}003$ \\
+DenseNet121     & $85{,}62 \pm 2{,}42\%$ & $0{,}797 \pm 0{,}025$ & $0{,}960 \pm 0{,}004$ \\
+Swin-Tiny       & $\mathbf{88{,}33 \pm 1{,}96\%}$ & $0{,}839 \pm 0{,}030$ & $0{,}966 \pm 0{,}008$ \\
+\midrule
+\rowcolor{usthblue!10}
+\textbf{Ensemble} & $\mathbf{89{,}93 \pm 0{,}66\%}$ & $\mathbf{0{,}852 \pm 0{,}010}$ & $\mathbf{0{,}982 \pm 0{,}001}$ \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\begin{idea}[3 phát hiện quan trọng]
+\textbf{(1)} Số gốc 89,49\% nằm trong 1$\sigma$ của trung bình 89,93\% --- xác nhận robust, không lucky.\\
+\textbf{(2)} Swin-Tiny mới là mô hình đơn mạnh nhất khi average qua seeds (88,33\% > EB0 87,31\%). Hạt giống 42 là pha xui của Swin (early-stop sớm).\\
+\textbf{(3)} Std của ensemble cực nhỏ (Acc 0,66\%, AUC 0,001) --- soft voting hấp thụ phương sai cấp hạt giống.
+\end{idea}
+
+\textbf{McNemar test (ensemble vs.\ mỗi mô hình đơn, Fisher tổ hợp 5 hạt giống):}
+
+\begin{table}[h]
+\centering\small
+\begin{tabular}{lccc}
+\toprule
+\textbf{Mô hình đơn vs.\ Ensemble} & \textbf{Ensemble thắng} & \textbf{p Fisher tổ hợp} \\
+\midrule
+EfficientNet-B0 & 5/5 & $5{,}3 \times 10^{-18}$ \\
+ResNet50        & 5/5 & $4{,}5 \times 10^{-31}$ \\
+DenseNet121     & 5/5 & $6{,}7 \times 10^{-39}$ \\
+Swin-Tiny (mạnh nhất) & 5/5 & $1{,}2 \times 10^{-7}$ \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+Ensemble thắng \textbf{5/5 hạt giống} so với mọi backbone, p-value cực thấp --- bằng chứng thống kê mạnh cho hội đồng.
+
 \subsection{Hiệu năng per-class của Ensemble}
 
 \begin{table}[h]
@@ -1243,7 +1289,7 @@ Gessert et al.\ (winner) & 2018 & Ensemble EfficientNet + SENet & 88.5 & 0.82 \\
 Mahbod et al.         & 2020 & Multi-scale CNN ensemble      & 88.7 & 0.83 \\
 Pacheco \& Krohling   & 2020 & ResNet-50 + metadata fusion    & 89.0 & 0.83 \\
 \rowcolor{usthblue!10}
-\textbf{Đồ án này}    & 2026 & \textbf{4-model soft ensemble} & \textbf{89.49} & \textbf{0.845} \\
+\textbf{Đồ án này}    & 2026 & \textbf{4-model soft ensemble (n=5 hạt giống)} & \textbf{89.93 $\pm$ 0.66} & \textbf{0.852 $\pm$ 0.010} \\
 \bottomrule
 \end{tabular}
 \end{table}
@@ -1289,7 +1335,7 @@ Pacheco \& Krohling   & 2020 & ResNet-50 + metadata fusion    & 89.0 & 0.83 \\
   \item \textbf{Mixed precision} FP16.
 \end{itemize}
 
-\textbf{Ensemble} bằng soft voting (trung bình xác suất 4 mô hình) $\Rightarrow$ Accuracy 89.49\%, Macro F1 0.845, AUC 0.980.
+\textbf{Ensemble} bằng soft voting (trung bình xác suất 4 mô hình) $\Rightarrow$ Accuracy 89.49\% / Macro F1 0.845 / AUC 0.980 ở hạt giống đại diện; trung bình qua 5 hạt giống ngẫu nhiên: $89{,}93 \pm 0{,}66\%$ / $0{,}852 \pm 0{,}010$ / $0{,}982 \pm 0{,}001$. McNemar test ($p < 10^{-7}$ vs.\ mô hình mạnh nhất) xác nhận ensemble vượt mọi mô hình đơn có ý nghĩa thống kê.
 
 \textbf{Grad-CAM} cho heatmap giải thích quyết định mô hình; \texttt{focus\_ratio} > 0.6 chứng minh mô hình focus đúng tổn thương.
 

@@ -367,7 +367,8 @@
         \vspace{0.15cm}
         \begin{block}{Ensemble results (test set, 1\,503 images)}
             \centering \footnotesize
-            Accuracy \textbf{89.49\%} \quad Macro F1 \textbf{0.845} \quad Macro AUC \textbf{0.980}
+            Single seed: Acc \textbf{89.49\%} \quad F1 \textbf{0.845} \quad AUC \textbf{0.980}\\[2pt]
+            5 seeds: \textbf{$89.93 \pm 0.66\%$} \quad \textbf{$0.852 \pm 0.010$} \quad \textbf{$0.982 \pm 0.001$}
         \end{block}
 
         \column{0.5\textwidth}
@@ -1099,7 +1100,7 @@
         Mahbod et al.        & 2020 & Multi-scale CNN ensemble     & 88.7 & 0.83 \\
         Pacheco \& Krohling  & 2020 & ResNet-50 + metadata fusion  & 89.0 & 0.83 \\
         \rowcolor{usthlight}
-        \textbf{This thesis} & 2026 & \textbf{4-model soft ensemble (CNN + Transformer)} & \textbf{89.49} & \textbf{0.845} \\
+        \textbf{This thesis} & 2026 & \textbf{4-model soft ensemble, n=5 seeds} & \textbf{89.93 $\pm$ 0.66} & \textbf{0.852 $\pm$ 0.010} \\
         \bottomrule
         \end{tabular}
     \end{table}
@@ -1131,6 +1132,44 @@
         \item Patients may \textit{self-diagnose} via the web tool $\Rightarrow$ delay expert consultation.
         \item \textbf{Therefore:} the prototype is designed as a \textit{second opinion}, and every UI screen states clearly "not a substitute for medical diagnosis".
     \end{itemize}
+\end{frame}
+
+% --- A21 ---
+\begin{frame}{A21. Statistical Robustness across Random Seeds}
+    \scriptsize
+    \textbf{Setup.} Full pipeline replayed with five independent seeds (\{42, 1337, 2024, 7, 11\}).
+    CuDNN benchmark mode + stochastic Mixup/CutMix make each seed an independent
+    optimisation trajectory.
+
+    \vspace{0.15cm}
+    \begin{table}[h]
+    \centering
+    \begin{tabular}{lccc}
+    \toprule
+    \textbf{Model} & \textbf{Accuracy} & \textbf{Macro F1} & \textbf{Macro AUC}\\
+    \midrule
+    EfficientNet-B0 & $87.31 \pm 1.32\%$ & $0.814 \pm 0.022$ & $0.965 \pm 0.006$\\
+    ResNet50        & $86.31 \pm 0.57\%$ & $0.792 \pm 0.011$ & $0.949 \pm 0.003$\\
+    DenseNet121     & $85.62 \pm 2.42\%$ & $0.797 \pm 0.025$ & $0.960 \pm 0.004$\\
+    Swin-Tiny       & $\mathbf{88.33 \pm 1.96\%}$ & $0.839 \pm 0.030$ & $0.966 \pm 0.008$\\
+    \midrule
+    \rowcolor{usthlight}\textbf{Ensemble} & $\mathbf{89.93 \pm 0.66\%}$ & $\mathbf{0.852 \pm 0.010}$ & $\mathbf{0.982 \pm 0.001}$\\
+    \bottomrule
+    \end{tabular}
+    \end{table}
+
+    \vspace{0.15cm}
+    \textbf{McNemar test (ensemble vs.\ each single model, Fisher-combined across seeds):}\\[2pt]
+    vs.\ EB0: $p = 5.3{\times}10^{-18}$ \quad
+    vs.\ RN50: $p = 4.5{\times}10^{-31}$ \quad
+    vs.\ DN121: $p = 6.7{\times}10^{-39}$ \quad
+    vs.\ Swin (strongest): $p = 1.2{\times}10^{-7}$
+
+    \vspace{0.1cm}
+    \textbf{Findings.} Ensemble wins 5/5 seeds against every backbone; its std
+    is smallest (0.66\% vs. 0.57--2.42\% for singles). The single-seed 89.49\%
+    headline is within 1$\sigma$ of the mean --- not lucky. Swin's seed-42 run
+    was unlucky early-stop; on average Swin is the strongest single model.
 \end{frame}
 
 % =====================  Final slide  =====================

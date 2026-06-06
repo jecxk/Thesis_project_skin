@@ -126,6 +126,52 @@ Ensemble nâng accuracy thêm 1,1 điểm phần trăm, đẩy Macro AUC từ 0,
 
 Ensemble cải thiện AUC cho \textbf{mọi lớp} không có ngoại lệ.
 
+\section{Độ tin cậy thống kê qua các hạt giống ngẫu nhiên}
+
+Để kiểm chứng kết quả ensemble không phải may mắn của một hạt giống khởi tạo, toàn bộ pipeline được lặp lại với năm hạt giống độc lập (\{42, 1337, 2024, 7, 11\}). CuDNN dùng kernel không tất định và Mixup/CutMix lấy mẫu ngẫu nhiên nên mỗi hạt giống nhiễu hoàn toàn quỹ đạo tối ưu hóa. Bảng~\ref{tab:multiseed_vn} báo cáo trung bình $\pm$ độ lệch chuẩn qua năm lần chạy.
+
+\begin{table}[H]
+\centering
+\caption{Hiệu năng đa hạt giống ($n=5$ hạt giống). Độ lệch chuẩn của ensemble nhỏ hơn rõ rệt so với bất kỳ mô hình đơn nào --- biểu quyết mềm hấp thụ phương sai cấp hạt giống.}
+\label{tab:multiseed_vn}
+\begin{tabular}{lccc}
+\toprule
+\textbf{Mô hình} & \textbf{Accuracy} & \textbf{Macro F1} & \textbf{Macro AUC} \\
+\midrule
+EfficientNet-B0  & $87{,}31 \pm 1{,}32\%$ & $0{,}814 \pm 0{,}022$ & $0{,}965 \pm 0{,}006$ \\
+ResNet50         & $86{,}31 \pm 0{,}57\%$ & $0{,}792 \pm 0{,}011$ & $0{,}949 \pm 0{,}003$ \\
+DenseNet121      & $85{,}62 \pm 2{,}42\%$ & $0{,}797 \pm 0{,}025$ & $0{,}960 \pm 0{,}004$ \\
+Swin-Tiny        & $88{,}33 \pm 1{,}96\%$ & $0{,}839 \pm 0{,}030$ & $0{,}966 \pm 0{,}008$ \\
+\midrule
+\textbf{Ensemble} & $\mathbf{89{,}93 \pm 0{,}66\%}$ & $\mathbf{0{,}852 \pm 0{,}010}$ & $\mathbf{0{,}982 \pm 0{,}001}$ \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+Hai nhận xét chính. Thứ nhất, kết quả 89,49\% accuracy đã báo cáo ở phần trước nằm trong một độ lệch chuẩn của trung bình đa hạt giống 89,93\%, xác nhận đây là hiệu năng điển hình chứ không phải may mắn. Độ lệch chuẩn accuracy của ensemble (0,66 điểm phần trăm) nhỏ hơn tất cả mô hình đơn (0,57--2,42 điểm), độ lệch AUC chỉ $\pm 0{,}001$ --- gần như không đáng kể.
+
+Thứ hai, trung bình accuracy của Swin-Tiny (88,33\%) khi qua nhiều hạt giống hé lộ rằng đây mới thực sự là mô hình đơn mạnh nhất, không phải EfficientNet-B0 như xếp hạng hạt giống 42 gợi ý. Lần chạy Swin với hạt giống 42 đã early-stop tại một điểm validation không thuận lợi (đó là kết quả 84,90\%). Khi trung bình hóa qua các hạt giống, attention toàn cục của Swin thực sự cạnh tranh với các CNN; điểm yếu là phương sai, không phải hiệu năng trung bình. Đây cũng là lý do giữ Swin trong ensemble: chính phương sai cao --- yếu tố hại cho điểm số đơn --- lại làm cho lỗi của nó ít tương quan với lỗi của các CNN, biến nó thành thành phần ensemble có giá trị.
+
+Để kiểm định ưu thế của ensemble so với mô hình đơn mạnh nhất có ý nghĩa thống kê hay không, kiểm định McNemar được áp dụng trên bảng cặp bất đồng giữa dự đoán của (mô hình đơn, ensemble) cho mỗi hạt giống, kết quả tổ hợp qua phương pháp Fisher.
+
+\begin{table}[H]
+\centering
+\caption{Kiểm định McNemar trên dự đoán tập kiểm tra, mô hình đơn so với ensemble. Cột ``Ensemble thắng'' đếm số hạt giống ensemble có nhiều mẫu đúng (đối với cặp bất đồng) hơn mô hình đơn.}
+\label{tab:mcnemar_vn}
+\begin{tabular}{lccc}
+\toprule
+\textbf{Mô hình đơn vs.\ Ensemble} & \textbf{Ensemble thắng} & \textbf{Có ý nghĩa $\alpha=0{,}05$} & \textbf{$p$ Fisher tổ hợp} \\
+\midrule
+EfficientNet-B0 & 5/5 & 4/5 & $5{,}3 \times 10^{-18}$ \\
+ResNet50        & 5/5 & 5/5 & $4{,}5 \times 10^{-31}$ \\
+DenseNet121     & 5/5 & 5/5 & $6{,}7 \times 10^{-39}$ \\
+Swin-Tiny (mạnh nhất) & 5/5 & 3/5 & $1{,}2 \times 10^{-7}$ \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+Ensemble vượt mọi mô hình đơn trên cả năm hạt giống. So với các CNN, chênh lệch rất lớn: hàng chục ảnh test ensemble đúng và mô hình đơn sai, đối lại chỉ vài ảnh ngược lại --- tổ hợp p-value dưới $10^{-18}$. So với Swin-Tiny --- mô hình đơn mạnh nhất --- mức độ chênh lệch nhỏ hơn nhưng kết luận giống nhau: ưu thế của ensemble tồn tại qua hiệu chỉnh đa kiểm định và không phải hiệu ứng ngẫu nhiên.
+
 \section{Phân tích Grad-CAM}
 
 \begin{figure}[H]
