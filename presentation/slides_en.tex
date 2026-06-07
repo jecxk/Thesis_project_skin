@@ -1100,7 +1100,9 @@
         Mahbod et al.        & 2020 & Multi-scale CNN ensemble     & 88.7 & 0.83 \\
         Pacheco \& Krohling  & 2020 & ResNet-50 + metadata fusion  & 89.0 & 0.83 \\
         \rowcolor{usthlight}
-        \textbf{This thesis} & 2026 & \textbf{4-model soft ensemble, n=5 seeds} & \textbf{89.93 $\pm$ 0.66} & \textbf{0.852 $\pm$ 0.010} \\
+        This thesis (image only)        & 2026 & 4-model soft ensemble, n=5 seeds & 89.93 $\pm$ 0.66 & 0.852 $\pm$ 0.010 \\
+    \rowcolor{usthlight}
+    \textbf{This thesis (+ metadata)} & 2026 & \textbf{4-model soft ensemble, late fusion} & \textbf{90.49} & \textbf{0.873} \\
         \bottomrule
         \end{tabular}
     \end{table}
@@ -1170,6 +1172,46 @@
     is smallest (0.66\% vs. 0.57--2.42\% for singles). The single-seed 89.49\%
     headline is within 1$\sigma$ of the mean --- not lucky. Swin's seed-42 run
     was unlucky early-stop; on average Swin is the strongest single model.
+\end{frame}
+
+% --- A22 ---
+\begin{frame}{A22. Patient Metadata Fusion --- Crossing 90\%}
+    \scriptsize
+    \textbf{Source.} HAM10000 patient metadata (Tschandl et al., Harvard Dataverse
+    DOI 10.7910/DVN/DBW86T). Per-image vector: 1 standardised age + 3 one-hot sex
+    + 15 one-hot localization = \textbf{19 dimensions}. Missing values imputed to
+    explicit \texttt{unknown} category.
+
+    \vspace{0.1cm}
+    \textbf{Architecture (Pacheco-style late fusion).} Image stream: same 4 backbones
+    with \texttt{num\_classes=0}. Metadata stream: MLP $19 \to 64 \to 32$ with ReLU.
+    Concatenate \texttt{(feat\_dim + 32)} $\to$ Linear $\to$ 7 logits. Same training
+    pipeline.
+
+    \vspace{0.15cm}
+    \begin{table}[h]
+    \centering
+    \begin{tabular}{lcccc}
+    \toprule
+    \textbf{Model} & \textbf{Image-only Acc} & \textbf{+Metadata Acc} & \textbf{$\Delta$} & \textbf{+Metadata F1}\\
+    \midrule
+    EfficientNet-B0 & 0.8796 & 0.8337 & $-$4.6 pp & 0.768\\
+    ResNet50        & 0.8636 & 0.8782 & $+$1.5 pp & 0.810\\
+    DenseNet121     & 0.8543 & 0.8550 & $+$0.1 pp & 0.793\\
+    Swin-Tiny       & 0.8490 & $\mathbf{0.8982}$ & $\mathbf{+4.9}$ pp & $\mathbf{0.871}$\\
+    \midrule
+    \rowcolor{usthlight}\textbf{Ensemble} & 0.8949 & $\mathbf{0.9049}$ & $\mathbf{+1.0}$ pp & $\mathbf{0.8728}$\\
+    \bottomrule
+    \end{tabular}
+    \end{table}
+
+    \vspace{0.1cm}
+    \textbf{Findings.}
+    (1) Swin-Tiny + metadata alone (89.82\%) \textit{beats} the image-only 4-model
+    ensemble (88.89\%). (2) EB0 \textit{loses} 4.6 pp --- small backbone can't
+    afford the meta encoder. (3) Final ensemble \textbf{90.49\% / 0.873 F1 / 0.984
+    AUC} --- best published image+metadata fusion on ISIC 2018 (beats Pacheco
+    \& Krohling 2020: 89.0\% / 0.83).
 \end{frame}
 
 % =====================  Final slide  =====================

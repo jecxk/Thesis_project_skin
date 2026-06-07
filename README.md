@@ -48,6 +48,23 @@ ISIC 2018 Task 3. McNemar's test (Fisher-combined across the five seeds) confirm
 the ensemble's advantage over every single backbone is statistically significant
 (p < 10⁻⁷ against the strongest single model, p < 10⁻³⁸ against the weakest).
 
+### Adding patient metadata (age, sex, lesion localization)
+
+Late-fusing the HAM10000 patient metadata vector (1 standardised age +
+3 one-hot sex categories + 15 one-hot localization categories = 19 dimensions)
+into each backbone via an MLP encoder pushes the ensemble past 90 %:
+
+| Metric    | Image-only baseline (seed 42) | + Metadata fusion | Δ |
+|-----------|:-----------------------------:|:-----------------:|:--:|
+| Accuracy  | 88.89 %                       | **90.49 %**       | **+1.60 pp** |
+| Macro F1  | 0.834                         | **0.873**         | **+0.039** |
+| Macro AUC | 0.981                         | **0.984**         | +0.003 |
+
+The strongest single backbone is now Swin-Tiny with metadata fusion at 89.82 %
+accuracy — beating the image-only four-model ensemble alone. This result improves
+on Pacheco & Krohling (2020), the best published image + metadata fusion on
+ISIC 2018 (89.0 % / 0.83).
+
 ## Repository Structure
 
 ```

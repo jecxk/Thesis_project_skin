@@ -1,0 +1,63 @@
+{
+  "age_mean": 51.863828077927295,
+  "age_std": 16.96776166198128,
+  "sex_categories": [
+    "male",
+    "female",
+    "unknown"
+  ],
+  "localization_categories": [
+    "abdomen",
+    "acral",
+    "back",
+    "chest",
+    "ear",
+    "face",
+    "foot",
+    "genital",
+    "hand",
+    "lower extremity",
+    "neck",
+    "scalp",
+    "trunk",
+    "upper extremity",
+    "unknown"
+  ],
+  "feature_dim": 19,
+  "feature_layout": [
+    {
+      "name": "age_standardised",
+      "dim": 1
+    },
+    {
+      "name": "sex_onehot",
+      "dim": 3,
+      "categories": [
+        "male",
+        "female",
+        "unknown"
+      ]
+    },
+    {
+      "name": "localization_onehot",
+      "dim": 15,
+      "categories": [
+        "abdomen",
+        "acral",
+        "back",
+        "chest",
+        "ear",
+        "face",
+        "foot",
+        "genital",
+        "hand",
+        "lower extremity",
+        "neck",
+        "scalp",
+        "trunk",
+        "upper extremity",
+        "unknown"
+      ]
+    }
+  ]
+}

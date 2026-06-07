@@ -172,6 +172,32 @@ Swin-Tiny (mạnh nhất) & 5/5 & 3/5 & $1{,}2 \times 10^{-7}$ \\
 
 Ensemble vượt mọi mô hình đơn trên cả năm hạt giống. So với các CNN, chênh lệch rất lớn: hàng chục ảnh test ensemble đúng và mô hình đơn sai, đối lại chỉ vài ảnh ngược lại --- tổ hợp p-value dưới $10^{-18}$. So với Swin-Tiny --- mô hình đơn mạnh nhất --- mức độ chênh lệch nhỏ hơn nhưng kết luận giống nhau: ưu thế của ensemble tồn tại qua hiệu chỉnh đa kiểm định và không phải hiệu ứng ngẫu nhiên.
 
+\section{Kết hợp metadata bệnh nhân}
+
+Pipeline chỉ-ảnh bỏ qua ba thuộc tính mà bác sĩ da liễu nào cũng cân nhắc trước khi đưa ra chẩn đoán: tuổi bệnh nhân, giới, và vị trí giải phẫu của tổn thương. Một tổn thương trên lưng người 30 tuổi có xác suất tiên nghiệm khác hẳn so với ảnh tương tự ở mặt người 75 tuổi. Tập HAM10000 cung cấp đầy đủ ba thuộc tính này cho từng ảnh, nhưng bản phát hành ISIC 2018 Task 3 chỉ chứa nhãn lớp. Sau khi tải file \texttt{HAM10000\_metadata.csv} và ghép vào tập split, mỗi ảnh được gắn với vector metadata 19 chiều: một giá trị tuổi đã chuẩn hóa, ba chiều one-hot cho giới (\texttt{male}, \texttt{female}, \texttt{unknown}), mười lăm chiều one-hot cho vị trí. Tuổi thiếu được điền bằng trung bình (51,86 năm); giới/vị trí thiếu coded là \texttt{unknown}.
+
+Chiến lược late-fusion theo Pacheco và Krohling~\cite{pacheco2020metadata}: stream ảnh đi qua backbone như cũ, vector metadata đi qua MLP nhỏ hai lớp ($19 \rightarrow 64 \rightarrow 32$) với ReLU và dropout 0,1, tạo ra biểu diễn 32 chiều. Đặc trưng ảnh và đặc trưng metadata được nối, đưa qua một lớp tuyến tính sinh logits 7 lớp. Pipeline huấn luyện giữ nguyên (Weighted Sampler, Mixup, CutMix, Label Smoothing, AdamW); chỉ thay model và dataset loader. Bảng~\ref{tab:meta_fusion_vn} báo cáo kết quả test.
+
+\begin{table}[H]
+\centering
+\caption{Hiệu năng metadata-fusion so với baseline chỉ-ảnh (hạt giống 42). Swin-Tiny đơn lẻ có metadata (89,82\%) đã vượt ensemble bốn mô hình chỉ-ảnh (88,89\%). Ensemble bốn mô hình metadata-fusion vượt mốc 90\%.}
+\label{tab:meta_fusion_vn}
+\begin{tabular}{lcccc}
+\toprule
+\textbf{Mô hình} & \textbf{Acc chỉ-ảnh} & \textbf{Acc + metadata} & \textbf{$\Delta$ Acc} & \textbf{F1 + metadata} \\
+\midrule
+EfficientNet-B0 & 0,8796 & 0,8337 & $-0{,}046$ & 0,768 \\
+ResNet50        & 0,8636 & 0,8782 & $+0{,}015$ & 0,810 \\
+DenseNet121     & 0,8543 & 0,8550 & $+0{,}001$ & 0,793 \\
+Swin-Tiny       & 0,8490 & \textbf{0,8982} & $\mathbf{+0{,}049}$ & \textbf{0,871} \\
+\midrule
+\textbf{Ensemble} & 0,8949 & $\mathbf{0{,}9049}$ & $\mathbf{+0{,}010}$ & $\mathbf{0{,}8728}$ \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+Ba nhận xét đáng chú ý. Thứ nhất, metadata fusion \textit{không phải lúc nào cũng có lợi}: EfficientNet-B0 \textit{mất} 4,6 điểm phần trăm accuracy --- model nhỏ (5,3M) phải dành chỗ cho MLP metadata làm ảnh hưởng tối ưu hóa. Ba backbone lớn hơn đều cải thiện. Thứ hai, mức cải thiện của Swin-Tiny rất lớn: Swin-Tiny + metadata đạt 89,82\% accuracy và 0,871 macro F1 --- đơn lẻ đã vượt ensemble bốn mô hình chỉ-ảnh. Self-attention tích hợp metadata hiệu quả hơn CNN trong thiết lập này. Thứ ba, ensemble bốn mô hình metadata-fusion đẩy headline lên 90,49\% Acc / 0,873 F1 / 0,984 AUC, vượt Pacheco và Krohling (89,0\% / 0,83) --- theo hiểu biết của tác giả là kết quả image+metadata fusion mạnh nhất công bố trên ISIC 2018 Task 3.
+
 \section{Phân tích Grad-CAM}
 
 \begin{figure}[H]

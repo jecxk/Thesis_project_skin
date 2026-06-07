@@ -20,7 +20,6 @@ from __future__ import annotations
 
 import argparse
 import time
-from pathlib import Path
 
 import numpy as np
 import pandas as pd
@@ -141,7 +140,9 @@ def evaluate_one_epoch_meta(model, loader, criterion, device, amp):
             logits = model(images, meta)
             loss = criterion(logits, targets)
         losses.append(loss.item())
-        probs = F.softmax(logits, dim=1).cpu()
+        # Cast to float32 before softmax — FP16 probs lose precision below
+        # ~1e-4 and pandas .round(6) overflows them to NaN downstream.
+        probs = F.softmax(logits.float(), dim=1).cpu()
         all_probs.append(probs)
         all_p.extend(probs.argmax(dim=1).tolist())
         all_t.extend(targets.cpu().tolist())

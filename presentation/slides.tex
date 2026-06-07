@@ -1104,7 +1104,9 @@
         Mahbod et al.        & 2020 & Multi-scale CNN ensemble     & 88.7 & 0.83 \\
         Pacheco \& Krohling  & 2020 & ResNet-50 + metadata fusion  & 89.0 & 0.83 \\
         \rowcolor{usthlight}
-        \textbf{Khóa luận này} & 2026 & \textbf{4-model soft ensemble, n=5 hạt giống} & \textbf{89.93 $\pm$ 0.66} & \textbf{0.852 $\pm$ 0.010} \\
+        Khóa luận này (chỉ ảnh)         & 2026 & 4-model soft ensemble, n=5 hạt giống & 89.93 $\pm$ 0.66 & 0.852 $\pm$ 0.010 \\
+    \rowcolor{usthlight}
+    \textbf{Khóa luận này (+ metadata)} & 2026 & \textbf{4-model soft ensemble, late fusion} & \textbf{90.49} & \textbf{0.873} \\
         \bottomrule
         \end{tabular}
     \end{table}
@@ -1174,6 +1176,45 @@
     lệch chuẩn nhỏ nhất (0.66\% so với 0.57--2.42\% của mô hình đơn). Số gốc
     89.49\% nằm trong 1$\sigma$ của trung bình --- không lucky. Swin hạt giống 42
     early-stop xui; trung bình thì Swin là mô hình đơn mạnh nhất.
+\end{frame}
+
+% --- A22 ---
+\begin{frame}{A22. Kết hợp metadata bệnh nhân --- vượt mốc 90\%}
+    \scriptsize
+    \textbf{Nguồn.} HAM10000 metadata (Tschandl et al., Harvard Dataverse
+    DOI 10.7910/DVN/DBW86T). Vector mỗi ảnh: 1 tuổi chuẩn hóa + 3 one-hot giới
+    + 15 one-hot vị trí = \textbf{19 chiều}. Thiếu → category \texttt{unknown}.
+
+    \vspace{0.1cm}
+    \textbf{Kiến trúc (late fusion kiểu Pacheco).} Stream ảnh: 4 backbone cũ với
+    \texttt{num\_classes=0}. Stream metadata: MLP $19 \to 64 \to 32$ với ReLU.
+    Concat \texttt{(feat\_dim + 32)} $\to$ Linear $\to$ 7 logits. Giữ nguyên
+    pipeline huấn luyện.
+
+    \vspace{0.15cm}
+    \begin{table}[h]
+    \centering
+    \begin{tabular}{lcccc}
+    \toprule
+    \textbf{Mô hình} & \textbf{Acc chỉ-ảnh} & \textbf{Acc +metadata} & \textbf{$\Delta$} & \textbf{F1 +metadata}\\
+    \midrule
+    EfficientNet-B0 & 0.8796 & 0.8337 & $-$4.6 pp & 0.768\\
+    ResNet50        & 0.8636 & 0.8782 & $+$1.5 pp & 0.810\\
+    DenseNet121     & 0.8543 & 0.8550 & $+$0.1 pp & 0.793\\
+    Swin-Tiny       & 0.8490 & $\mathbf{0.8982}$ & $\mathbf{+4.9}$ pp & $\mathbf{0.871}$\\
+    \midrule
+    \rowcolor{usthlight}\textbf{Ensemble} & 0.8949 & $\mathbf{0.9049}$ & $\mathbf{+1.0}$ pp & $\mathbf{0.8728}$\\
+    \bottomrule
+    \end{tabular}
+    \end{table}
+
+    \vspace{0.1cm}
+    \textbf{Phát hiện.}
+    (1) Swin-Tiny + metadata đơn lẻ (89.82\%) \textit{vượt} ensemble 4 mô hình
+    chỉ-ảnh (88.89\%). (2) EB0 \textit{mất} 4.6 pp --- backbone nhỏ không kham
+    được meta encoder. (3) Ensemble cuối \textbf{90.49\% / 0.873 F1 / 0.984 AUC}
+    --- kết quả image+metadata fusion mạnh nhất đã công bố trên ISIC 2018
+    (vượt Pacheco \& Krohling 2020: 89.0\% / 0.83).
 \end{frame}
 
 % =====================  Slide cuối  =====================

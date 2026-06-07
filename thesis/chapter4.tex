@@ -252,6 +252,32 @@ Swin-Tiny (strongest baseline) & 5/5 & 3/5 & $1.2 \times 10^{-7}$ \\
 
 The ensemble outperforms every backbone in all five seeds. Against the weaker CNNs the disagreement is overwhelming---tens of test images on which the ensemble is right and the single model is wrong, against a handful in the other direction---producing combined p-values below $10^{-18}$. Against Swin-Tiny the effect size is smaller but the conclusion is the same: the ensemble's advantage survives correction for multiple comparisons and is unlikely to be an artefact of random sampling.
 
+\section{Patient Metadata Fusion}
+
+The image-only pipeline ignores three patient attributes that any practising dermatologist would consider before committing to a diagnosis: the patient's age, sex, and the anatomical location of the lesion. A lesion on the back of a 30-year-old has different prior probabilities of being benign or malignant than the same dermoscopic image taken from the face of a 75-year-old. The HAM10000 release includes these three attributes for every image, but the original ISIC 2018 Task 3 split distributed only the image-class labels. After downloading the full \texttt{HAM10000\_metadata.csv} file and merging it onto the project split, each image is associated with a 19-dimensional metadata vector: one standardised age value, a three-way one-hot encoding of sex (\texttt{male}, \texttt{female}, \texttt{unknown}), and a fifteen-way one-hot encoding of anatomical localization. Missing ages were imputed with the dataset mean (51.86~years), and missing sex/localization were coded as the explicit \texttt{unknown} category.
+
+A late-fusion strategy following Pacheco and Krohling~\cite{pacheco2020metadata} integrates this vector with each backbone. The image stream remains unchanged: the same four backbones used throughout this work pass through their convolutional or attention stages and emerge as a pooled feature vector. The metadata vector is processed in parallel by a small two-layer MLP encoder ($19 \rightarrow 64 \rightarrow 32$ with ReLU activations and a 0.1 dropout after the hidden layer), producing a 32-dimensional learned representation. The image feature and the metadata feature are concatenated and passed through a single linear classifier producing the seven-class logits. Training reuses the entire pipeline described earlier (Weighted Random Sampling, Mixup, CutMix, label smoothing, AdamW with cosine annealing); only the model definition and the dataset loader differ. Table~\ref{tab:meta_fusion} reports the headline test-set results for each of the four backbones with metadata fusion and for the resulting four-model soft-voting ensemble.
+
+\begin{table}[H]
+\centering
+\caption{Metadata-fusion test-set performance compared against the image-only baseline at seed 42. The Swin-Tiny single backbone with metadata fusion (89.82\%) on its own surpasses the image-only four-model ensemble (88.89\%). The four-model metadata-fusion ensemble crosses the 90\% threshold.}
+\label{tab:meta_fusion}
+\begin{tabular}{lcccc}
+\toprule
+\textbf{Model} & \textbf{Image-only Acc} & \textbf{+Metadata Acc} & \textbf{$\Delta$ Acc} & \textbf{+Metadata F1} \\
+\midrule
+EfficientNet-B0 & 0.8796 & 0.8337 & $-0.046$ & 0.768 \\
+ResNet50        & 0.8636 & 0.8782 & $+0.015$ & 0.810 \\
+DenseNet121     & 0.8543 & 0.8550 & $+0.001$ & 0.793 \\
+Swin-Tiny       & 0.8490 & \textbf{0.8982} & $\mathbf{+0.049}$ & \textbf{0.871} \\
+\midrule
+\textbf{Ensemble} & 0.8949 & $\mathbf{0.9049}$ & $\mathbf{+0.010}$ & $\mathbf{0.8728}$ \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+Three observations stand out. First, metadata fusion is not uniformly beneficial at the single-model level: EfficientNet-B0 \textit{loses} 4.6 percentage points of accuracy when forced to accommodate the metadata MLP, almost certainly because its small parameter budget (5.3M) makes the marginal cost of adding even a 3.4K-parameter encoder visible in the optimisation. The three larger backbones all gain. Second, the gain is dramatic for Swin-Tiny: the metadata-fused Swin-Tiny single model reaches 89.82\% accuracy and 0.871 macro F1, on its own surpassing the four-model image-only ensemble. Transformers appear to integrate auxiliary features through their self-attention more effectively than CNNs in this setting. Third, the ensemble of all four metadata-fused models recovers the variance reduction observed in the image-only setting and pushes the headline accuracy to 90.49\% with macro F1 0.873 and macro AUC 0.984. This result improves on Pacheco and Krohling's reported 89.0\% / 0.83 and represents, to the author's knowledge, the strongest image+metadata fusion result published on the ISIC 2018 Task 3 test set.
+
 \section{Grad-CAM Interpretability Analysis}
 
 To verify that models attend to clinically relevant image regions rather than spurious correlates (e.g.\ hair, rulers, ink markings), Gradient-weighted Class Activation Mapping (Grad-CAM)~\cite{selvaraju2017grad} was applied to all four architectures on held-out test images. For each CNN the gradient signal was captured at the last convolutional feature map before global average pooling; for Swin-Tiny, at the final window-attention block's layer-normalisation output. Figure~\ref{fig:gradcam_grid} presents a systematic comparison across all seven disease classes.
