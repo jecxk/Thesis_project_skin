@@ -1,0 +1,345 @@
+% !TEX program = xelatex
+\documentclass[11pt,a4paper]{article}
+
+\usepackage[a4paper,top=2cm,bottom=2.2cm,left=2.2cm,right=2.2cm]{geometry}
+\usepackage{fontspec}
+\usepackage{polyglossia}
+\setdefaultlanguage{vietnamese}
+\setotherlanguage{english}
+\setmainfont{Times New Roman}
+\setmonofont{Consolas}[Scale=0.92]
+
+\usepackage{amsmath, amssymb}
+\usepackage{xcolor}
+\usepackage{tcolorbox}
+\usepackage{enumitem}
+\usepackage{titlesec}
+\usepackage[hidelinks]{hyperref}
+
+\definecolor{usthblue}{HTML}{0054A6}
+\definecolor{usthdark}{HTML}{003366}
+\definecolor{qbox}{HTML}{FFF8E6}
+\definecolor{qborder}{HTML}{E5C97A}
+
+\titleformat{\section}{\Large\bfseries\color{usthblue}}{Câu \thesection.}{0.5em}{}
+\titleformat{\subsection}{\normalsize\bfseries\color{usthdark}}{}{0pt}{}
+\titlespacing*{\section}{0pt}{20pt}{8pt}
+\titlespacing*{\subsection}{0pt}{12pt}{4pt}
+
+\newtcolorbox{question}{
+  colback=qbox, colframe=qborder, boxrule=0.6pt,
+  arc=4pt, left=10pt, right=10pt, top=6pt, bottom=6pt,
+  title={\textit{Câu hỏi}}, fonttitle=\bfseries\color{black!70},
+  before skip=8pt, after skip=8pt
+}
+\newtcolorbox{answer}{
+  colback=blue!4, colframe=usthblue!50, boxrule=0.6pt,
+  arc=4pt, left=10pt, right=10pt, top=6pt, bottom=6pt,
+  title={\textit{Câu trả lời}}, fonttitle=\bfseries\color{usthblue},
+  before skip=8pt, after skip=8pt
+}
+\newtcolorbox{tip}{
+  colback=gray!5, colframe=gray!40, boxrule=0.4pt,
+  arc=3pt, left=8pt, right=8pt, top=4pt, bottom=4pt,
+  title={\footnotesize \textit{Mẹo trả lời}}, fonttitle=\bfseries\color{black!60},
+  before skip=6pt, after skip=6pt
+}
+
+\setlength{\parskip}{4pt}
+\setlength{\parindent}{0pt}
+
+\title{
+  \vspace{-1.5cm}
+  \color{usthblue}\Large\textbf{Q\&A chuẩn bị cho buổi bảo vệ}\\[4pt]
+  \color{black!75}\normalsize Mười câu hỏi khó nhất + cách trả lời
+}
+\author{Nguyễn Trọng Bách --- 23BI14057}
+\date{}
+
+\begin{document}
+\maketitle
+\vspace{-0.8cm}
+
+{\hypersetup{linkcolor=black}\tableofcontents}
+\newpage
+
+% =============================================================
+\section{Tại sao soft voting mà không stacking hay learned weights?}
+
+\begin{question}
+``Em chọn soft voting trung bình xác suất bốn mô hình. Sao không học trọng số ensemble (stacking, meta-learner)? Có thể tốt hơn không?''
+\end{question}
+
+\begin{answer}
+Em đã cân nhắc cả ba phương án. Em chọn soft voting vì \textbf{ba lý do thực tế}:
+
+\textbf{Thứ nhất}, stacking cần một validation set thứ hai để fit meta-learner --- nếu dùng cùng val set đã chọn checkpoint thì meta-learner học \textit{quirks} của val set chứ không phải tín hiệu thật, dẫn đến overfit. Tập ISIC 2018 đã nhỏ, lấy thêm một mảnh val đồng nghĩa lấy data train ra, không đáng đánh đổi.
+
+\textbf{Thứ hai}, hard voting (argmax từng mô hình rồi vote) mất thông tin xác suất. Soft voting giữ trọn vector $p_m(x) \in [0,1]^7$, cho phép ensemble phân biệt giữa ``cả 4 mô hình rất chắc MEL'' và ``2 mô hình MEL 51\%, 2 mô hình NV 49\%''. Sự khác biệt này quan trọng lâm sàng.
+
+\textbf{Thứ ba}, soft voting đã đạt 89.49\% in-distribution và 90.49\% với metadata. McNemar test cho thấy soft voting vượt mọi mô hình đơn với $p < 10^{-7}$ so với mô hình mạnh nhất. Không có \textit{headroom} rõ ràng để stacking phá được, mà stacking lại tăng chi phí inference.
+\end{answer}
+
+\begin{tip}
+Nếu thầy/cô hỏi tiếp ``vẫn nghĩ stacking sẽ tốt hơn'' --- đồng ý là có thể, nhưng nói rõ là ``em đã ưu tiên tính tái lập và đơn giản với kết quả đã ngang SOTA, stacking là hướng tiếp theo nếu có thêm thời gian/data.''
+\end{tip}
+
+% =============================================================
+\section{Làm sao biết Grad-CAM là ``đúng''?}
+
+\begin{question}
+``Heatmap đỏ vàng thì ai cũng thấy đẹp. Làm sao em biết mô hình thực sự nhìn vào tổn thương chứ không phải artifact trùng vị trí?''
+\end{question}
+
+\begin{answer}
+Em không dừng ở định tính. Em đo \textbf{bốn chỉ số định lượng} so với mask lesion (sinh từ Otsu threshold) trên \textit{toàn bộ test set}:
+
+\begin{itemize}[leftmargin=*]
+  \item \texttt{focus\_ratio} — tỉ lệ tổng activation nằm trong mask lesion. Cao = focus đúng. Cả 4 mô hình đạt $> 0.6$.
+  \item \texttt{peak\_distance} — khoảng cách từ peak activation tới centroid lesion (normalize theo đường chéo). Thấp = focus đúng tâm. Cả 4 mô hình đạt $< 0.2$.
+  \item \texttt{entropy} — Shannon entropy của heatmap. Thấp = focus sắc nét.
+  \item \texttt{coverage\_75} — \% diện tích chứa top-25\% activation. Thấp = compact.
+\end{itemize}
+
+Đây là cải tiến so với nhiều công trình chỉ show heatmap mà không định lượng. Bài học em rút ra từ chính việc này: lần đầu dùng \texttt{model.bn2} của EfficientNet, \texttt{focus\_ratio} chỉ 0.18 --- heatmap xanh đồng đều. Em chuyển sang \texttt{blocks[-1][-1]}, \texttt{focus\_ratio} lên 0.51 --- mới thực sự khoanh tổn thương. Nếu không có định lượng, sai lầm \texttt{bn2} sẽ trượt qua.
+\end{answer}
+
+\begin{tip}
+Nhấn mạnh chuyện ``định lượng phát hiện bug'' --- show được tư duy khoa học chứ không phải chỉ chạy code.
+\end{tip}
+
+% =============================================================
+\section{Macro F1 vs balanced accuracy khác gì? Tại sao chọn Macro F1?}
+
+\begin{question}
+``Em báo cáo Macro F1 chứ không phải balanced accuracy. Hai cái khác nhau thế nào? Tại sao chọn cái này?''
+\end{question}
+
+\begin{answer}
+\textbf{Balanced accuracy} = trung bình recall theo lớp. Chỉ nhìn recall, bỏ qua precision.
+
+\textbf{Macro F1} = trung bình F1 theo lớp = trung bình điều hòa của precision \textit{và} recall.
+
+\textbf{Khác biệt thực tiễn}: balanced accuracy chỉ phạt mô hình \textit{bỏ sót} (false negative). Macro F1 phạt cả \textit{báo động giả} (false positive). Trên data mất cân bằng 58:1, mô hình có thể đạt balanced accuracy cao bằng cách dự đoán DF cho mọi ảnh mơ hồ --- recall DF lên 100\%, balanced accuracy tăng, nhưng precision DF sụp đổ. Macro F1 bắt được điều đó.
+
+Em chọn Macro F1 vì trong lâm sàng \textit{cả hai loại lỗi đều có chi phí}: bỏ sót MEL nguy hiểm, nhưng báo động giả cũng gây sinh thiết không cần thiết, tăng chi phí và stress cho bệnh nhân.
+
+Trong báo cáo em vẫn đưa cả Sensitivity (= Recall) và Specificity (= 1 $-$ false positive rate) per-class để có bức tranh đầy đủ.
+\end{answer}
+
+% =============================================================
+\section{Tại sao Swin-Tiny overfit nhanh hơn các CNN?}
+
+\begin{question}
+``Swin-Tiny early-stop ở epoch 13 trong khi các CNN chạy tới 39--49. Em giải thích thế nào?''
+\end{question}
+
+\begin{answer}
+Ba lý do cộng dồn:
+
+\textbf{(1) Thiếu inductive bias.} CNN có sẵn translation invariance và locality vì kernel conv \textit{cố định kích thước}. Transformer học cả hai \textit{từ data}, nên cần data nhiều hơn để hội tụ. ISIC 2018 chỉ 7.010 ảnh train --- nhỏ so với chuẩn computer vision (ImageNet 1.28M).
+
+\textbf{(2) Tỉ lệ tham số/sample cực cao.} Swin-Tiny 28M tham số / 7.010 ảnh = \textbf{4.000$\times$}. Cực kỳ dễ overfit. So với EB0 5.3M tham số = 756$\times$, hợp lý hơn nhiều.
+
+\textbf{(3) Self-attention bậc 2.} Mọi cặp patch đều attend lẫn nhau, dễ ``ghi nhớ'' cấu trúc không gian cụ thể của ảnh train.
+
+Em đã cố giảm thiểu: learning rate thấp 1e-4 (CNN dùng 3e-4) để không phá pretrained attention weights, weight decay cao 5e-2 (CNN dùng 1e-3) để regularize mạnh, warmup 5 epoch (CNN 3 epoch). Early stop patience 12 bắt được checkpoint epoch 13.
+
+Mặt tích cực: Swin trên đa hạt giống có \textbf{accuracy trung bình cao nhất} (88.33\% so với EB0 87.31\%) --- early-stop sớm không có nghĩa là kém, chỉ là \textit{phương sai cao hơn}. Trong ensemble, phương sai cao + lỗi không tương quan với CNN = thành phần có giá trị.
+\end{answer}
+
+% =============================================================
+\section{Nếu cho ảnh ngoài 7 lớp (vd. nốt mụn) thì sao?}
+
+\begin{question}
+``Em chỉ train 7 lớp. Nếu bệnh nhân chụp ảnh mụn trứng cá, vết sẹo --- mô hình sẽ làm gì?''
+\end{question}
+
+\begin{answer}
+Mô hình \textbf{buộc phải gán} một trong 7 lớp với softmax tổng bằng 1 --- không có lớp ``other''. Đây là điểm yếu thật sự của mọi classifier closed-set.
+
+Hai giải pháp em đã tích hợp:
+
+\textbf{Confidence threshold.} App Streamlit đặt ngưỡng 50\%; nếu top-1 dưới 50\% sẽ hiển thị cảnh báo ``Low confidence'' và đề xuất hỏi chuyên gia. Trong test set ISIC, tỉ lệ low-conf chỉ $\sim$2\%, nên cảnh báo không spam người dùng.
+
+\textbf{Predictive entropy.} App cũng tính entropy của vector xác suất. Entropy cao (gần $\log 7$) = mô hình không chắc giữa nhiều lớp = có thể là OOD. Em hiển thị entropy số trong app.
+
+Giải pháp đầy đủ hơn cho production: \textit{open-set classifier} hoặc \textit{OOD detector} riêng (ví dụ Mahalanobis distance trên features, hoặc Energy-based score). Em chưa triển khai vì đây là prototype --- đó là hướng phát triển hiển nhiên tiếp theo.
+\end{answer}
+
+\begin{tip}
+Đây là điểm \textbf{thầy cô YT/AI sẽ rất quan tâm}. Nói thẳng ``mô hình không biết khi không biết'' --- thừa nhận điểm yếu rồi nêu giải pháp. Nếu nói ``mô hình sẽ phân loại đúng lớp gần nhất'' là sai.
+\end{tip}
+
+% =============================================================
+\section{Bao nhiêu false negative MEL trong test? Tác động lâm sàng?}
+
+\begin{question}
+``Em báo F1 melanoma 0.744. Cụ thể, trong 167 ảnh MEL test, mô hình bỏ sót bao nhiêu? Hậu quả lâm sàng?''
+\end{question}
+
+\begin{answer}
+\textbf{Số liệu trên test set ISIC 2018:}
+\begin{itemize}[leftmargin=*]
+  \item Test set có 167 ảnh MEL thật.
+  \item Ensemble nhận đúng 124 ca → \textbf{43 false negative} (recall 0.740).
+  \item Trong 43 ca bỏ sót: 35 ca model gán nhầm là NV (nốt ruồi lành), 8 ca BKL.
+\end{itemize}
+
+\textbf{Tác động lâm sàng nếu deploy nguyên trạng:} với 100 bệnh nhân MEL thật đến khám, 74 được phát hiện đúng, 26 bị gán ``lành tính'' và có nguy cơ rời phòng khám mà không được sinh thiết. Đây là lý do prototype Streamlit \textbf{không bao giờ} thay thế chẩn đoán bác sĩ --- chỉ là second opinion.
+
+\textbf{Đã có hướng giảm:} threshold tuning với Youden's J (slide A18) hạ ngưỡng MEL từ 0.143 (mặc định) xuống 0.100 đẩy MEL Sensitivity từ 0.74 lên 0.83 --- bỏ sót giảm còn 17/100 thay vì 26/100. Đổi lại tăng false positive (specificity giảm từ 0.97 xuống 0.95 --- chấp nhận được trong lâm sàng vì bỏ sót MEL nguy hiểm hơn báo động giả nhiều).
+\end{answer}
+
+% =============================================================
+\section{Sao không Focal Loss thay Label Smoothing?}
+
+\begin{question}
+``Focal Loss cũng để xử lý mất cân bằng. Em đã thử chưa? Tại sao chọn Label Smoothing?''
+\end{question}
+
+\begin{answer}
+Em có thử cả hai. \texttt{src/models/losses.py} có cả \texttt{FocalLoss} class --- code sẵn sàng. Lý do em chọn Label Smoothing trong pipeline cuối:
+
+\textbf{Focal Loss} ($\mathrm{FL}(p) = -(1-p)^\gamma \log p$) tăng trọng số cho \textit{sample khó} trong batch. Trong dataset mà em đã có Weighted Sampler cân bằng lớp + Mixup/CutMix tạo sample lai mềm, focal loss tạo ra \textit{interaction phức tạp}: sample lai bằng Mixup có nhãn soft $[0, ..., 0.7, ..., 0.3]$, focal loss với nhãn soft không có công thức chính tắc, em phải tự chế. Kết quả: F1 dao động, không ổn định bằng cross-entropy + label smoothing.
+
+\textbf{Label Smoothing} đơn giản hơn: nhân nhãn one-hot với $(1-\varepsilon)$ rồi rải đều $\varepsilon/C$. Cross-entropy chuẩn của PyTorch xử lý nhãn soft natively (hỗ trợ \texttt{label\_smoothing} param), nên kết hợp Mixup/CutMix trơn tru. Ablation cho thấy bỏ Label Smoothing giảm F1 3.11\%.
+
+\textbf{Tóm lại}: chiến lược ``Weighted Sampler + Mixup/CutMix + Label Smoothing'' đủ để xử lý mất cân bằng (kết quả 89.5\% Acc, 0.845 F1) mà không cần thêm Focal Loss. Nếu chỉ chọn 1 trong 2 và \textit{không} có Mixup, Focal Loss có thể tốt hơn.
+\end{answer}
+
+% =============================================================
+\section{ECE bao nhiêu? Mô hình có calibrated không?}
+
+\begin{question}
+``Em báo Macro AUC cao 0.98. Nhưng AUC chỉ đo xếp hạng, không đo calibration. ECE của em bao nhiêu?''
+\end{question}
+
+\begin{answer}
+Em đo Expected Calibration Error (ECE) cho cả 4 mô hình và áp dụng temperature scaling (Guo et al., 2017):
+
+\begin{center}\small
+\begin{tabular}{lcc}
+\toprule
+\textbf{Mô hình} & \textbf{ECE trước} & \textbf{ECE sau temperature scaling} \\
+\midrule
+EfficientNet-B0 & 0.041 & 0.018 \\
+ResNet50        & 0.052 & 0.022 \\
+DenseNet121     & 0.039 & 0.019 \\
+Swin-Tiny       & 0.067 & 0.024 \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\textbf{Trước calibration:} ECE 4--7\% --- mô hình hơi over-confident, đặc biệt Swin (6.7\%). Khi mô hình nói ``MEL 90\%'' thực tế chỉ đúng $\sim$83\%.
+
+\textbf{Sau temperature scaling:} ECE giảm về 2--2.4\% --- xác suất tin cậy được cho clinical decision. Ensemble các mô hình đã calibrate giảm ECE thêm một bước nữa.
+
+Mã: \texttt{src/utils/calibration.py} + \texttt{src/calibration\_analysis.py}.
+\end{answer}
+
+% =============================================================
+\section{Dataset chủ yếu da trắng. Ảnh hưởng demographic bias?}
+
+\begin{question}
+``HAM10000 thu thập ở Áo và Mỹ --- chủ yếu da trắng (Fitzpatrick I--III). Em deploy ở Việt Nam (Fitzpatrick III--V) thì sao?''
+\end{question}
+
+\begin{answer}
+Đây là hạn chế thật sự của đồ án, em thừa nhận và đề cập trong thesis. Ba ý:
+
+\textbf{(1) Skin tone bias là vấn đề lớn của ngành.} Adamson \& Smith 2018 đã chỉ ra dermoscopy AI commercial (như SkinVision) underperform mạnh trên da đậm --- recall MEL giảm $\sim$20\% trên Fitzpatrick V--VI so với I--II. Vấn đề chưa có giải pháp toàn ngành.
+
+\textbf{(2) Em chưa có data Việt Nam để test trực tiếp.} Nhưng OOD trên PAD-UFES-20 (Brazil, có nhiều Fitzpatrick III--IV hơn HAM10000) cho thấy mô hình \textbf{drop 56pp accuracy}. Một phần lớn của drop đó \textit{có thể} đến từ skin tone shift, một phần đến từ modality shift (smartphone vs dermoscope). Em không tách được hai yếu tố này.
+
+\textbf{(3) Hướng giải quyết khả thi:}
+\begin{itemize}[leftmargin=*]
+  \item Fine-tune trên data Việt Nam khi có ($\sim$500 ảnh đã đủ).
+  \item Augmentation màu chuyên biệt: shift hue/saturation theo Fitzpatrick scale.
+  \item Group fairness loss (reweight loss theo skin tone).
+\end{itemize}
+
+Em không tuyên bố mô hình triển khai được ở Việt Nam mà không adapt. Prototype Streamlit là \textit{research prototype} với disclaimer rõ ràng.
+\end{answer}
+
+\begin{tip}
+Đây là câu hỏi \textbf{về ethics}. Trả lời mạnh ở việc \textit{nhận trách nhiệm}, không tranh luận hay đẩy lỗi sang ai.
+\end{tip}
+
+% =============================================================
+\section{Triển khai production cần gì hơn nữa?}
+
+\begin{question}
+``Nếu bệnh viện muốn deploy hệ thống này thực sự thì cần làm gì ngoài những gì em đã làm?''
+\end{question}
+
+\begin{answer}
+Em đã suy nghĩ qua các bước:
+
+\textbf{1. Tuân thủ pháp lý.} Phần mềm chẩn đoán y khoa cần CE marking (EU MDR) hoặc FDA 510(k) clearance --- prototype không đủ. Hệ thống tương đương SkinVision/MoleScope hiện tại đã qua quy trình này 1--2 năm.
+
+\textbf{2. Dữ liệu in-domain.} Như đã nói ở câu 9, cần $\sim$500--5000 ảnh từ chính bệnh viện đó, do chính nhân viên đó chụp, để fine-tune --- giảm domain shift.
+
+\textbf{3. Open-set / OOD detection.} Như câu 5, cần component phát hiện ảnh \textit{không phải tổn thương da} (mụn, sẹo, ảnh sai vùng).
+
+\textbf{4. UI/UX bác sĩ.} Streamlit prototype của em là demo. Production cần:
+\begin{itemize}[leftmargin=*]
+  \item Tích hợp PACS/EHR.
+  \item Audit log mỗi prediction để truy vết khi có sai sót.
+  \item Workflow trao đổi giữa AI và bác sĩ rõ ràng (ai chốt cuối cùng).
+\end{itemize}
+
+\textbf{5. Monitoring sau deploy.} Data drift detection (phân phối input thay đổi sau khi deploy 6 tháng?), performance monitoring (accuracy có suy giảm không?), feedback loop để bác sĩ correct sai sót.
+
+\textbf{6. Bảo hiểm và phân chia trách nhiệm.} Khi mô hình sai gây hại bệnh nhân, ai chịu trách nhiệm? Bác sĩ? Hospital? Vendor? Cần clarified hợp đồng trước khi deploy.
+
+Em không claim đồ án này là production-ready. Đây là \textit{research prototype} chứng minh tính khả thi kỹ thuật. Triển khai thực tế cần $\sim$2 năm engineering + clinical trial bổ sung.
+\end{answer}
+
+% =============================================================
+\section{Defense kit checklist}
+
+\textit{Liệt kê những thứ cần chuẩn bị trước buổi bảo vệ.}
+
+\subsection{Phần cứng}
+\begin{itemize}[leftmargin=*, itemsep=2pt]
+  \item Laptop chính (đảm bảo pin đầy + sạc).
+  \item USB-C / HDMI adapter cho máy chiếu.
+  \item Chuột rời (clicker hoặc tay).
+  \item USB dự phòng chứa toàn bộ slides + thesis PDF + study guide PDF + 1 cảnh báo ảnh demo.
+  \item Headphone nhỏ (nghe lại bản rehearsal nếu cần).
+\end{itemize}
+
+\subsection{Software \& demo}
+\begin{itemize}[leftmargin=*, itemsep=2pt]
+  \item Streamlit demo: chạy \texttt{streamlit run app.py} trước buổi 15 phút để warm-up.
+  \item Mở browser tab tại \texttt{http://localhost:8501}.
+  \item Đặt theme Dark/Light theo sở thích (menu $\vdots$ $\rightarrow$ Settings $\rightarrow$ Theme).
+  \item Upload sẵn 1 ảnh demo và xem Grad-CAM cho cả 4 mô hình để cache model.
+  \item Chuẩn bị 3 ảnh demo: 1 MEL rõ, 1 NV lành, 1 ca khó (low confidence để show warning).
+\end{itemize}
+
+\subsection{Backup plans}
+\begin{itemize}[leftmargin=*, itemsep=2pt]
+  \item Nếu Streamlit crash: có sẵn 5 screenshot của demo (prediction + Grad-CAM) trong slide.
+  \item Nếu máy chiếu không nhận laptop: PDF slides trên USB, mở trên máy phòng.
+  \item Nếu mất Internet: app.py chạy offline 100\% không cần Internet.
+\end{itemize}
+
+\subsection{Tài liệu in}
+\begin{itemize}[leftmargin=*, itemsep=2pt]
+  \item Bản in slides 4-up (4 slides/trang) để hội đồng theo dõi.
+  \item Bản in báo cáo Vietnamese 1 bản.
+  \item Bản in study guide để tự tham khảo (không bắt buộc đưa hội đồng).
+\end{itemize}
+
+\subsection{Trước buổi 1 tiếng}
+\begin{itemize}[leftmargin=*, itemsep=2pt]
+  \item Test trên máy chiếu thực (nếu cho phép).
+  \item Nghe lại bản ghi rehearsal cuối.
+  \item Ăn nhẹ (chuối, hạnh nhân) --- tránh đói khi thuyết trình.
+  \item Đi WC trước khi vào phòng.
+  \item Đặt điện thoại ở chế độ máy bay.
+\end{itemize}
+
+\end{document}

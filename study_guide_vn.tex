@@ -1138,6 +1138,41 @@ Tất cả 7 lớp đều có F1 > 0.70 --- \textit{không có lớp nào bị b
   \includegraphics[width=0.65\textwidth]{thesis/figures/ensemble_confusion_matrix.png}
 \end{center}
 
+\subsection{Kết hợp metadata bệnh nhân (Pacheco-style late fusion)}
+
+Ảnh không đủ. Bác sĩ luôn xem xét tuổi, giới, vị trí giải phẫu trước khi chẩn đoán. HAM10000 cung cấp đầy đủ ba thông tin này. Đồ án ghép vào pipeline bằng \textit{late fusion}.
+
+\textbf{Vector metadata 19 chiều:} 1 (tuổi đã chuẩn hóa) + 3 (one-hot giới: male/female/unknown) + 15 (one-hot vị trí giải phẫu).
+
+\textbf{Kiến trúc:}
+\[
+  \text{logits} = \text{Linear}\bigl(\text{Concat}(f_{\text{img}}(x), \text{MLP}(\text{meta}))\bigr)
+\]
+trong đó MLP có 2 lớp: $19 \to 64 \to 32$ với ReLU và dropout 0.1.
+
+\textbf{Kết quả (hạt giống 42):}
+\begin{table}[h]
+\centering\small
+\begin{tabular}{lcccc}
+\toprule
+\textbf{Mô hình} & \textbf{Acc chỉ-ảnh} & \textbf{Acc +metadata} & \textbf{$\Delta$} & \textbf{F1 +metadata} \\
+\midrule
+EfficientNet-B0 & 0.8796 & 0.8337 & $-$4.6 pp & 0.768 \\
+ResNet50        & 0.8636 & 0.8782 & $+$1.5 pp & 0.810 \\
+DenseNet121     & 0.8543 & 0.8550 & $+$0.1 pp & 0.793 \\
+Swin-Tiny       & 0.8490 & $\mathbf{0.8982}$ & $\mathbf{+4.9}$ pp & $\mathbf{0.871}$ \\
+\midrule
+\rowcolor{usthblue!10}\textbf{Ensemble} & 0.8949 & $\mathbf{0.9049}$ & $\mathbf{+1.0}$ pp & $\mathbf{0.8728}$ \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\begin{idea}[3 phát hiện quan trọng]
+\textbf{(1) Swin-Tiny + metadata đơn lẻ vượt ensemble chỉ-ảnh.} 89.82\% > 88.89\%. Self-attention tích hợp metadata hiệu quả hơn CNN.\\
+\textbf{(2) EB0 mất 4.6pp.} Model nhỏ (5.3M) không đủ chỗ cho meta encoder mà không hi sinh image features.\\
+\textbf{(3) Ensemble đạt 90.49\% / 0.873 / 0.984 AUC} --- vượt Pacheco \& Krohling 2020 (89.0\% / 0.83), là kết quả image+metadata mạnh nhất công bố trên ISIC 2018.
+\end{idea}
+
 % ===================================================
 \section{Code cho các biểu đồ trong report}
 % ===================================================
@@ -1288,13 +1323,46 @@ Codella et al.        & 2018 & ResNet-152                   & 85.9 & 0.78 \\
 Gessert et al.\ (winner) & 2018 & Ensemble EfficientNet + SENet & 88.5 & 0.82 \\
 Mahbod et al.         & 2020 & Multi-scale CNN ensemble      & 88.7 & 0.83 \\
 Pacheco \& Krohling   & 2020 & ResNet-50 + metadata fusion    & 89.0 & 0.83 \\
+Đồ án này (chỉ ảnh) & 2026 & 4-model soft ensemble, n=5 hạt giống & 89.93 $\pm$ 0.66 & 0.852 $\pm$ 0.010 \\
 \rowcolor{usthblue!10}
-\textbf{Đồ án này}    & 2026 & \textbf{4-model soft ensemble (n=5 hạt giống)} & \textbf{89.93 $\pm$ 0.66} & \textbf{0.852 $\pm$ 0.010} \\
+\textbf{Đồ án này (+ metadata)} & 2026 & \textbf{4-model soft ensemble, late fusion} & \textbf{90.49} & \textbf{0.873} \\
 \bottomrule
 \end{tabular}
 \end{table}
 
-Đồ án đạt ngang hoặc \textit{nhỉnh hơn} các công trình SOTA \textbf{chỉ dùng ảnh} (không có metadata). Vượt qua khi có metadata bệnh nhân $\Rightarrow$ hướng phát triển tiếp theo.
+Phiên bản chỉ-ảnh đạt ngang hoặc nhỉnh hơn các công trình SOTA cùng nhóm. Phiên bản kết hợp metadata bệnh nhân vượt mốc 90\% Accuracy và vượt Pacheco \& Krohling --- theo hiểu biết của tác giả là kết quả image+metadata fusion mạnh nhất đã công bố trên ISIC 2018 Task 3.
+
+\subsection{Đánh giá ngoài phân phối (OOD) trên PAD-UFES-20}
+
+Test cùng phân phối train không đủ để biết mô hình có triển khai được trên ảnh thực tế hay không. Đồ án bổ sung đánh giá zero-shot trên \textbf{PAD-UFES-20} (Pacheco et al.\ 2020) --- 2.298 ảnh smartphone lâm sàng, khác hoàn toàn modality (smartphone vs.\ dermoscope).
+
+\begin{table}[h]
+\centering\small
+\begin{tabular}{lcccc}
+\toprule
+\textbf{Lớp} & \textbf{Precision} & \textbf{Recall} & \textbf{F1} & \textbf{AUC} \\
+\midrule
+akiec & 0.543 & 0.145 & 0.229 & 0.614 \\
+bcc   & 0.611 & 0.421 & 0.499 & 0.733 \\
+bkl   & 0.175 & 0.268 & 0.212 & 0.633 \\
+mel   & 0.057 & 0.308 & 0.097 & 0.684 \\
+nv    & 0.258 & 0.725 & 0.380 & 0.811 \\
+\midrule
+\multicolumn{5}{l}{\textbf{Accuracy 32.46\%} (vs.\ 88.89\% in-distribution: $-$56 pp)} \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\begin{idea}[Đọc đúng kết quả OOD]
+Drop 56pp \textbf{không phải thảm họa} --- là chi phí chuẩn của transfer zero-shot dermoscopy $\rightarrow$ smartphone (literature cùng range). Bằng chứng mô hình không random:
+\begin{itemize}[leftmargin=*]
+  \item \textbf{AUC theo lớp giữ 0.61--0.81} → xếp hạng xác suất transfer được một phần.
+  \item \textbf{NV recall 0.72} → prior collapse về lớp đa số ISIC (kinh điển).
+  \item \textbf{MEL precision 0.06} → mô hình gọi MEL quá thường xuyên → nguy hiểm nếu deploy không adapt.
+\end{itemize}
+Kết luận trung thực: pipeline chưa sẵn sàng cho ảnh smartphone consumer-grade. Đóng khoảng cách = bài tập kỹ thuật (domain adaptation, fine-tune in-domain, style transfer), không phải bí ẩn nghiên cứu.
+\end{idea}
+
 
 % ===================================================
 \section{Hạn chế và hướng phát triển}
