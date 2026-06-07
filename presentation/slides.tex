@@ -1217,6 +1217,52 @@
     (vượt Pacheco \& Krohling 2020: 89.0\% / 0.83).
 \end{frame}
 
+% --- A23 ---
+\begin{frame}{A23. Đánh giá ngoài phân phối trên PAD-UFES-20}
+    \scriptsize
+    \textbf{Cấu hình.} Ensemble ISIC 2018 (dermoscopy) đánh giá zero-shot trên
+    PAD-UFES-20 --- 2\,298 ảnh smartphone lâm sàng (Pacheco et al.\ 2020,
+    Mendeley DOI 10.17632/zr7vgbcyr2.1). Không domain adaptation, không fine-tune.
+
+    \vspace{0.1cm}
+    \textbf{Ánh xạ lớp (6 PAD-UFES $\rightarrow$ 5 ISIC):}
+    ACK \& SCC $\rightarrow$ akiec, BCC $\rightarrow$ bcc, SEK $\rightarrow$ bkl,
+    NEV $\rightarrow$ nv, MEL $\rightarrow$ mel. (DF, VASC không có trong OOD test.)
+
+    \vspace{0.15cm}
+    \begin{table}[h]
+    \centering
+    \begin{tabular}{lccccr}
+    \toprule
+    \textbf{Lớp} & \textbf{Prec.} & \textbf{Recall} & \textbf{F1} & \textbf{AUC} & \textbf{n}\\
+    \midrule
+    akiec & 0.543 & 0.145 & 0.229 & 0.614 & 922\\
+    bcc   & 0.611 & 0.421 & 0.499 & 0.733 & 845\\
+    bkl   & 0.175 & 0.268 & 0.212 & 0.633 & 235\\
+    mel   & 0.057 & 0.308 & 0.097 & 0.684 &  52\\
+    nv    & 0.258 & 0.725 & 0.380 & 0.811 & 244\\
+    \midrule
+    \rowcolor{usthlight}\multicolumn{6}{l}{\textbf{Accuracy 32.46\%}\quad \textbf{Macro F1 0.283} (vs.\ 88.9\% / 0.852 in-distribution)}\\
+    \bottomrule
+    \end{tabular}
+    \end{table}
+
+    \vspace{0.1cm}
+    \textbf{Phát hiện.}
+    (1) Drop $-$56 pp là chi phí chuẩn của transfer zero-shot dermoscopy
+    $\rightarrow$ smartphone.
+    (2) AUC theo lớp giữ 0.61--0.81 --- mô hình \textbf{không} random; xếp hạng
+    xác suất transfer một phần.
+    (3) NV recall 0.72: prior-collapse kinh điển về lớp dominant của ISIC.
+    (4) MEL precision 0.06: mô hình gọi MEL quá thường xuyên trên smartphone
+    --- nguy hiểm lâm sàng nếu triển khai không adapt.
+
+    \vspace{0.1cm}
+    \textbf{Kết luận trung thực.} Pipeline \textbf{chưa} sẵn sàng cho triển khai
+    consumer-grade. Đóng khoảng cách là việc kỹ thuật (domain adaptation, fine-tune
+    in-domain, style transfer) --- không phải bí ẩn nghiên cứu.
+\end{frame}
+
 % =====================  Slide cuối  =====================
 \begin{frame}[plain]
     \centering

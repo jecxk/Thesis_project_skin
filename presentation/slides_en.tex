@@ -1214,6 +1214,52 @@
     \& Krohling 2020: 89.0\% / 0.83).
 \end{frame}
 
+% --- A23 ---
+\begin{frame}{A23. Out-of-distribution Evaluation on PAD-UFES-20}
+    \scriptsize
+    \textbf{Setup.} ISIC 2018 (dermoscopy) ensemble evaluated zero-shot on PAD-UFES-20
+    --- 2\,298 clinical smartphone photographs (Pacheco et al.\ 2020, Mendeley DOI
+    10.17632/zr7vgbcyr2.1). No domain adaptation, no fine-tuning.
+
+    \vspace{0.1cm}
+    \textbf{Class mapping (6 PAD-UFES $\rightarrow$ 5 ISIC):}
+    ACK \& SCC $\rightarrow$ akiec, BCC $\rightarrow$ bcc, SEK $\rightarrow$ bkl,
+    NEV $\rightarrow$ nv, MEL $\rightarrow$ mel. (DF, VASC absent from OOD test.)
+
+    \vspace{0.15cm}
+    \begin{table}[h]
+    \centering
+    \begin{tabular}{lccccr}
+    \toprule
+    \textbf{Class} & \textbf{Prec.} & \textbf{Recall} & \textbf{F1} & \textbf{AUC} & \textbf{n}\\
+    \midrule
+    akiec & 0.543 & 0.145 & 0.229 & 0.614 & 922\\
+    bcc   & 0.611 & 0.421 & 0.499 & 0.733 & 845\\
+    bkl   & 0.175 & 0.268 & 0.212 & 0.633 & 235\\
+    mel   & 0.057 & 0.308 & 0.097 & 0.684 &  52\\
+    nv    & 0.258 & 0.725 & 0.380 & 0.811 & 244\\
+    \midrule
+    \rowcolor{usthlight}\multicolumn{6}{l}{\textbf{Accuracy 32.46\%}\quad \textbf{Macro F1 0.283} (vs.\ 88.9\% / 0.852 in-distribution)}\\
+    \bottomrule
+    \end{tabular}
+    \end{table}
+
+    \vspace{0.1cm}
+    \textbf{Findings.}
+    (1) $-$56 pp accuracy drop is the standard cost of zero-shot dermoscopy
+    $\rightarrow$ smartphone transfer.
+    (2) Per-class AUC stays 0.61--0.81 --- model is \textbf{not} random; soft
+    rankings transfer partially.
+    (3) NV recall 0.72: classic prior-collapse onto the ISIC dominant class.
+    (4) MEL precision 0.06: model over-calls melanoma on smartphone photos
+    --- clinically dangerous if deployed without adaptation.
+
+    \vspace{0.1cm}
+    \textbf{Honest conclusion.} Pipeline is \textbf{not} ready for consumer-grade
+    deployment. Closing the gap is engineering (domain adaptation, in-domain
+    fine-tuning, style transfer) --- not a research mystery.
+\end{frame}
+
 % =====================  Final slide  =====================
 \begin{frame}[plain]
     \centering

@@ -198,6 +198,33 @@ Swin-Tiny       & 0,8490 & \textbf{0,8982} & $\mathbf{+0{,}049}$ & \textbf{0,871
 
 Ba nhận xét đáng chú ý. Thứ nhất, metadata fusion \textit{không phải lúc nào cũng có lợi}: EfficientNet-B0 \textit{mất} 4,6 điểm phần trăm accuracy --- model nhỏ (5,3M) phải dành chỗ cho MLP metadata làm ảnh hưởng tối ưu hóa. Ba backbone lớn hơn đều cải thiện. Thứ hai, mức cải thiện của Swin-Tiny rất lớn: Swin-Tiny + metadata đạt 89,82\% accuracy và 0,871 macro F1 --- đơn lẻ đã vượt ensemble bốn mô hình chỉ-ảnh. Self-attention tích hợp metadata hiệu quả hơn CNN trong thiết lập này. Thứ ba, ensemble bốn mô hình metadata-fusion đẩy headline lên 90,49\% Acc / 0,873 F1 / 0,984 AUC, vượt Pacheco và Krohling (89,0\% / 0,83) --- theo hiểu biết của tác giả là kết quả image+metadata fusion mạnh nhất công bố trên ISIC 2018 Task 3.
 
+\section{Đánh giá ngoài phân phối trên ảnh smartphone lâm sàng}
+
+Mô hình huấn luyện trên ảnh dermoscopy không cùng sản phẩm với mô hình triển khai trên ảnh smartphone. ISIC 2018 được thu thập bằng dermoscope ánh sáng phân cực --- tạo độ chiếu sáng, độ phóng đại và tương phản đặc trưng không tồn tại trên ảnh điện thoại chụp tổn thương ở khoảng cánh tay. Để định lượng khoảng cách này, ensemble chỉ-ảnh được đánh giá zero-shot trên tập PAD-UFES-20 --- bộ dữ liệu công khai 2.298 ảnh tổn thương da lâm sàng chụp bằng smartphone do Chương trình Hỗ trợ Da liễu và Phẫu thuật Đại học Espírito Santo phát hành~\cite{pacheco2020pad}. PAD-UFES-20 có sáu lớp chẩn đoán ánh xạ sang năm trong bảy lớp ISIC 2018: \texttt{ACK} và \texttt{SCC} cùng ánh xạ \texttt{akiec} (theo quy ước nhãn của Pacheco), \texttt{BCC} $\to$ \texttt{bcc}, \texttt{SEK} $\to$ \texttt{bkl}, \texttt{NEV} $\to$ \texttt{nv}, \texttt{MEL} $\to$ \texttt{mel}. Dermatofibroma và tổn thương mạch máu không có đối chiếu trong PAD-UFES. Không thực hiện domain adaptation, không fine-tune, không test-time training: ensemble đạt 88,9\% trên ISIC 2018 được tải nguyên trạng và chạy trên PAD-UFES.
+
+\begin{table}[H]
+\centering
+\caption{Đánh giá zero-shot của ensemble chỉ-ảnh trên PAD-UFES-20.}
+\label{tab:ood_pad_ufes_vn}
+\begin{tabular}{lccccr}
+\toprule
+\textbf{Lớp} & \textbf{Precision} & \textbf{Recall} & \textbf{F1} & \textbf{AUC} & \textbf{Support} \\
+\midrule
+akiec & 0,543 & 0,145 & 0,229 & 0,614 & 922 \\
+bcc   & 0,611 & 0,421 & 0,499 & 0,733 & 845 \\
+bkl   & 0,175 & 0,268 & 0,212 & 0,633 & 235 \\
+mel   & 0,057 & 0,308 & 0,097 & 0,684 &  52 \\
+nv    & 0,258 & 0,725 & 0,380 & 0,811 & 244 \\
+\midrule
+\multicolumn{6}{l}{\textbf{Accuracy: 32,46\%}~~~~\textbf{Macro F1 (5 lớp): 0,283}} \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+Accuracy tụt từ 88,9\% xuống 32,5\% --- giảm 56 điểm phần trăm --- nghe có vẻ thảm họa nếu đứng riêng, nhưng nhất quán với báo cáo dermoscopy-sang-lâm-sàng trong literature cho transfer zero-shot không adapt~\cite{pacheco2020metadata}. Ba quan sát có giá trị chẩn đoán hơn con số đầu. \textbf{Thứ nhất}, AUC theo lớp vẫn giữ 0,61--0,81: mô hình không random trên PAD-UFES, xếp hạng xác suất vẫn giữ tín hiệu đủ để quyết định cứng tụt mạnh hơn quyết định mềm. \textbf{Thứ hai}, recall NV bằng 0,72: mô hình mặc định dự đoán NV --- lớp huấn luyện ISIC chiếm ưu thế 67\% --- là failure mode kinh điển khi classifier bị buộc ngoại suy. \textbf{Thứ ba}, hành vi AKIEC và MEL đảo ngược: AKIEC precision cao nhất (0,54) và recall thấp nhất (0,14), nên khi mô hình nhận AKIEC thì đúng nhưng bỏ sót đa số ca; MEL ngược lại (precision 0,06, recall 0,31) --- mô hình gọi MEL quá thường xuyên trên ảnh smartphone nhưng hiếm khi trúng. Cả hai profile lỗi này không chấp nhận được cho triển khai lâm sàng trực tiếp.
+
+Kết luận trung thực là pipeline hiện tại \textbf{chưa sẵn sàng} chạy trên ảnh dermatology smartphone. Đóng khoảng cách này không phải bí ẩn nghiên cứu mà là bài tập kỹ thuật: domain adaptation, fine-tune trên bộ ảnh smartphone gắn nhãn, hoặc đơn giản là một bước style-transfer tiền xử lý đều có thể đẩy số OOD gần in-distribution hơn rõ rệt. Báo cáo OOD ở đây nhằm giới hạn kỳ vọng và đánh dấu khoảng cách modality là ràng buộc đơn lẻ quan trọng nhất cho triển khai thực tế của bất kỳ classifier ISIC nào.
+
 \section{Phân tích Grad-CAM}
 
 \begin{figure}[H]

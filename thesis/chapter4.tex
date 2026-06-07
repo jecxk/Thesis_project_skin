@@ -278,6 +278,33 @@ Swin-Tiny       & 0.8490 & \textbf{0.8982} & $\mathbf{+0.049}$ & \textbf{0.871} 
 
 Three observations stand out. First, metadata fusion is not uniformly beneficial at the single-model level: EfficientNet-B0 \textit{loses} 4.6 percentage points of accuracy when forced to accommodate the metadata MLP, almost certainly because its small parameter budget (5.3M) makes the marginal cost of adding even a 3.4K-parameter encoder visible in the optimisation. The three larger backbones all gain. Second, the gain is dramatic for Swin-Tiny: the metadata-fused Swin-Tiny single model reaches 89.82\% accuracy and 0.871 macro F1, on its own surpassing the four-model image-only ensemble. Transformers appear to integrate auxiliary features through their self-attention more effectively than CNNs in this setting. Third, the ensemble of all four metadata-fused models recovers the variance reduction observed in the image-only setting and pushes the headline accuracy to 90.49\% with macro F1 0.873 and macro AUC 0.984. This result improves on Pacheco and Krohling's reported 89.0\% / 0.83 and represents, to the author's knowledge, the strongest image+metadata fusion result published on the ISIC 2018 Task 3 test set.
 
+\section{Out-of-Distribution Evaluation on Clinical Smartphone Photographs}
+
+A model trained on dermoscopic images is not the same product as a model deployable on smartphone-acquired clinical photographs. ISIC 2018 was collected with polarised-light dermoscopes, which produce a characteristic illumination, magnification, and contrast profile that is absent from a phone camera held above a skin lesion at arm's length. To quantify the gap, the image-only ensemble was evaluated zero-shot on the PAD-UFES-20 dataset, a publicly available collection of 2,298 clinical skin-lesion photographs taken with smartphones by the Universidade Federal do Espírito Santo Dermatological and Surgical Assistance Program~\cite{pacheco2020pad}. PAD-UFES-20 covers six diagnostic classes that map onto five of the seven ISIC 2018 classes: \texttt{ACK} and \texttt{SCC} both map to \texttt{akiec} following Pacheco's own labelling convention, \texttt{BCC} maps to \texttt{bcc}, \texttt{SEK} maps to \texttt{bkl}, \texttt{NEV} maps to \texttt{nv}, and \texttt{MEL} maps to \texttt{mel}. Dermatofibroma and vascular lesions have no PAD-UFES counterpart and are simply absent from the OOD test. No domain adaptation, no fine-tuning, no test-time training: the ensemble that produced 88.9\% accuracy on ISIC 2018 is loaded as-is and run on PAD-UFES-20. Table~\ref{tab:ood_pad_ufes} reports the result.
+
+\begin{table}[H]
+\centering
+\caption{Zero-shot evaluation of the image-only ensemble on PAD-UFES-20. ``Support'' is the number of test samples per class in PAD-UFES.}
+\label{tab:ood_pad_ufes}
+\begin{tabular}{lccccr}
+\toprule
+\textbf{Class} & \textbf{Precision} & \textbf{Recall} & \textbf{F1} & \textbf{AUC} & \textbf{Support} \\
+\midrule
+akiec & 0.543 & 0.145 & 0.229 & 0.614 & 922 \\
+bcc   & 0.611 & 0.421 & 0.499 & 0.733 & 845 \\
+bkl   & 0.175 & 0.268 & 0.212 & 0.633 & 235 \\
+mel   & 0.057 & 0.308 & 0.097 & 0.684 &  52 \\
+nv    & 0.258 & 0.725 & 0.380 & 0.811 & 244 \\
+\midrule
+\multicolumn{6}{l}{\textbf{Accuracy: 32.46\%}~~~~\textbf{Macro F1 (5 classes): 0.283}} \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+The accuracy drop from 88.9\% to 32.5\% --- a 56-percentage-point fall --- looks catastrophic in isolation, but it is consistent with what the dermoscopy-to-clinical literature reports for zero-shot transfer without any adaptation~\cite{pacheco2020metadata}. Three observations are more diagnostic than the headline number. The first is that the per-class AUC stays between 0.61 and 0.81: the model is not random on PAD-UFES, its probability rankings retain enough signal that hard decisions degrade more than soft decisions. The second is that NV recall is 0.72: the model defaults toward predicting NV --- its dominant ISIC training class at 67\% of the training set --- a classical prior-collapse failure mode whenever a classifier is forced to extrapolate. The third is the inversion of the AKIEC and MEL behaviour: AKIEC has the highest precision (0.54) and the lowest recall (0.14), so when the model does call AKIEC it is usually correct but it misses most actual cases, whereas MEL is precisely the opposite (precision 0.06, recall 0.31) --- the model over-calls melanoma on smartphone photographs but rarely catches the actual ones. Neither of those error profiles is acceptable for direct clinical deployment without further work.
+
+The honest conclusion is that the present pipeline is not ready to be pointed at consumer-grade dermatology photographs. Closing this gap is not a research mystery, only an engineering exercise: domain adaptation, fine-tuning on a labelled clinical-photograph collection, or even a simple style-transfer pre-processing step would all push the OOD numbers materially closer to the in-distribution ones. Reporting the OOD result here serves to bound expectations and to flag the modality gap as the single most important constraint on real-world deployment of any ISIC-trained classifier.
+
 \section{Grad-CAM Interpretability Analysis}
 
 To verify that models attend to clinically relevant image regions rather than spurious correlates (e.g.\ hair, rulers, ink markings), Gradient-weighted Class Activation Mapping (Grad-CAM)~\cite{selvaraju2017grad} was applied to all four architectures on held-out test images. For each CNN the gradient signal was captured at the last convolutional feature map before global average pooling; for Swin-Tiny, at the final window-attention block's layer-normalisation output. Figure~\ref{fig:gradcam_grid} presents a systematic comparison across all seven disease classes.
