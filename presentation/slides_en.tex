@@ -540,13 +540,15 @@
 \section{Conclusion}
 % =========================================================
 \begin{frame}{Conclusion}
-    \begin{block}{The four main contributions of the thesis}
+    \begin{block}{Six main contributions of the thesis}
         \footnotesize
         \begin{enumerate}
-            \item \textbf{High performance on imbalanced data:} the ensemble reaches \textbf{89.49\%} Accuracy, \textbf{0.980} AUC, \textbf{0.744} F1 for Melanoma --- on par with state-of-the-art reports on ISIC 2018.
-            \item \textbf{Comprehensive ablation:} demonstrates that Mixup/CutMix is the most decisive component, more so than using a larger architecture.
-            \item \textbf{Interpretability:} Grad-CAM confirms the model focuses on the lesion area, not on imaging artefacts.
-            \item \textbf{Practical application:} a stable Streamlit prototype that can be demonstrated offline.
+            \item \textbf{Image-only ensemble:} \textbf{89.49\%} Accuracy, \textbf{0.980} AUC, \textbf{0.744} F1 for Melanoma at the headline seed; \textbf{89.93 $\pm$ 0.66\%} across 5 seeds.
+            \item \textbf{Statistical robustness:} McNemar test confirms ensemble beats every backbone with $p < 10^{-7}$ vs.\ the strongest, $p < 10^{-38}$ vs.\ the weakest.
+            \item \textbf{Metadata fusion crosses 90\%:} adding HAM10000 patient metadata yields \textbf{90.49\% / 0.873 F1} --- beats Pacheco \& Krohling 2020.
+            \item \textbf{Honest OOD evaluation:} zero-shot on PAD-UFES-20 (smartphone photos) gives 32.5\% --- quantifies the modality gap.
+            \item \textbf{Quantitative interpretability:} Grad-CAM \texttt{focus\_ratio} > 0.6 across all backbones, validated by the \texttt{model.bn2} debug story.
+            \item \textbf{Practical application:} a stable Streamlit prototype with subprocess-isolated Grad-CAM.
         \end{enumerate}
     \end{block}
 
@@ -559,9 +561,9 @@
 \begin{frame}{Future Work}
     \footnotesize
     \begin{enumerate}
-        \item \textbf{Multimodal integration:} combine images with patient metadata (age, sex, anatomical location) --- particularly useful for melanoma detection.
+        \item \textbf{Domain adaptation for clinical photographs:} OOD evaluation on PAD-UFES-20 (appendix A23) shows a $-56$ pp accuracy drop on smartphone images. Closing this gap requires fine-tuning on in-domain data or style-transfer preprocessing.
         \vspace{0.15cm}
-        \item \textbf{Out-of-distribution evaluation:} test the ensemble on other datasets (BCN20000, PAD-UFES-20) and on diverse skin tones to verify true generalisation.
+        \item \textbf{Open-set / OOD detection:} the current classifier is forced to assign one of 7 classes. A production system needs to recognise inputs that are not skin lesions at all (acne, scars, non-lesion photos).
         \vspace{0.15cm}
         \item \textbf{Active learning loop:} let physicians correct mispredictions in the prototype and periodically retrain the models.
         \vspace{0.15cm}

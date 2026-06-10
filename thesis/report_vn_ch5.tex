@@ -8,6 +8,8 @@ Khóa luận đã huấn luyện và đánh giá bốn kiến trúc học sâu -
 
 Grad-CAM xác nhận mọi mô hình chú ý đến tổn thương, không phải nhiễu nền. Nguyên mẫu Streamlit tương tác chứng minh các mô hình có thể tích hợp vào giao diện hỗ trợ chẩn đoán chức năng.
 
+Ngoài baseline chỉ-ảnh, hai thí nghiệm mở rộng được thực hiện. Kết hợp metadata bệnh nhân HAM10000 (tuổi, giới, vị trí giải phẫu) qua MLP encoder đẩy ensemble bốn mô hình lên 90,49\% accuracy và 0,873 Macro F1, vượt Pacheco và Krohling (89,0\% / 0,83) và vượt mốc 90\% --- mốc tham chiếu thường được trích dẫn cho phân loại da dựa trên ảnh. Để giới hạn kỳ vọng một cách trung thực, ensemble chỉ-ảnh cũng được đánh giá zero-shot trên PAD-UFES-20 --- 2.298 ảnh smartphone lâm sàng từ modality thu thập khác. Accuracy tụt còn 32,5\%, giảm 56 điểm phần trăm --- nhất quán với báo cáo literature cho transfer dermoscopy-sang-smartphone không adapt. AUC theo lớp vẫn giữ 0,61--0,81, xác nhận mô hình không random trên ảnh smartphone nhưng hiệu năng quyết định cứng cần adapt theo modality hoặc fine-tune để dùng được lâm sàng.
+
 \section{Các Phát hiện Chính}
 
 \textbf{Sự đảo ngược accuracy--AUC:} CNN tạo quyết định cứng sắc nét hơn, Swin-Tiny tạo phân phối xác suất được hiệu chỉnh tốt hơn. Mô hình phù hợp phụ thuộc vào nhiệm vụ lâm sàng: cờ nhị phân cần F1 cao (EfficientNet-B0), danh sách xếp hạng rủi ro cần AUC cao (Swin-Tiny).

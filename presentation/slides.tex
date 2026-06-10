@@ -544,13 +544,15 @@
 \section{Kết luận}
 % =========================================================
 \begin{frame}{Kết luận}
-    \begin{block}{Bốn đóng góp chính của khóa luận}
+    \begin{block}{Sáu đóng góp chính của khóa luận}
         \footnotesize
         \begin{enumerate}
-            \item \textbf{Hiệu năng cao trên dữ liệu mất cân bằng:} ensemble đạt \textbf{89.49\%} Accuracy, \textbf{0.980} AUC, \textbf{0.744} F1 cho Melanoma --- ngang với các báo cáo state-of-the-art trên ISIC 2018.
-            \item \textbf{Ablation toàn diện:} chứng minh Mixup/CutMix là thành phần quyết định nhất, vượt cả việc dùng kiến trúc lớn hơn.
-            \item \textbf{Khả diễn giải:} Grad-CAM xác nhận mô hình tập trung đúng vùng tổn thương, không bị nhiễu artifact.
-            \item \textbf{Ứng dụng thực tế:} prototype Streamlit ổn định, có thể demo offline.
+            \item \textbf{Ensemble chỉ-ảnh:} \textbf{89.49\%} Acc, \textbf{0.980} AUC, \textbf{0.744} F1 cho Melanoma ở hạt giống đại diện; \textbf{89.93 $\pm$ 0.66\%} qua 5 hạt giống.
+            \item \textbf{Robustness thống kê:} McNemar xác nhận ensemble vượt mọi backbone với $p < 10^{-7}$ so với mạnh nhất, $p < 10^{-38}$ so với yếu nhất.
+            \item \textbf{Metadata fusion vượt 90\%:} thêm metadata bệnh nhân HAM10000 đạt \textbf{90.49\% / 0.873 F1} --- vượt Pacheco \& Krohling 2020.
+            \item \textbf{Đánh giá OOD trung thực:} zero-shot trên PAD-UFES-20 (ảnh smartphone) đạt 32.5\% --- định lượng khoảng cách modality.
+            \item \textbf{Khả diễn giải định lượng:} Grad-CAM \texttt{focus\_ratio} > 0.6 trên cả 4 backbone, được validate qua story debug \texttt{model.bn2}.
+            \item \textbf{Ứng dụng thực tế:} prototype Streamlit ổn định với subprocess-isolated Grad-CAM.
         \end{enumerate}
     \end{block}
 
@@ -563,9 +565,9 @@
 \begin{frame}{Hướng phát triển}
     \footnotesize
     \begin{enumerate}
-        \item \textbf{Đa phương thức (multimodal):} kết hợp ảnh với metadata bệnh nhân (tuổi, giới, vị trí tổn thương) --- đặc biệt giúp phát hiện Melanoma.
+        \item \textbf{Domain adaptation cho ảnh smartphone:} kết quả OOD trên PAD-UFES-20 (phụ lục A23) cho thấy drop $-56$ pp accuracy. Đóng khoảng cách cần fine-tune trên data in-domain hoặc style-transfer preprocessing.
         \vspace{0.15cm}
-        \item \textbf{Kiểm thử out-of-distribution:} đánh giá ensemble trên các tập dữ liệu khác (BCN20000, PAD-UFES-20) và các tông da khác nhau để đảm bảo tổng quát hóa.
+        \item \textbf{Open-set / OOD detection:} classifier hiện tại bị buộc gán 1 trong 7 lớp. Production cần component nhận diện input \textit{không phải} tổn thương da (mụn, sẹo, ảnh sai vùng).
         \vspace{0.15cm}
         \item \textbf{Active learning loop:} cho phép bác sĩ chỉnh sửa nhãn sai trong prototype, định kỳ retrain mô hình.
         \vspace{0.15cm}

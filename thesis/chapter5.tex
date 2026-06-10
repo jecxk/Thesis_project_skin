@@ -9,6 +9,8 @@ At the single representative seed (42) reported in the headline tables, Efficien
 
 Grad-CAM visualisations confirmed that every model attends to the lesion interior and boundary, not to background skin or imaging artefacts. This is a necessary condition for clinical deployment---a model that achieves 88\% accuracy by attending to ruler markings is not useful, regardless of its test-set numbers. An interactive Streamlit prototype embedding real-time ensemble prediction and Grad-CAM overlay demonstrates that these models can be integrated into a functional diagnostic support interface.
 
+Beyond the image-only baseline, two further experiments were conducted to extend and probe the result. Late-fusing the HAM10000 patient metadata vector (age, sex, anatomical location) into each backbone through a small MLP encoder pushes the four-model ensemble to 90.49\% accuracy and 0.873 macro F1, improving on Pacheco and Krohling's reported 89.0\% / 0.83 and crossing the 90\% threshold often cited as a reference point for image-based skin classification. To bound expectations honestly, the image-only ensemble was also evaluated zero-shot on PAD-UFES-20, a public dataset of 2,298 clinical smartphone photographs from a different acquisition modality. Accuracy drops to 32.5\%, a 56-percentage-point fall that is consistent with literature reports for dermoscopy-to-clinical-photo transfer without domain adaptation. Per-class AUC remains in the 0.61--0.81 range, confirming the model is not random on smartphone photographs but that hard-decision performance requires modality-specific adaptation or fine-tuning to be clinically usable.
+
 \section{Key Findings}
 
 Three findings from this work have implications beyond the specific dataset and architectures studied.
