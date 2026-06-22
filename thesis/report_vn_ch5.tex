@@ -21,22 +21,24 @@ Ngoài baseline chỉ-ảnh, hai thí nghiệm mở rộng được thực hiệ
 \section{Hạn chế}
 
 \begin{itemize}
-    \item \textbf{Tập dữ liệu đơn.} Chỉ ISIC 2018, chưa kiểm tra trên ISIC 2019/2020 hoặc dữ liệu lâm sàng bên ngoài.
-    \item \textbf{Độ phân giải cố định $224 \times 224$.} Độ phân giải cao hơn có thể khôi phục đặc trưng phân biệt tinh tế.
-    \item \textbf{Tập kiểm tra lớp hiếm nhỏ.} 17 DF, 22 VASC --- một phân loại sai dịch chuyển F1 khoảng 0,06.
-    \item \textbf{Không có xác thực lâm sàng.} Chưa đánh giá bởi bác sĩ da liễu thực hành.
-    \item \textbf{Không có kiểm tra ý nghĩa thống kê.} Chỉ ước tính điểm từ một phân chia duy nhất.
-    \item \textbf{Kiến trúc Transformer đơn.} Chỉ Swin-Tiny; các biến thể khác có thể cho kết quả khác.
+    \item \textbf{Thiên kiến nhân khẩu học của tập dữ liệu.} HAM10000 thu thập chủ yếu ở Áo và Mỹ với dân số đa số Fitzpatrick I--III. Triển khai trên bệnh nhân với tông da đậm hơn (Fitzpatrick IV--VI) nhiều khả năng kém hiệu năng, nhất quán với báo cáo thiên kiến tông da ở các hệ thống dermoscopy thương mại. Khóa luận không bao gồm dữ liệu Việt Nam hoặc dữ liệu địa phương đại diện, nên khoảng cách nhân khẩu học được thừa nhận nhưng chưa được đo lường.
+    \item \textbf{Khoảng cách modality thu thập.} Đánh giá ngoài phân phối trên PAD-UFES-20 định lượng mức giảm 56 điểm phần trăm accuracy khi cùng một ensemble chỉ-ảnh chạy trên ảnh smartphone lâm sàng thay vì dermoscopy ánh sáng phân cực. Pipeline chưa triển khai được trên ảnh consumer-grade nếu không có domain adaptation, fine-tune in-domain, hoặc tiền xử lý đặc trị cho modality.
+    \item \textbf{Phạm vi closed-set bảy lớp.} Classifier bị buộc gán mọi input vào một trong bảy lớp ISIC. Thực hành lâm sàng có hàng chục loại tổn thương, và bất kỳ input nào ngoài bảy lớp huấn luyện (mụn, sẹo, vùng không phải tổn thương) sẽ bị gán nhầm vào lớp gần nhất. Prototype Streamlit giảm thiểu bằng cảnh báo ngưỡng tin cậy, nhưng một bộ phát hiện open-set hoặc OOD chuyên dụng chưa được triển khai.
+    \item \textbf{Độ phân giải cố định $224 \times 224$.} Độ phân giải cao hơn, mà các kiến trúc như EfficientNetV2~\cite{tan2021efficientnetv2} thiết kế để khai thác, có thể khôi phục các đặc trưng phân biệt tinh tế bị mất ở kích thước chuẩn, đặc biệt cho các pattern sắc tố và kết cấu tinh tế trong cụm nhầm lẫn MEL/NV/BKL.
+    \item \textbf{Tập kiểm tra lớp hiếm nhỏ.} Test set chỉ có 17 Dermatofibroma và 22 Vascular Lesion. Một phân loại sai bổ sung dịch chuyển F1 các lớp này khoảng 0,06, nên các con số per-class cho lớp hiếm mang phương sai cao và không nên diễn giải quá mức.
+    \item \textbf{Kiến trúc Transformer đơn.} Chỉ Swin-Tiny được đánh giá. Các biến thể khác (DeiT~\cite{touvron2021deit}, ConvNeXt~\cite{liu2022convnext}, hoặc Swin lớn hơn) có thể cho trade-off accuracy--AUC khác và đặc tính ensemble khác khi kết hợp với các CNN.
+    \item \textbf{Không có xác thực lâm sàng tiến cứu.} Các mô hình chưa được triển khai trong workflow patient-facing hoặc đánh giá bởi bác sĩ da liễu thực hành theo thời gian thực. Các nghiên cứu so sánh human--AI và đánh giá chấp nhận của bác sĩ vẫn là điều kiện tiên quyết cho mọi cân nhắc triển khai.
 \end{itemize}
 
 \section{Hướng Phát triển}
 
 \begin{itemize}
-    \item \textbf{Tăng cường thời gian kiểm tra (TTA):} Lấy trung bình dự đoán trên nhiều phiên bản tăng cường, thường thêm 1--2\% accuracy.
-    \item \textbf{Điều chỉnh ngưỡng theo lớp:} Tối ưu ngưỡng trên đường cong ROC xác thực để tăng độ nhạy melanoma.
-    \item \textbf{Đánh giá xuyên tập dữ liệu:} Kiểm tra trên ISIC 2019/2020 hoặc dữ liệu lâm sàng riêng tư.
-    \item \textbf{Huấn luyện trước tự giám sát:} Phương pháp như DINO trên ảnh dermoscopy không gán nhãn.
-    \item \textbf{Phân loại hỗ trợ phân đoạn:} Dự đoán đồng thời ranh giới tổn thương và nhãn bệnh.
-    \item \textbf{Chưng cất tri thức:} Nén ensemble bốn mô hình thành một mô hình nhẹ duy nhất.
-    \item \textbf{Phân tích hiệu chỉnh chính thức:} Temperature scaling và biểu đồ độ tin cậy.
+    \item \textbf{Domain adaptation cho ảnh lâm sàng.} Mức giảm 56 điểm phần trăm OOD trên PAD-UFES-20 thiết lập một mục tiêu định lượng. Style-transfer preprocessing, adversarial domain adaptation, hoặc fine-tune trên một bộ ảnh smartphone gắn nhãn nhỏ đều được kỳ vọng thu hẹp phần đáng kể khoảng cách đó.
+    \item \textbf{Open-set và OOD detection.} Bổ sung một component chuyên dụng (Mahalanobis distance trên features backbone, Energy-based score, hoặc tín hiệu tái cấu trúc autoencoder) sẽ cho phép hệ thống từ chối input không phải tổn thương da, thay vì buộc gán bảy lớp mà người dùng phải tự loại trừ.
+    \item \textbf{Augmentation theo tông da và phân tích fairness.} Augmentation hue/saturation theo Fitzpatrick, kết hợp với loss term fairness theo subgroup, sẽ trực tiếp đối phó thiên kiến nhân khẩu học thừa hưởng từ phân phối huấn luyện HAM10000. Khi có dữ liệu Việt Nam hoặc dữ liệu địa phương đại diện, các con số fairness có thể được đo lường.
+    \item \textbf{Huấn luyện độ phân giải cao hơn.} Các kiến trúc thiết kế cho input lớn hơn có thể khôi phục features bị mất ở $224 \times 224$, đặc biệt cho cụm nhầm lẫn MEL/NV/BKL nơi các khác biệt texture nhỏ mang thông tin chẩn đoán.
+    \item \textbf{Huấn luyện trước tự giám sát.} Các phương pháp như DINO~\cite{caron2021dino} có thể trích xuất biểu diễn thị giác mạnh từ các bộ sưu tập dermoscopy không nhãn lớn trước khi fine-tune trên dữ liệu có nhãn, có khả năng giảm yêu cầu dữ liệu hiệu quả và cải thiện tổng quát hóa lớp thiểu số.
+    \item \textbf{Phân loại hỗ trợ phân đoạn.} Dự đoán đồng thời ranh giới tổn thương~\cite{hasan2020dsnet} cùng với nhãn bệnh sẽ cho mô hình giám sát không gian rõ ràng cho các features ranh giới liên quan nhất tới phân biệt melanoma--nevus.
+    \item \textbf{Knowledge distillation cho triển khai.} Nén ensemble bốn mô hình thành một mô hình nhẹ duy nhất sẽ giữ phần lớn lợi thế accuracy đồng thời giảm chi phí inference về một forward pass, yêu cầu thực tiễn cho triển khai mobile hoặc point-of-care.
+    \item \textbf{Đánh giá lâm sàng tiến cứu.} Một nghiên cứu có kiểm soát so sánh output của hệ thống với một hội đồng bác sĩ da liễu thực hành trên tập case đại diện là bước tiếp theo cần thiết trước khi đưa ra bất kỳ tuyên bố triển khai nào.
 \end{itemize}

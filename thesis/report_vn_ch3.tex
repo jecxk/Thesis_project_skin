@@ -74,7 +74,7 @@ Swin-Tiny       & 28,0 & ViT & Chú ý cửa sổ dịch chuyển & 0,30 \\
 
 \section{Pipeline Huấn luyện}
 
-Pipeline được xây dựng xung quanh vấn đề mất cân bằng lớp 58:1, với bốn kỹ thuật giải quyết từ các góc độ khác nhau. Hình~\ref{fig:training_pipeline_vn} cung cấp tổng quan toàn bộ pipeline.
+Pipeline huấn luyện được xây dựng xung quanh một vấn đề trung tâm: mất cân bằng lớp 58:1. Bốn kỹ thuật giải quyết vấn đề này từ các góc độ khác nhau --- lấy mẫu, tăng cường dữ liệu, sửa đổi mục tiêu nhãn và điều chuẩn --- và các đóng góp cá nhân của chúng được định lượng trong nghiên cứu loại bỏ ở Chương~4. Hình~\ref{fig:training_pipeline_vn} cung cấp tổng quan toàn bộ pipeline.
 
 \begin{figure}[H]
 \centering
@@ -84,19 +84,62 @@ Pipeline được xây dựng xung quanh vấn đề mất cân bằng lớp 58:
 \end{figure}
 
 \subsection{Lấy mẫu Ngẫu nhiên có Trọng số}
-Mỗi mẫu được gán trọng số tỷ lệ nghịch với tần suất lớp: $w_c = N / (C \cdot n_c)$, đảm bảo mỗi mini-batch xấp xỉ cân bằng lớp.
+
+Để chống lại mất cân bằng lớp trong huấn luyện, một Weighted Random Sampler được sử dụng. Mỗi mẫu được gán một trọng số tỷ lệ nghịch với tần suất lớp của nó trong tập huấn luyện:
+\begin{equation}
+w_c = \frac{N}{C \cdot n_c}
+\label{eq:class_weight_vn}
+\end{equation}
+trong đó $N$ là tổng số mẫu huấn luyện, $C$ là số lớp, và $n_c$ là số mẫu thuộc lớp $c$. Điều này đảm bảo các mini-batch xấp xỉ cân bằng lớp, ngăn mô hình phát triển thiên kiến về phía lớp đa số (NV).
 
 \subsection{Tăng cường Mixup và CutMix}
-Áp dụng với xác suất bằng nhau ($p=0,5$ mỗi loại). \textbf{Mixup:} $\tilde{x} = \lambda x_i + (1-\lambda) x_j$, $\tilde{y} = \lambda y_i + (1-\lambda) y_j$ với $\lambda \sim \text{Beta}(0,2; 0,2)$. \textbf{CutMix:} thay thế vùng hình chữ nhật của một ảnh bằng vùng tương ứng từ ảnh khác, nhãn theo tỷ lệ diện tích, $\alpha = 1,0$.
+
+Để điều chuẩn thêm và cải thiện tổng quát hóa, Mixup và CutMix được áp dụng với xác suất bằng nhau ($p = 0{,}5$ mỗi loại) trong huấn luyện.
+
+\textbf{Mixup} tạo ra các ví dụ huấn luyện ảo bằng cách nội suy tuyến tính các cặp ảnh và nhãn của chúng:
+\begin{equation}
+\tilde{x} = \lambda x_i + (1 - \lambda) x_j, \quad \tilde{y} = \lambda y_i + (1 - \lambda) y_j
+\end{equation}
+với $\lambda \sim \text{Beta}(\alpha, \alpha)$ và $\alpha = 0{,}2$.
+
+\textbf{CutMix} thay thế một vùng hình chữ nhật của một ảnh bằng vùng tương ứng từ một ảnh khác, điều chỉnh nhãn theo tỷ lệ diện tích của vùng:
+\begin{equation}
+\tilde{x} = M \odot x_i + (1 - M) \odot x_j, \quad \tilde{y} = \lambda y_i + (1 - \lambda) y_j
+\end{equation}
+trong đó $M$ là mask nhị phân chỉ vùng cắt và $\lambda$ bằng tỷ lệ vùng không bị che. CutMix alpha được đặt là 1,0.
+
+Cả hai kỹ thuật buộc mô hình học từ các tín hiệu lai mơ hồ. Với chỉ 81 ảnh Dermatofibroma huấn luyện, huấn luyện cross-entropy thuần ghi nhớ các ví dụ đó trong vài epoch; Mixup và CutMix ngăn điều đó bằng cách đảm bảo không ví dụ huấn luyện nào có nhãn one-hot cứng.
 
 \subsection{Làm mượt Nhãn (Label Smoothing)}
-$y_{\text{smooth}} = (1 - \epsilon) \cdot y_{\text{one-hot}} + \epsilon/C$ với $\epsilon = 0,1$, $C = 7$.
 
-\subsection{Tối ưu hóa}
-AdamW với lịch trình giảm cosine và khởi động tuyến tính (warmup 3--5 epoch). Gradient clipping ($\text{max\_norm}=1,0$). Mixed precision (FP16).
+Nhãn one-hot tiêu chuẩn gán xác suất 1,0 cho lớp đúng và 0,0 cho mọi lớp khác. Label Smoothing phân phối lại một phần nhỏ khối lượng xác suất sang các lớp sai:
+\begin{equation}
+y_{\text{smooth}} = (1 - \epsilon) \cdot y_{\text{one-hot}} + \frac{\epsilon}{C}
+\end{equation}
+trong đó $\epsilon = 0{,}1$ là hệ số làm mượt và $C = 7$ là số lớp. Điều này ngăn mô hình gán xác suất 1,0 cho bất kỳ lớp nào, cải thiện calibration và, như ablation ở Chương~4 cho thấy, cải thiện Macro F1 --- mặc dù phải trả giá nhỏ về độ sắc nét AUC.
+
+\subsection{Tối ưu hóa và Lập lịch}
+
+Tất cả mô hình được huấn luyện với AdamW, vốn tách weight decay khỏi việc scale gradient thích nghi. Adam tiêu chuẩn hấp thụ weight decay vào các tốc độ học theo từng tham số, làm giảm hiệu lực điều chuẩn của nó; AdamW áp dụng weight decay như một hình phạt nhân tử cố định bất kể lịch sử gradient, dẫn đến tổng quát hóa tốt hơn trên dữ liệu giữ lại. Tốc độ học tuân theo lịch trình giảm cosine với khởi động tuyến tính:
+
+\begin{itemize}
+    \item \textbf{Pha khởi động} (3--5 epoch đầu): Tốc độ học tăng tuyến tính từ gần 0 lên giá trị mục tiêu. Điều này ngăn classification head được khởi tạo ngẫu nhiên tạo ra các gradient lớn làm bất ổn feature extractor pretrained trong vài cập nhật đầu.
+    \item \textbf{Pha giảm cosine} (các epoch còn lại): Tốc độ học giảm theo đường cong cosine đến mức tối thiểu $1 \times 10^{-6}$, cho phép mô hình ổn định trong một vùng rộng, phẳng của loss landscape thay vì dao động quanh một minimum sắc.
+\end{itemize}
 
 \subsection{Tăng cường Dữ liệu}
-Lật ngang/dọc ($p=0,5$), xoay (±90°), biến đổi màu (0,25), cắt xén ngẫu nhiên (0,85--1,0), làm mờ Gaussian ($p=0,1$), xóa ngẫu nhiên ($p=0,1$). Ảnh: $224\times224$, chuẩn hóa ImageNet. Batch size: 16.
+
+Ngoài Mixup và CutMix, các phép tăng cường chuẩn sau được áp dụng trong huấn luyện:
+\begin{itemize}
+    \item Lật ngẫu nhiên ngang và dọc ($p = 0{,}5$)
+    \item Xoay ngẫu nhiên (lên đến $\pm 90^\circ$)
+    \item Color jittering (độ sáng, tương phản, độ bão hòa, hue; biên độ 0,25)
+    \item Random Resized Crop (phạm vi scale: 0,85--1,0)
+    \item Gaussian Blur ($p = 0{,}1$)
+    \item Random Erasing ($p = 0{,}1$)
+\end{itemize}
+
+Mọi ảnh được resize về $224 \times 224$ và chuẩn hóa với mean và độ lệch chuẩn ImageNet. Batch size cố định 16 cho mọi mô hình. Giá trị này bị áp đặt bởi Swin-Tiny 28M tham số dưới huấn luyện mixed precision; giữ batch size giống nhau qua mọi kiến trúc đảm bảo bất kỳ khác biệt hiệu suất nào phản ánh chính các mô hình thay vì động lực tối ưu hóa.
 
 \begin{table}[H]
 \centering
@@ -119,16 +162,20 @@ Làm mượt nhãn     & 0,1   & 0,1   & 0,1    & 0,1 \\
 
 \section{Các Chỉ số Đánh giá}
 
+Accuracy một mình là chỉ số gây hiểu lầm ở đây: một bộ phân loại dự đoán Melanocytic Nevus cho mọi input đạt 67\% accuracy trong khi không phát hiện được gì có giá trị lâm sàng. Vì vậy các chỉ số sau được báo cáo song song với accuracy:
+
 \begin{itemize}
-    \item \textbf{Macro F1-Score:} Trung bình không trọng số của F1 theo lớp --- tiêu chí lựa chọn mô hình chính.
-    \item \textbf{Macro AUC:} Diện tích dưới đường cong ROC one-vs-rest, trung bình trên các lớp.
-    \item \textbf{Cohen's Kappa ($\kappa$):} Đồng thuận đã hiệu chỉnh cho ngẫu nhiên. Trên 0,6 = đồng thuận đáng kể.
-    \item \textbf{MCC:} Tóm tắt toàn bộ ma trận nhầm lẫn trong một con số.
-    \item \textbf{Độ nhạy và Độ đặc hiệu theo lớp.}
+    \item \textbf{Macro F1-Score.} Trung bình không trọng số của F1 theo lớp. Vì mỗi lớp đóng góp như nhau bất kể tần suất, một mô hình bỏ qua DF hoặc VASC bị phạt mạnh ngay cả khi accuracy tổng thể trông tốt. Đây là tiêu chí lựa chọn mô hình chính trong khóa luận này.
+    \item \textbf{Weighted F1-Score.} F1 có trọng số theo cỡ lớp, đo độ chính xác tổng thể mà có tính tới mất cân bằng. Báo cáo cùng với Macro F1 cho bức tranh đầy đủ.
+    \item \textbf{Macro AUC (One-vs-Rest).} Diện tích dưới đường cong ROC theo lớp, trung bình trên các lớp. AUC độc lập với ngưỡng quyết định và đo khả năng xếp hạng các trường hợp lớp dương trên các lớp âm. Trong triage lâm sàng nơi xác suất output được tiêu thụ trực tiếp để xếp hạng rủi ro, đây là chỉ số liên quan.
+    \item \textbf{Cohen's Kappa ($\kappa$).} Độ đồng thuận đã hiệu chỉnh cho ngẫu nhiên. $\kappa > 0{,}6$ thường được xem là đồng thuận đáng kể.
+    \item \textbf{Matthews Correlation Coefficient (MCC).} Tóm tắt toàn bộ ma trận nhầm lẫn (TP, TN, FP, FN) trong một con số duy nhất, đặc biệt phù hợp cho dữ liệu mất cân bằng vì không bị thiên kiến bởi lớp đa số.
+    \item \textbf{Độ nhạy và Độ đặc hiệu theo lớp.} Độ nhạy (recall) = TP / (TP + FN); Độ đặc hiệu = TN / (TN + FP). Cả hai báo cáo theo lớp để định lượng riêng các hành vi gọi nhầm và bỏ sót.
 \end{itemize}
 
 \section{Chiến lược Kết hợp (Ensemble)}
-Hình~\ref{fig:ensemble_arch_vn} minh họa kiến trúc ensemble biểu quyết mềm.
+
+Các phương pháp ensemble đã liên tục xuất hiện trong các bài nộp đạt kết quả cao nhất của ISIC challenge, và lý do thì đơn giản: các mô hình đa dạng phạm sai lầm ở các vị trí khác nhau, và việc lấy trung bình các output xác suất của chúng triệt tiêu một phần sai số đó. Khóa luận này sử dụng biểu quyết mềm (soft voting), lấy trung bình các vector xác suất thô trước khi lấy argmax. Hình~\ref{fig:ensemble_arch_vn} minh họa kiến trúc.
 
 \begin{figure}[H]
 \centering
@@ -137,10 +184,20 @@ Hình~\ref{fig:ensemble_arch_vn} minh họa kiến trúc ensemble biểu quyết
 \label{fig:ensemble_arch_vn}
 \end{figure}
 
-Công thức: $\hat{y} = \arg\max_c \frac{1}{M} \sum_{m=1}^{M} p_m(c \mid x)$ với $M=4$.
+Công thức formal:
+\begin{equation}
+\hat{y} = \arg\max_c \frac{1}{M} \sum_{m=1}^{M} p_m(c \mid x), \quad M = 4
+\end{equation}
+
+So với hard voting (mỗi mô hình lấy argmax rồi vote), soft voting giữ thông tin xác suất --- nó phân biệt được giữa ``cả bốn mô hình rất chắc MEL'' và ``hai mô hình vote MEL 51\%, hai mô hình vote NV 49\%''. So với stacking (meta-learner học trọng số ensemble), soft voting đơn giản hơn đáng kể, không cần val set thứ hai và không gây overfit thêm trên tập dữ liệu nhỏ.
 
 \section{Khả năng Giải thích với Grad-CAM}
-Grad-CAM tính gradient của điểm số lớp $y^c$ đối với feature map $A^k$:
+
+Sự chấp nhận lâm sàng của một công cụ chẩn đoán AI phụ thuộc vào nhiều hơn là độ chính xác --- một mô hình phải cung cấp lập luận có thể kiểm tra. Grad-CAM tính gradient của điểm số lớp mục tiêu $y^c$ đối với bản đồ đặc trưng tích chập cuối cùng $A^k$, và sử dụng các gradient đó để tạo bản đồ nhiệt không gian có trọng số theo kênh:
 \begin{equation}
 \alpha_k^c = \frac{1}{Z} \sum_i \sum_j \frac{\partial y^c}{\partial A_{ij}^k}, \quad L_{\text{Grad-CAM}}^c = \text{ReLU}\left(\sum_k \alpha_k^c A^k\right)
 \end{equation}
+
+Trong đó $\alpha_k^c$ là trọng số kênh thu được bằng global average pooling của gradient, và $L^c$ là heatmap đã ReLU (chỉ giữ phần đóng góp positive). Heatmap được up-sample về kích thước input gốc và overlay lên ảnh bằng colormap JET.
+
+Đối với phân loại tổn thương da, Grad-CAM hoạt động như bài kiểm tra tính phản chứng: một mô hình tập trung activation vào nội thất và ranh giới tổn thương đang chú ý đến các đặc trưng mà bác sĩ nhận ra; một mô hình thắp sáng vạch ruler hoặc da nền thì không, bất kể accuracy trên test set là gì.

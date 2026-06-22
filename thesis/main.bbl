@@ -1315,6 +1315,125 @@
       \field{title}{SGDR: Stochastic gradient descent with warm restarts}
       \field{year}{2017}
     \endentry
+    \entry{pacheco2020metadata}{inproceedings}{}{}
+      \name{author}{2}{}{%
+        {{hash=d9fef9544610b0b771a7c79d6e4087ec}{%
+           family={Pacheco},
+           familyi={P\bibinitperiod},
+           given={Andre\bibnamedelimb G.\bibnamedelimi C.},
+           giveni={A\bibinitperiod\bibinitdelim G\bibinitperiod\bibinitdelim C\bibinitperiod}}}%
+        {{hash=a71b4c6ee0af0a5030c2d47206795bf3}{%
+           family={Krohling},
+           familyi={K\bibinitperiod},
+           given={Renato\bibnamedelima A.},
+           giveni={R\bibinitperiod\bibinitdelim A\bibinitperiod}}}%
+      }
+      \list{publisher}{1}{%
+        {Elsevier}%
+      }
+      \strng{namehash}{086a5903b7cd94f3f3b4c8b062f70c43}
+      \strng{fullhash}{086a5903b7cd94f3f3b4c8b062f70c43}
+      \strng{fullhashraw}{086a5903b7cd94f3f3b4c8b062f70c43}
+      \strng{bibnamehash}{086a5903b7cd94f3f3b4c8b062f70c43}
+      \strng{authorbibnamehash}{086a5903b7cd94f3f3b4c8b062f70c43}
+      \strng{authornamehash}{086a5903b7cd94f3f3b4c8b062f70c43}
+      \strng{authorfullhash}{086a5903b7cd94f3f3b4c8b062f70c43}
+      \strng{authorfullhashraw}{086a5903b7cd94f3f3b4c8b062f70c43}
+      \field{sortinit}{4}
+      \field{sortinithash}{9381316451d1b9788675a07e972a12a7}
+      \field{labelnamesource}{author}
+      \field{labeltitlesource}{title}
+      \field{booktitle}{Computers in Biology and Medicine}
+      \field{title}{The impact of patient clinical information on automated skin cancer detection}
+      \field{volume}{116}
+      \field{year}{2020}
+      \field{pages}{103545}
+      \range{pages}{1}
+    \endentry
+    \entry{pacheco2020pad}{misc}{}{}
+      \name{author}{11}{}{%
+        {{hash=d9fef9544610b0b771a7c79d6e4087ec}{%
+           family={Pacheco},
+           familyi={P\bibinitperiod},
+           given={Andre\bibnamedelimb G.\bibnamedelimi C.},
+           giveni={A\bibinitperiod\bibinitdelim G\bibinitperiod\bibinitdelim C\bibinitperiod}}}%
+        {{hash=56a3fb9691416e9583dcccd158c7872c}{%
+           family={Lima},
+           familyi={L\bibinitperiod},
+           given={Gustavo\bibnamedelima R.},
+           giveni={G\bibinitperiod\bibinitdelim R\bibinitperiod}}}%
+        {{hash=4daaa3ee74e454a6b2bd10040e1eb25d}{%
+           family={Salomão},
+           familyi={S\bibinitperiod},
+           given={Amanda\bibnamedelima S.},
+           giveni={A\bibinitperiod\bibinitdelim S\bibinitperiod}}}%
+        {{hash=8e0bf18006baaed929a9a7ef54eb8be3}{%
+           family={Krohling},
+           familyi={K\bibinitperiod},
+           given={Breno},
+           giveni={B\bibinitperiod}}}%
+        {{hash=f97a3a4d31fe80ba3c9df8cdc15bcdfb}{%
+           family={Biral},
+           familyi={B\bibinitperiod},
+           given={Igor\bibnamedelima P.},
+           giveni={I\bibinitperiod\bibinitdelim P\bibinitperiod}}}%
+        {{hash=4e66e85bd55b5e16311c42d731838772}{%
+           family={Angelo},
+           familyi={A\bibinitperiod},
+           given={Gabriel\bibnamedelima G.},
+           giveni={G\bibinitperiod\bibinitdelim G\bibinitperiod},
+           prefix={de},
+           prefixi={d\bibinitperiod}}}%
+        {{hash=aa6449742e666a9610e8dcc85e04fc8b}{%
+           family={Alves\bibnamedelima Jr},
+           familyi={A\bibinitperiod\bibinitdelim J\bibinitperiod},
+           given={Fábio\bibnamedelimb C.\bibnamedelimi R.},
+           giveni={F\bibinitperiod\bibinitdelim C\bibinitperiod\bibinitdelim R\bibinitperiod}}}%
+        {{hash=f5b519d71059a8334d9385e9470db16e}{%
+           family={Esgario},
+           familyi={E\bibinitperiod},
+           given={José\bibnamedelimb G.\bibnamedelimi M.},
+           giveni={J\bibinitperiod\bibinitdelim G\bibinitperiod\bibinitdelim M\bibinitperiod}}}%
+        {{hash=f61587719903709cb3aaaa198ff20598}{%
+           family={Simora},
+           familyi={S\bibinitperiod},
+           given={Alana\bibnamedelima C.},
+           giveni={A\bibinitperiod\bibinitdelim C\bibinitperiod}}}%
+        {{hash=d4692fcc4c88984341ab1e969705c0f4}{%
+           family={Barros},
+           familyi={B\bibinitperiod},
+           given={Luíz\bibnamedelimb F.\bibnamedelimi S.},
+           giveni={L\bibinitperiod\bibinitdelim F\bibinitperiod\bibinitdelim S\bibinitperiod},
+           prefix={de},
+           prefixi={d\bibinitperiod}}}%
+        {{hash=a71b4c6ee0af0a5030c2d47206795bf3}{%
+           family={Krohling},
+           familyi={K\bibinitperiod},
+           given={Renato\bibnamedelima A.},
+           giveni={R\bibinitperiod\bibinitdelim A\bibinitperiod}}}%
+      }
+      \list{publisher}{1}{%
+        {Mendeley Data}%
+      }
+      \strng{namehash}{2c48c5e8f2d18e00eb2cb919c156ab29}
+      \strng{fullhash}{fec607713750469993f0e55a46abbb01}
+      \strng{fullhashraw}{fec607713750469993f0e55a46abbb01}
+      \strng{bibnamehash}{2c48c5e8f2d18e00eb2cb919c156ab29}
+      \strng{authorbibnamehash}{2c48c5e8f2d18e00eb2cb919c156ab29}
+      \strng{authornamehash}{2c48c5e8f2d18e00eb2cb919c156ab29}
+      \strng{authorfullhash}{fec607713750469993f0e55a46abbb01}
+      \strng{authorfullhashraw}{fec607713750469993f0e55a46abbb01}
+      \field{sortinit}{4}
+      \field{sortinithash}{9381316451d1b9788675a07e972a12a7}
+      \field{labelnamesource}{author}
+      \field{labeltitlesource}{title}
+      \field{howpublished}{\url{https://doi.org/10.17632/zr7vgbcyr2.1}}
+      \field{title}{{PAD-UFES-20}: A skin lesion dataset composed of patient data and clinical images collected from smartphones}
+      \field{year}{2020}
+      \verb{doi}
+      \verb 10.17632/zr7vgbcyr2.1
+      \endverb
+    \endentry
     \entry{abbasi2004early}{article}{}{}
       \name{author}{8}{}{%
         {{hash=af08efca2b61f08d62d8d5adc287b5c0}{%
@@ -1369,8 +1488,8 @@
       \strng{authornamehash}{50e3135372b115cf1996e662ff564949}
       \strng{authorfullhash}{b171f4518a191e75ceb6c527e7b3efd9}
       \strng{authorfullhashraw}{b171f4518a191e75ceb6c527e7b3efd9}
-      \field{sortinit}{4}
-      \field{sortinithash}{9381316451d1b9788675a07e972a12a7}
+      \field{sortinit}{5}
+      \field{sortinithash}{20e9b4b0b173788c5dace24730f47d8c}
       \field{labelnamesource}{author}
       \field{labeltitlesource}{title}
       \field{journaltitle}{JAMA}

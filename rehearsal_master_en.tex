@@ -1,0 +1,1069 @@
+% !TEX program = xelatex
+\documentclass[11pt,a4paper]{article}
+
+\usepackage[a4paper,top=2cm,bottom=2.2cm,left=2.2cm,right=2.2cm]{geometry}
+\usepackage{fontspec}
+\setmainfont{Times New Roman}
+\setmonofont{Consolas}[Scale=0.92]
+
+\usepackage{amsmath, amssymb}
+\usepackage{graphicx}
+\usepackage{xcolor}
+\usepackage{colortbl}
+\usepackage{booktabs}
+\usepackage{tabularx}
+\usepackage{array}
+\usepackage{enumitem}
+\usepackage{tcolorbox}
+\usepackage{listings}
+\usepackage{titlesec}
+\usepackage[hidelinks,colorlinks=true,linkcolor=blue!60!black,urlcolor=blue!60!black]{hyperref}
+
+\definecolor{usthblue}{HTML}{0054A6}
+\definecolor{darkblue}{HTML}{003366}
+\definecolor{softgray}{HTML}{F5F6F8}
+\definecolor{boxborder}{HTML}{D8E0EA}
+\definecolor{kwcol}{HTML}{0033CC}
+\definecolor{strcol}{HTML}{B30000}
+\definecolor{cmtcol}{HTML}{717171}
+\definecolor{numcol}{HTML}{8E5816}
+\definecolor{egbox}{HTML}{FFF8E6}
+\definecolor{egbord}{HTML}{E5C97A}
+\definecolor{qbox}{HTML}{FCEDE7}
+\definecolor{qbord}{HTML}{D88C6F}
+
+\lstdefinestyle{py}{
+  language=Python,
+  basicstyle=\ttfamily\footnotesize,
+  keywordstyle=\color{kwcol}\bfseries,
+  stringstyle=\color{strcol},
+  commentstyle=\color{cmtcol}\itshape,
+  numberstyle=\tiny\color{numcol},
+  numbers=left, numbersep=8pt,
+  showstringspaces=false, breaklines=true, breakatwhitespace=true,
+  frame=single, rulecolor=\color{boxborder},
+  backgroundcolor=\color{softgray},
+  framerule=0.4pt, xleftmargin=12pt, xrightmargin=4pt,
+  aboveskip=8pt, belowskip=8pt,
+  literate={→}{$\rightarrow$}{1}{≥}{$\geq$}{1}{≤}{$\leq$}{1}
+           {α}{$\alpha$}{1}{ε}{$\varepsilon$}{1}{λ}{$\lambda$}{1}{·}{$\cdot$}{1}
+}
+\lstset{style=py}
+
+\titleformat{\section}{\Large\bfseries\color{usthblue}}{\thesection.}{0.5em}{}
+\titleformat{\subsection}{\large\bfseries\color{darkblue}}{\thesubsection.}{0.5em}{}
+\titleformat{\subsubsection}{\normalsize\bfseries}{}{0pt}{}
+\titlespacing*{\section}{0pt}{16pt}{8pt}
+\titlespacing*{\subsection}{0pt}{12pt}{6pt}
+
+\newtcolorbox{idea}[1][]{
+  colback=blue!4, colframe=usthblue!60, boxrule=0.6pt,
+  arc=4pt, left=10pt, right=10pt, top=6pt, bottom=6pt,
+  title=#1, fonttitle=\bfseries\color{usthblue}
+}
+\newtcolorbox{example}[1][Example]{
+  colback=egbox, colframe=egbord, boxrule=0.6pt,
+  arc=4pt, left=10pt, right=10pt, top=6pt, bottom=6pt,
+  title={\footnotesize #1}, fonttitle=\bfseries\color{black!70},
+  before skip=8pt, after skip=8pt
+}
+\newtcolorbox{simple}[1][Plain-English Explanation]{
+  colback=green!4, colframe=green!50!black, boxrule=0.6pt,
+  arc=4pt, left=10pt, right=10pt, top=6pt, bottom=6pt,
+  title={\footnotesize #1}, fonttitle=\bfseries\color{green!40!black},
+  before skip=6pt, after skip=6pt
+}
+\newtcolorbox{qa}[1][Committee may ask]{
+  colback=qbox, colframe=qbord, boxrule=0.6pt,
+  arc=4pt, left=10pt, right=10pt, top=6pt, bottom=6pt,
+  title={\footnotesize #1}, fonttitle=\bfseries\color{qbord!60!black},
+  before skip=6pt, after skip=6pt
+}
+
+\setlength{\parskip}{6pt}
+\setlength{\parindent}{0pt}
+\renewcommand{\arraystretch}{1.2}
+
+\title{
+  \vspace{-1.5cm}
+  \color{usthblue}\Huge\textbf{Master Rehearsal Guide}\\[6pt]
+  \color{black!75}\large Skin Lesion Classification Thesis\\[2pt]
+  \normalsize\textit{Everything you need to defend successfully}
+}
+\author{Nguyen Trong Bach --- 23BI14057 \\[2pt]\small USTH ICT 2026}
+\date{}
+
+\begin{document}
+\maketitle
+\vspace{-1cm}
+
+{\hypersetup{linkcolor=black}\tableofcontents}
+
+\newpage
+
+% ==========================================================
+\section{How to use this document}
+% ==========================================================
+
+\begin{idea}[Orientation]
+This is the \textbf{single file} you should read while rehearsing. It covers:
+\begin{itemize}[leftmargin=*]
+  \item Every technique in the project --- explained \textit{plainly} first, then with \textit{rigorous math}.
+  \item Every updated number through Week 3 (multi-seed, metadata fusion, OOD).
+  \item Every concept paired with a \textit{concrete worked example}.
+  \item The 10 hardest questions the committee may ask + answer templates.
+  \item Defense-day checklist.
+  \item A one-page summary you can print and carry.
+\end{itemize}
+\end{idea}
+
+\textbf{Colour-coded boxes:}
+
+\begin{simple}
+Green box --- everyday-language explanation, no formulas. Understand \textit{this} before going into the math.
+\end{simple}
+
+\begin{example}
+Yellow box --- concrete numerical example using actual project numbers. This is how you answer ``give me an example'' during Q\&A.
+\end{example}
+
+\begin{idea}[Blue box --- key insight / deep understanding]
+The single most important bullet of a section. Re-read these before defense.
+\end{idea}
+
+\begin{qa}
+Orange box --- hypothetical committee question with a model answer.
+\end{qa}
+
+\textbf{Suggested reading schedule:}
+\begin{itemize}[leftmargin=*]
+  \item Round 1 (90 min): read sequentially from section 2 to section 22.
+  \item Round 2 (45 min): only the blue and orange boxes.
+  \item Round 3 (15 min on the morning of defense): only section 23 (one-page summary).
+\end{itemize}
+
+% ==========================================================
+\section{What is this thesis --- 1-page elevator pitch}
+% ==========================================================
+
+\textbf{Problem.} Given one dermoscopic image (a skin lesion photographed under a polarised-light dermoscope), predict \textbf{which of 7 lesion classes} it belongs to: \texttt{akiec}, \texttt{bcc}, \texttt{bkl}, \texttt{df}, \texttt{mel}, \texttt{nv}, \texttt{vasc}. Among these, \texttt{mel} (melanoma) is the \textbf{most dangerous}.
+
+\textbf{Data.} ISIC 2018 Task 3 / HAM10000 --- 10,015 images, severe imbalance (NV is 67\%, DF is only 1.1\%, ratio \textbf{58:1}).
+
+\textbf{Method.} Fine-tune 4 ImageNet-pretrained models (\textit{EfficientNet-B0, ResNet50, DenseNet121, Swin-Tiny}) on ISIC 2018, combine them with \textbf{soft-voting ensemble}, and extend with \textbf{patient metadata fusion} (age, sex, anatomical localisation).
+
+\textbf{Headline results:}
+\begin{itemize}[leftmargin=*]
+  \item Best single model (seed 42): EfficientNet-B0 --- Acc 88.36\%, F1 0.831.
+  \item Image-only ensemble (1 seed): Acc \textbf{89.49\%}, F1 \textbf{0.845}, AUC \textbf{0.980}.
+  \item Image-only ensemble (5 seeds): Acc \textbf{89.93 $\pm$ 0.66\%}, F1 \textbf{0.852 $\pm$ 0.010}, AUC \textbf{0.982 $\pm$ 0.001}.
+  \item Ensemble + metadata fusion: Acc \textbf{90.49\%}, F1 \textbf{0.873}, AUC \textbf{0.984} --- beats Pacheco \& Krohling 2020.
+  \item Out-of-distribution on PAD-UFES-20 (smartphone photos, zero-shot): Acc \textbf{32.46\%} --- a 56 pp drop, the standard cost of dermoscopy-to-smartphone transfer.
+\end{itemize}
+
+\textbf{Interpretability.} Grad-CAM (Selvaraju 2017) + 4 quantitative metrics: \texttt{focus\_ratio > 0.6} and \texttt{peak\_distance < 0.2} across all 4 models $\Rightarrow$ the model actually attends to the lesion, not to artefacts.
+
+\textbf{Product.} Streamlit prototype (\texttt{app.py}) that lets clinicians upload an image and receive a diagnosis + heatmap in real time.
+
+\begin{idea}[One-line take-away]
+A carefully regularised pipeline, an architecturally diverse ensemble, plus patient metadata can reach 90\%+ on ISIC 2018 and beat several published SOTA --- but real-world deployment on smartphone photographs still requires domain adaptation (the 56 pp OOD drop bounds this honestly).
+\end{idea}
+
+% ==========================================================
+\section{Foundational definitions}
+% ==========================================================
+
+\subsection{Deep learning}
+
+\begin{simple}
+Deep learning = a neural network with \textit{many layers} stacked on top of each other. Each layer takes the previous layer's output and transforms it into a \textit{more abstract} representation. For images: the first layers see \textit{edges}, middle layers see \textit{parts}, final layers see \textit{concepts}.
+\end{simple}
+
+Mathematically: given data $(x_i, y_i)$ and parameters $\theta$, the network learns by gradient descent:
+\[
+  \theta^* = \arg\min_\theta \; \frac{1}{N}\sum_{i=1}^N \mathcal{L}\bigl(f_\theta(x_i),\, y_i\bigr).
+\]
+
+\subsection{Pre-training --- training ``from scratch''}
+
+\begin{simple}
+Pre-training = teach a network from zero on a \textit{very large} dataset. The goal: teach the network how to ``see'' in general. Example: teach the network to distinguish cats, dogs and cars --- it knows nothing about dermatology yet.
+\end{simple}
+
+\begin{example}[Pre-training on ImageNet]
+ImageNet-1K has 1.28 \textit{million} images across 1{,}000 classes. Pre-training EfficientNet-B0 on ImageNet takes \textit{weeks} on many GPUs. The output: a weights file $\theta_{\text{pre}}$ --- the network ``knows how to look at images'' but knows nothing about skin yet.
+\end{example}
+
+\subsection{Fine-tuning --- ``small adjustment''}
+
+\begin{simple}
+Fine-tuning = take a pre-trained network, change its output for a new task, then keep training on a smaller dataset. Like: you already know English, now you study \textit{medical} English --- no need to start from A-Z, just learn the specialised vocabulary.
+\end{simple}
+
+\begin{example}[Fine-tuning EB0 for ISIC 2018]
+\begin{enumerate}[leftmargin=*]
+  \item Load $\theta_{\text{pre}}$ (ImageNet weights) from \texttt{timm}.
+  \item Replace the classifier head: \texttt{Linear(1280, 1000)} $\to$ \texttt{Linear(1280, 7)} (random init).
+  \item Train the entire network on 7{,}010 ISIC images with a small LR of 3e-4 for 50 epochs.
+\end{enumerate}
+\end{example}
+
+\begin{idea}[When to use which?]
+\textbf{Training from scratch} needs $>$ 100K images and weeks of GPU time --- not feasible on the 10K-image ISIC dataset.
+\textbf{Fine-tuning} needs a few thousand images and minutes-to-hours of training --- this is exactly what the thesis does.
+\end{idea}
+
+\subsection{Which one does this thesis use?}
+
+\textbf{The thesis uses fine-tuning.} It loads ImageNet weights from \texttt{timm} and does \textit{not} pre-train anything itself. The actual code:
+
+\begin{lstlisting}[caption={\texttt{src/models/build\_model.py}}]
+import timm
+def build_model(model_cfg: dict):
+    model = timm.create_model(
+        model_cfg['name'],       # "tf_efficientnet_b0", "resnet50", ...
+        pretrained=True,         # load ImageNet weights
+        num_classes=7,           # replace head: 1000 -> 7
+        drop_rate=0.3,           # dropout before classifier
+    )
+    return model
+\end{lstlisting}
+
+\begin{qa}
+\textbf{Q:} Did you pre-train or fine-tune?\\
+\textbf{A:} Fine-tuning. I do not have the data to pre-train from scratch (that needs millions of images). I load ImageNet-pretrained weights from \texttt{timm}, replace the classifier head from 1000 ImageNet classes down to 7 ISIC classes, then train the entire network on ISIC with a small learning rate.
+\end{qa}
+
+% ==========================================================
+\section{The ISIC 2018 / HAM10000 dataset}
+% ==========================================================
+
+\subsection{The seven lesion classes}
+
+\begin{table}[h]
+\centering\small
+\begin{tabular}{llrrrr}
+\toprule
+\textbf{Code} & \textbf{Full name} & \textbf{Train} & \textbf{Val} & \textbf{Test} & \textbf{Total} \\
+\midrule
+nv    & Melanocytic Nevus (common mole)            & 4{,}693 & 1{,}006 & 1{,}006 & 6{,}705 \\
+mel   & \textbf{Melanoma}                          &   779   &   167   &   167   & 1{,}113 \\
+bkl   & Benign Keratosis-like                      &   769   &   165   &   165   & 1{,}099 \\
+bcc   & Basal Cell Carcinoma                       &   360   &    77   &    77   &   514 \\
+akiec & Actinic Keratosis (pre-cancerous)          &   229   &    49   &    49   &   327 \\
+vasc  & Vascular Lesion                            &    99   &    21   &    22   &   142 \\
+df    & Dermatofibroma                             &    81   &    17   &    17   &   115 \\
+\midrule
+\multicolumn{2}{l}{\textbf{Total}} & 7{,}010 & 1{,}502 & 1{,}503 & \textbf{10{,}015}\\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\subsection{Extreme class imbalance}
+
+\begin{simple}
+The largest class (NV: 4{,}693 images) versus the smallest (DF: 81 images) gives a ratio of \textbf{58:1}. Equivalently, in 59 random images you would expect 58 NV and 1 DF. This imbalance naturally biases any model toward NV.
+\end{simple}
+
+\begin{idea}[Why is imbalance dangerous?]
+A \textit{lazy} model could predict ``NV for everything'' and reach \textbf{67\% accuracy} without learning anything --- but it would miss 100\% of melanomas. That is why we report \textbf{Macro F1} (the \textit{unweighted} mean of per-class F1) as the headline metric, not accuracy.
+\end{idea}
+
+\subsection{Stratified 70/15/15 split}
+
+\begin{simple}
+Stratified = split the data so that the 7-class proportions are preserved across train/val/test. A purely random split risks leaving the val set with zero DF samples (only 17 exist in 10K).
+\end{simple}
+
+% ==========================================================
+\section{Pre-processing + augmentation}
+% ==========================================================
+
+\subsection{Base pre-processing}
+
+Every image is:
+\begin{itemize}[leftmargin=*]
+  \item \textbf{Resized to 224$\times$224} --- the standard ImageNet input size.
+  \item \textbf{ToTensor} --- pixels $[0, 255] \to [0, 1]$.
+  \item \textbf{Normalised} with ImageNet mean/std:
+  \[
+    x' = \frac{x - \mu_{\text{ImageNet}}}{\sigma_{\text{ImageNet}}}, \quad
+    \mu = (0.485, 0.456, 0.406), \quad \sigma = (0.229, 0.224, 0.225).
+  \]
+\end{itemize}
+
+\begin{simple}
+Why use ImageNet's mean and std? The pretrained model has already learned to expect inputs at that statistical scale. Normalising differently shifts the input distribution away from training distribution $\Rightarrow$ the model panics.
+\end{simple}
+
+\subsection{Augmentation (train only, never on val/test)}
+
+\begin{table}[h]
+\centering\small
+\begin{tabular}{lcc}
+\toprule
+\textbf{Transform} & \textbf{Parameter} & \textbf{Reason} \\
+\midrule
+RandomResizedCrop & scale 0.85--1.0    & Scale invariance \\
+HorizontalFlip    & $p = 0.5$            & Skin images are symmetric \\
+VerticalFlip      & $p = 0.5$            & No fixed ``up/down'' orientation \\
+Rotation          & $\pm 90^\circ$     & Rotation invariance \\
+ColorJitter       & b/c/s/h $= 0.25$   & Robustness to device \\
+GaussianBlur      & $p = 0.1$            & Robustness to sharpness \\
+RandomErasing     & $p = 0.1$            & Robustness to occlusion \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+% ==========================================================
+\section{Weighted Random Sampler}
+% ==========================================================
+
+\subsection{Idea}
+
+\begin{simple}
+A vanilla DataLoader picks images uniformly $\to$ a single batch is mostly NV. The Weighted Sampler assigns a \textit{higher weight} to rare classes $\to$ the DataLoader picks DF more often $\to$ each batch is approximately class-balanced.
+\end{simple}
+
+\subsection{Formula}
+
+\[
+  w_c = \frac{1}{n_c} \quad \text{(or normalised)} \quad w_c = \frac{N}{C \cdot n_c}
+\]
+
+\begin{example}[Per-class weights on ISIC train]
+$N = 7{,}010$, $C = 7$:
+
+\begin{center}\small
+\begin{tabular}{lrr}
+\toprule
+Class & $n_c$ & $w_c$ \\
+\midrule
+nv    & 4{,}693 & 0.213 \\
+mel   &   779   & 1.286 \\
+bkl   &   769   & 1.303 \\
+bcc   &   360   & 2.782 \\
+akiec &   229   & 4.373 \\
+vasc  &    99   & 10.117 \\
+df    &    81   & \textbf{12.365} \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\textbf{Consequence:} a DF image is sampled with probability $12.365 / 0.213 \approx \mathbf{58\times}$ that of an NV image. After sampling, each mini-batch is roughly class-balanced.
+\end{example}
+
+% ==========================================================
+\section{Mixup --- ``blend two images''}
+% ==========================================================
+
+\begin{simple}
+Mixup = take two different images, \textit{blend} them at a random ratio, and blend their labels at the same ratio. This forces the model to behave \textit{linearly} between samples and prevents memorisation.
+\end{simple}
+
+\subsection{Formula}
+
+Given two samples $(x_i, y_i)$ and $(x_j, y_j)$, draw $\lambda \sim \mathrm{Beta}(\alpha, \alpha)$ with $\alpha = 0.2$:
+\[
+  \tilde{x} = \lambda x_i + (1-\lambda) x_j, \qquad \tilde{y} = \lambda y_i + (1-\lambda) y_j.
+\]
+
+\begin{example}[Mixup of a melanoma and a nevus]
+\begin{itemize}[leftmargin=*]
+  \item $x_i$ = a melanoma image, $y_i = [0,0,0,0,\mathbf{1},0,0]$ (mel)
+  \item $x_j$ = a nevus image, $y_j = [0,0,0,0,0,\mathbf{1},0]$ (nv)
+  \item $\lambda = 0.7$ drawn at random.
+\end{itemize}
+\textbf{Blended image:} $\tilde{x} = 0.7 \, x_i + 0.3 \, x_j$ --- the melanoma image is ``70\% clear'' and a faint ``30\% nevus'' is overlaid on it.\\
+\textbf{Blended label:} $\tilde{y} = [0,0,0,0, \mathbf{0.7}, \mathbf{0.3}, 0]$.\\
+The model must predict probability mel near 0.7 \textit{and} nv near 0.3.
+\end{example}
+
+\begin{idea}[Ablation: Mixup is the most important component]
+Removing Mixup/CutMix from the pipeline drops Macro F1 by \textbf{4.51\%} --- the largest single contribution of any component. With only 81 DF training images, without Mixup the model effectively \textit{memorises} those 81 images in the first few epochs.
+\end{idea}
+
+% ==========================================================
+\section{CutMix --- ``cut and paste a patch''}
+% ==========================================================
+
+\begin{simple}
+CutMix differs from Mixup: instead of blending the whole image (which makes a blurry overlay), CutMix \textit{cuts a rectangular patch} from image $j$ and \textit{pastes} it onto image $i$. The blended label follows the \textit{area} of the patch.
+\end{simple}
+
+\subsection{Formula}
+
+\[
+  \tilde{x} = M \odot x_i + (1-M) \odot x_j, \qquad \tilde{y} = \lambda y_i + (1-\lambda) y_j,
+\]
+where $M \in \{0,1\}^{H\times W}$ is a bounding-box mask and $\lambda = 1 - \frac{\text{patch area}}{H \cdot W}$.
+
+\begin{example}[CutMix with an $80\times 80$ patch]
+\begin{itemize}[leftmargin=*]
+  \item $x_i$ = a nevus image $224\times 224$, $y_i$ = nv.
+  \item $x_j$ = a melanoma image $224\times 224$, $y_j$ = mel.
+  \item Sample a random bounding box of size $80 \times 80$ in the top-left corner.
+\end{itemize}
+\textbf{Blended image:} the nevus image, but the $80 \times 80$ region is replaced by pixels from the melanoma.\\
+\textbf{$\lambda$:} $1 - 80 \cdot 80 / (224 \cdot 224) = 1 - 0.128 = 0.872$.\\
+\textbf{Blended label:} $[0,0,0,0,\mathbf{0.128},\mathbf{0.872},0]$.
+\end{example}
+
+% ==========================================================
+\section{Label Smoothing --- ``soften the labels''}
+% ==========================================================
+
+\begin{simple}
+A one-hot label says ``\textit{100\% certain} this is MEL, 0\% everything else''. Label smoothing replaces it with ``\textbf{91\%} MEL, 1.5\% each of the other classes''. This prevents the model from becoming overconfident.
+\end{simple}
+
+\subsection{Formula}
+
+\[
+  y^{\text{LS}}_k = (1 - \varepsilon) \, \mathbb{1}[k = c] + \frac{\varepsilon}{C}, \quad \varepsilon = 0.1, \, C = 7.
+\]
+
+\begin{example}[Smoothing the MEL label]
+$y_{\text{onehot}} = [0,0,0,0,1,0,0]$ (mel).
+
+With $\varepsilon = 0.1$, $C = 7$: the ``correct'' part shrinks to $1 - 0.1 = 0.9$, and $0.1$ is spread evenly across the 7 classes: $0.1 / 7 \approx 0.0143$.
+\[
+  y^{\text{LS}} = [\mathbf{0.0143}, 0.0143, 0.0143, 0.0143, \mathbf{0.9143}, 0.0143, 0.0143].
+\]
+Sanity check: $0.9143 + 6 \cdot 0.0143 = 1.000$. ✓
+\end{example}
+
+\begin{idea}[Observed paradox]
+Removing Label Smoothing \textit{raises} AUC (0.952 $\to$ 0.967) but \textit{lowers} Macro F1 by 3.11\%. Hard targets $\Rightarrow$ sharper probability ranking (higher AUC), but harder decision boundaries make more errors at the boundary regions (lower F1).
+\end{idea}
+
+% ==========================================================
+\section{The four model architectures}
+% ==========================================================
+
+\subsection{EfficientNet-B0 (5.3M parameters)}
+
+\begin{simple}
+The \textit{smallest} of the four models. Its idea: simultaneously scale up the network's \textit{depth} (number of layers), \textit{width} (number of channels) and \textit{resolution} (input image size) using a single shared scaling coefficient --- this is called ``compound scaling''. It also has Squeeze-and-Excitation (SE) blocks that learn channel-wise global context.
+\end{simple}
+
+\subsection{ResNet50 (25.6M parameters)}
+
+\begin{simple}
+A \textit{classical} architecture. Core idea: the residual connection $f(x) = F(x) + x$. This lets very deep networks (50+ layers) train without vanishing gradients.
+\end{simple}
+
+\subsection{DenseNet121 (8.0M parameters)}
+
+\begin{simple}
+Each layer receives the concatenation of \textit{every} previous layer --- this is called dense connectivity. It reuses already-learned features and keeps the parameter count down.
+\end{simple}
+
+\subsection{Swin-Tiny (28.0M parameters, Vision Transformer)}
+
+\begin{simple}
+Substantially \textit{different} from the three CNNs above. It uses \textit{self-attention} instead of convolution. The image is split into small windows, attention is computed within each window, then the windows are \textit{shifted} so different regions can exchange information. The architecture is hierarchical with 4 stages.
+\end{simple}
+
+\begin{idea}[Why pick four diverse architectures?]
+Three CNNs (EB0, RN50, DN121) + one Transformer (Swin) $\Rightarrow$ \textit{uncorrelated errors}. CNNs focus on local features, Swin focuses on global context. When you ensemble them, one model's mistakes do not overlap with another's $\Rightarrow$ averaging the probabilities actually improves accuracy.
+\end{idea}
+
+% ==========================================================
+\section{Full training pipeline}
+% ==========================================================
+
+\subsection{Loss function}
+
+Cross-entropy with label smoothing:
+\[
+  \mathcal{L}_{\text{CE}}(p, y) = -\sum_{k=1}^C y^{\text{LS}}_k \log p_k.
+\]
+
+\subsection{Optimiser: AdamW}
+
+\begin{simple}
+Adam = a ``smart'' optimiser that automatically adjusts the learning rate for each parameter. AdamW = Adam with weight decay applied \textit{correctly} (directly on the parameters, not added to the gradient). It is the modern default.
+\end{simple}
+
+\[
+  \theta_t = \theta_{t-1} - \eta \left( \frac{\hat{m}_t}{\sqrt{\hat{v}_t} + \epsilon} + \lambda \theta_{t-1} \right).
+\]
+
+\subsection{Cosine annealing with warmup}
+
+\begin{simple}
+Warmup: LR rises from near 0 to a peak over the first 3--5 epochs --- avoids destroying the pretrained weights right at the start.
+Cosine: LR then decays along a cosine curve from peak down to a minimum --- a gentle convergence at the end.
+\end{simple}
+
+\subsection{Hyperparameters}
+
+\begin{table}[h]
+\centering\small
+\begin{tabular}{lcccc}
+\toprule
+& \textbf{EB0} & \textbf{RN50} & \textbf{DN121} & \textbf{Swin} \\
+\midrule
+Learning rate       & 3e-4 & 3e-4 & 2.5e-4 & \textbf{1e-4} \\
+Weight decay        & 1e-3 & 1e-3 & 1e-3   & \textbf{5e-2} \\
+Warmup epochs       & 3    & 3    & 3      & 5 \\
+Max epochs          & 50   & 50   & 50     & 50 \\
+Batch size          & 16   & 16   & 16     & 16 \\
+Mixup / CutMix $\alpha$ & 0.2/1.0 & 0.2/1.0 & 0.2/1.0 & 0.2/1.0 \\
+Label smoothing $\varepsilon$ & 0.1 & 0.1 & 0.1 & 0.1 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\begin{idea}[Why is Swin configured differently?]
+Transformers lack the inductive bias of CNNs $\Rightarrow$ they need a \textbf{lower LR} to avoid destroying the pretrained attention weights, and a \textbf{higher weight decay} to limit overfitting (28M parameters on 7K images is a very overfit-prone ratio).
+\end{idea}
+
+% ==========================================================
+\section{Soft-voting ensemble}
+% ==========================================================
+
+\subsection{Why ensemble?}
+
+\begin{simple}
+A single model tends to be wrong on a \textit{specific subset} of images. Another model is wrong on \textit{a different subset}. Averaging four models cancels individual errors and keeps the consensus signal.
+\end{simple}
+
+\subsection{Soft-voting formula}
+
+With $M = 4$ models and each model $m$ producing a probability vector $p_m(x) \in [0,1]^7$:
+\[
+  \bar{p}(x) = \frac{1}{M} \sum_{m=1}^{M} p_m(x), \qquad \hat{y} = \arg\max_c \bar{p}_c(x).
+\]
+
+\begin{example}[Soft voting on one real test image]
+The four models produce these probability vectors over the 7 classes (akiec, bcc, bkl, df, \textbf{mel}, nv, vasc):
+
+\small
+\begin{tabular}{lccccccc}
+\toprule
+& akiec & bcc & bkl & df & \textbf{mel} & nv & vasc \\
+\midrule
+EB0    & 0.02 & 0.03 & 0.05 & 0.01 & \textbf{0.65} & 0.22 & 0.02 \\
+RN50   & 0.03 & 0.05 & 0.08 & 0.01 & \textbf{0.55} & 0.26 & 0.02 \\
+DN121  & 0.02 & 0.03 & 0.06 & 0.01 & \textbf{0.62} & 0.24 & 0.02 \\
+Swin   & 0.04 & 0.04 & 0.05 & 0.01 & \textbf{0.48} & 0.36 & 0.02 \\
+\midrule
+\textbf{Mean} & 0.028 & 0.038 & 0.060 & 0.010 & \textbf{0.575} & 0.270 & 0.020 \\
+\bottomrule
+\end{tabular}
+\normalsize
+
+\textbf{Argmax:} \texttt{mel} with ensemble probability 57.5\%. Swin is ``not very confident'' (48\%) but the CNNs lift the average up --- the ensemble remains robust.
+\end{example}
+
+\subsection{Why soft voting over hard voting or stacking?}
+
+\begin{itemize}[leftmargin=*]
+  \item \textbf{Hard voting} (each model takes argmax then votes): discards probability information. Cannot distinguish ``all four are sure of MEL'' from ``two say MEL 51\%, two say NV 49\%''.
+  \item \textbf{Stacking} (a meta-learner learns ensemble weights): requires a second validation set, easy to overfit on small data.
+  \item \textbf{Soft voting}: simple, stable, no extra training --- already reaches 89.49\% in-distribution and there is no clear headroom for stacking to overtake.
+\end{itemize}
+
+% ==========================================================
+\section{Multi-seed + McNemar (Week 1)}
+% ==========================================================
+
+\subsection{Why multi-seed?}
+
+\begin{simple}
+One random seed = one ``lucky roll''. The committee will ask: ``how do you know 89.49\% is not luck?'' The answer: rerun the experiment with 5 different seeds and report \textit{mean $\pm$ standard deviation}.
+\end{simple}
+
+\subsection{Five-seed results}
+
+\begin{table}[h]
+\centering\small
+\begin{tabular}{lccc}
+\toprule
+\textbf{Model} & \textbf{Accuracy} & \textbf{Macro F1} & \textbf{Macro AUC} \\
+\midrule
+EfficientNet-B0  & $87.31 \pm 1.32\%$ & $0.814 \pm 0.022$ & $0.965 \pm 0.006$ \\
+ResNet50         & $86.31 \pm 0.57\%$ & $0.792 \pm 0.011$ & $0.949 \pm 0.003$ \\
+DenseNet121      & $85.62 \pm 2.42\%$ & $0.797 \pm 0.025$ & $0.960 \pm 0.004$ \\
+\textbf{Swin-Tiny} & $\mathbf{88.33 \pm 1.96\%}$ & $\mathbf{0.839 \pm 0.030}$ & $0.966 \pm 0.008$ \\
+\midrule
+\rowcolor{usthblue!10}\textbf{Ensemble} & $\mathbf{89.93 \pm 0.66\%}$ & $\mathbf{0.852 \pm 0.010}$ & $\mathbf{0.982 \pm 0.001}$ \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\begin{idea}[Three important findings]
+\textbf{(1)} The 89.49\% (single seed) lies within 1$\sigma$ of the 89.93\% mean $\Rightarrow$ \textbf{not lucky, statistically robust}.\\
+\textbf{(2)} Swin-Tiny is in fact the strongest single backbone when averaged across seeds (88.33\% > EB0's 87.31\%). Seed 42 was simply a bad draw for Swin.\\
+\textbf{(3)} The ensemble's standard deviation is tiny (Acc 0.66\%, AUC 0.001) $\Rightarrow$ soft voting absorbs seed-level variance.
+\end{idea}
+
+\subsection{McNemar's test --- statistical proof}
+
+\begin{simple}
+McNemar = a statistical test comparing two classifiers on the \textit{same test set}. It counts: on how many images is A right and B wrong vs. on how many is A wrong and B right. If the gap is large $\Rightarrow$ one classifier is \textit{genuinely} better than the other, not by chance.
+\end{simple}
+
+The McNemar formula (with continuity correction):
+\[
+  \chi^2 = \frac{(|n_{ab} - n_{ba}| - 1)^2}{n_{ab} + n_{ba}}, \quad p = \chi^2_1\text{-survival}(\chi^2).
+\]
+
+\begin{example}[McNemar: Swin vs.\ Ensemble, seed 42]
+1503 test images:
+\begin{itemize}[leftmargin=*]
+  \item $n_{ab} = 33$ (Swin correct, ensemble wrong)
+  \item $n_{ba} = 93$ (Swin wrong, ensemble correct)
+  \item $\chi^2 = (|33-93| - 1)^2 / (33+93) = 59^2 / 126 = 27.63$
+  \item $p = 1.47 \times 10^{-7}$
+\end{itemize}
+$p \ll 0.05$ $\Rightarrow$ the ensemble is \textbf{genuinely} better than Swin, not by chance.
+\end{example}
+
+\subsection{Combining across 5 seeds with Fisher's method}
+
+\[
+  \chi^2_{\text{combined}} = -2 \sum_{i=1}^k \log p_i, \quad df = 2k.
+\]
+
+\begin{table}[h]
+\centering\small
+\begin{tabular}{lcc}
+\toprule
+\textbf{Single model vs.\ Ensemble} & \textbf{Ensemble wins} & \textbf{Fisher combined $p$} \\
+\midrule
+EfficientNet-B0 & 5/5 & $5.3 \times 10^{-18}$ \\
+ResNet50        & 5/5 & $4.5 \times 10^{-31}$ \\
+DenseNet121     & 5/5 & $6.7 \times 10^{-39}$ \\
+\textbf{Swin-Tiny} (strongest) & \textbf{5/5} & $\mathbf{1.2 \times 10^{-7}}$ \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+% ==========================================================
+\section{Grad-CAM --- interpretability}
+% ==========================================================
+
+\subsection{Why is Grad-CAM useful?}
+
+\begin{simple}
+The model says ``MEL 90\%'' but \textit{why}? Grad-CAM produces a heatmap: the redder a region, the more the model relied on it to make the decision. If the model attends to the lesion $\Rightarrow$ trustworthy. If it attends to hair / ruler / image corners $\Rightarrow$ less so.
+\end{simple}
+
+\subsection{Four mathematical steps}
+
+Given image $x$, target class $c$, and feature map $A \in \mathbb{R}^{K \times H \times W}$ at the last convolutional layer:
+
+\textbf{Step 1 --- forward + backward:}
+\[
+  y^c = f_\theta(x)[c], \quad \frac{\partial y^c}{\partial A^k_{ij}}.
+\]
+
+\textbf{Step 2 --- channel weights (GAP over gradients):}
+\[
+  \alpha_c^k = \frac{1}{HW} \sum_{i,j} \frac{\partial y^c}{\partial A^k_{ij}}.
+\]
+
+\textbf{Step 3 --- heatmap (ReLU):}
+\[
+  L_c = \mathrm{ReLU}\left( \sum_k \alpha_c^k \, A^k \right).
+\]
+
+\textbf{Step 4:} upsample to $224\times 224$, normalise to $[0,1]$, overlay with the JET colormap.
+
+\subsection{Target layer per model}
+
+\begin{table}[h]
+\centering\small
+\begin{tabular}{llc}
+\toprule
+\textbf{Model} & \textbf{Target layer} & \textbf{Shape} \\
+\midrule
+EfficientNet-B0 & \texttt{model.blocks[-1][-1]}    & (320, 7, 7) \\
+ResNet50        & \texttt{model.layer4[-1]}        & (2048, 7, 7) \\
+DenseNet121     & \texttt{model.features.norm5}    & (1024, 7, 7) \\
+Swin-Tiny       & \texttt{model.layers[-1].blocks[-1].norm2} & (49, 768) \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\begin{idea}[The \texttt{model.bn2} debug story]
+The first attempt used \texttt{model.bn2} on EfficientNet (BatchNormAct2d $+$ SiLU). Because SiLU$(x) \approx 0$ for $x < 0$, about 50\% of activations zero out after BN $\Rightarrow$ only 18\% of pixels carry meaningful activation $\Rightarrow$ heatmaps are \textit{uniformly blue}, with no focus.
+
+Switching to \texttt{blocks[-1][-1]} gives 51\% active pixels and heatmaps that \textit{correctly outline the lesion}. \textbf{Without quantitative metrics, this error would have slipped past visual inspection.}
+\end{idea}
+
+\subsection{Quantitative Grad-CAM (4 metrics)}
+
+\begin{table}[h]
+\centering\small
+\begin{tabular}{lp{8cm}}
+\toprule
+\texttt{focus\_ratio}      & Fraction of total activation inside the lesion mask (Otsu). High = correct focus. \\
+\texttt{peak\_distance}    & Distance from peak activation to lesion centroid. Low = focus on the centre. \\
+\texttt{entropy}           & Shannon entropy of the heatmap. Low = sharp focus. \\
+\texttt{coverage\_75}      & \% area containing the top-25\% activation. Low = compact. \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+All 4 models achieve \texttt{focus\_ratio} $> 0.6$ and \texttt{peak\_distance} $< 0.2$ on the test set.
+
+% ==========================================================
+\section{Evaluation metrics}
+% ==========================================================
+
+\subsection{Why accuracy alone is not enough}
+
+\begin{simple}
+On 58:1 imbalanced data, ``predict NV for every image'' gives 67\% accuracy while missing 100\% of melanomas. So accuracy is a \textit{misleading} metric.
+\end{simple}
+
+\subsection{Definition of the headline metrics}
+
+\begin{table}[h]
+\centering\small
+\begin{tabular}{lll}
+\toprule
+\textbf{Metric} & \textbf{Formula} & \textbf{Meaning} \\
+\midrule
+Accuracy        & $\sum TP_c / N$            & Overall correctness (biased on imbalanced data) \\
+\textbf{Macro F1} & $\frac{1}{C}\sum F1_c$  & \textbf{Unweighted mean of per-class F1 --- HEADLINE METRIC} \\
+Weighted F1     & $\sum F1_c \cdot n_c / N$  & F1 weighted by class size \\
+Macro AUC       & $\frac{1}{C}\sum \mathrm{AUC}_c$ & Probability-ranking capability \\
+Cohen's $\kappa$ & $(P_o - P_e)/(1 - P_e)$  & Agreement above chance \\
+MCC             & most balanced              & Uses all four confusion cells \\
+Sensitivity     & $TP/(TP+FN)$              & Recall --- catching positives correctly \\
+Specificity     & $TN/(TN+FP)$              & Identifying negatives correctly \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\begin{example}[Ensemble's melanoma F1]
+167 true MEL images in the test set. The ensemble predicts ``MEL'' on 166 images, of which 124 are actually MEL.
+\begin{align*}
+TP &= 124, \quad FP = 166-124 = 42, \quad FN = 167-124 = 43\\
+\mathrm{Precision} &= 124/166 = 0.747\\
+\mathrm{Recall} &= 124/167 = 0.740\\
+F1 &= \frac{2 \cdot 0.747 \cdot 0.740}{0.747 + 0.740} = \mathbf{0.744}
+\end{align*}
+\end{example}
+
+% ==========================================================
+\section{Ablation study}
+% ==========================================================
+
+\subsection{Methodology}
+
+\begin{simple}
+\textit{Remove one component at a time} from the pipeline, keep everything else fixed, measure the drop in Macro F1. The component whose removal causes the largest drop is the most important one.
+\end{simple}
+
+\subsection{Results}
+
+\begin{table}[h]
+\centering\small
+\begin{tabular}{lcccc}
+\toprule
+\textbf{Configuration} & \textbf{Acc} & \textbf{Macro F1} & \textbf{AUC} & \textbf{$\Delta$ F1} \\
+\midrule
+\textbf{Full pipeline} & \textbf{0.8836} & \textbf{0.8311} & 0.9522 & --- \\
+\midrule
+$-$ Mixup \& CutMix     & 0.8589 & 0.7860 & 0.9486 & \textcolor{red}{$\mathbf{-0.0451}$} \\
+$-$ Label Smoothing     & 0.8776 & 0.8000 & \textbf{0.9674} & \textcolor{red}{$-0.0311$} \\
+$-$ Weighted Sampler    & 0.8762 & 0.8041 & 0.9521 & \textcolor{red}{$-0.0270$} \\
+$-$ Advanced Aug        & \textbf{0.8896} & 0.8204 & 0.9664 & \textcolor{red}{$-0.0107$} \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\subsection{Three findings and two paradoxes}
+
+\textbf{1. Mixup/CutMix is the most important ($-4.51\%$ F1).} With 81 training DF images, without Mixup the model memorises the rare samples.
+
+\textbf{2. Label-smoothing paradox.} Removing LS \textit{raises} AUC (0.952 $\to$ 0.967) but \textit{lowers} F1 by 3.11\%. Hard targets $\Rightarrow$ sharper rankings (higher AUC), but harder boundaries hurt MEL/NV/BKL (lower F1).
+
+\textbf{3. Augmentation paradox.} Removing strong augmentation actually \textit{raises} accuracy (88.96\% > 88.36\%) because the model fits NV more easily. But Macro F1 drops --- minority classes are abandoned.
+
+\begin{idea}[Core lesson]
+The largest contribution does \textbf{not} come from a bigger architecture, it comes from \textbf{better regularisation}. Mixup/CutMix $+$ LS $+$ Weighted Sampler together contribute roughly \textbf{$\sim$10\% F1} --- more than the spread between architectures.
+\end{idea}
+
+% ==========================================================
+\section{Metadata fusion (Week 2) --- crossing 90\%}
+% ==========================================================
+
+\subsection{Idea}
+
+\begin{simple}
+Images alone are not enough. A clinician always considers age, sex and anatomical location before diagnosing. A brown lesion on the back of a 30-year-old is very different from the same lesion on the face of a 75-year-old. The image-only pipeline ignores all of this. In Week 2 I added a 19-dimensional metadata vector to the pipeline.
+\end{simple}
+
+\subsection{The 19-dimensional metadata vector}
+
+\begin{itemize}[leftmargin=*]
+  \item 1 dim: standardised age (mean 51.86, std 16.97, missing $\to$ mean).
+  \item 3 dims: one-hot sex (male / female / unknown).
+  \item 15 dims: one-hot anatomical localisation (abdomen, back, chest, ear, face, foot, ..., unknown).
+\end{itemize}
+
+\subsection{Late-fusion architecture}
+
+\[
+  \text{logits} = \text{Linear}\bigl(\text{Concat}(f_{\text{img}}(x), \text{MLP}(\text{meta}))\bigr)
+\]
+The MLP has two layers: $19 \to 64 \to 32$ with ReLU and dropout 0.1.
+
+\subsection{Results}
+
+\begin{table}[h]
+\centering\small
+\begin{tabular}{lcccc}
+\toprule
+\textbf{Model} & \textbf{Image-only Acc} & \textbf{+metadata Acc} & \textbf{$\Delta$ Acc} & \textbf{+meta F1} \\
+\midrule
+EfficientNet-B0 & 0.8796 & 0.8337 & $-$4.6 pp & 0.768 \\
+ResNet50        & 0.8636 & 0.8782 & $+$1.5 pp & 0.810 \\
+DenseNet121     & 0.8543 & 0.8550 & $+$0.1 pp & 0.793 \\
+Swin-Tiny       & 0.8490 & \textbf{0.8982} & \textbf{$+$4.9 pp} & \textbf{0.871} \\
+\midrule
+\rowcolor{usthblue!10}
+\textbf{Ensemble} & 0.8949 & $\mathbf{0.9049}$ & $\mathbf{+1.0}$ pp & $\mathbf{0.8728}$ \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\begin{idea}[Three breakthrough findings]
+\textbf{(1) Swin + metadata alone beats the image-only ensemble!} 89.82\% > 88.89\%. Self-attention integrates metadata more effectively than CNNs in this setting.\\
+\textbf{(2) EB0 loses 4.6 pp.} The smallest model (5.3M) does not have enough capacity for a meta encoder without sacrificing image features.\\
+\textbf{(3) The ensemble reaches 90.49\% / 0.873 / 0.984 AUC} --- beating Pacheco \& Krohling 2020 (89.0\% / 0.83), which is the strongest published image+metadata fusion on ISIC 2018.
+\end{idea}
+
+\subsection{The FP16 bug story}
+
+\begin{example}[Bug ``AMP FP16 softmax NaN'' --- a lesson]
+Initially train\_meta.py ran softmax under AMP autocast $\to$ FP16 probability tensors. When saved to CSV with pandas \texttt{.round(6)}, FP16 lacked the precision $\to$ \textbf{the entire column became NaN}. Per-model metrics were fine (computed in memory), but the ensemble combined NaNs $\to$ accuracy 3.26\% (below random!).
+
+Fix: cast \texttt{logits.float()} before softmax. Lesson: \textit{always} use float32 for probabilities when writing them to disk.
+\end{example}
+
+% ==========================================================
+\section{Out-of-distribution evaluation (Week 3) --- smartphone photographs}
+% ==========================================================
+
+\subsection{Why OOD evaluation?}
+
+\begin{simple}
+Testing on the same distribution as training (ISIC 2018 dermoscopy) does not prove the model is deployable in the real world. I evaluated the image-only ensemble zero-shot on 2{,}298 smartphone images from PAD-UFES-20 (Brazil) --- a completely different acquisition modality from dermoscopy.
+\end{simple}
+
+\subsection{Mapping 6 PAD-UFES $\to$ 5 ISIC}
+
+\begin{itemize}[leftmargin=*]
+  \item ACK $\to$ akiec
+  \item SCC $\to$ akiec (Pacheco clusters it with AKIEC)
+  \item BCC $\to$ bcc
+  \item SEK $\to$ bkl
+  \item NEV $\to$ nv
+  \item MEL $\to$ mel
+\end{itemize}
+
+\subsection{Results}
+
+\begin{table}[h]
+\centering\small
+\begin{tabular}{lccccr}
+\toprule
+\textbf{Class} & \textbf{Precision} & \textbf{Recall} & \textbf{F1} & \textbf{AUC} & \textbf{Support} \\
+\midrule
+akiec & 0.543 & 0.145 & 0.229 & 0.614 & 922 \\
+bcc   & 0.611 & 0.421 & 0.499 & 0.733 & 845 \\
+bkl   & 0.175 & 0.268 & 0.212 & 0.633 & 235 \\
+mel   & 0.057 & 0.308 & 0.097 & 0.684 &  52 \\
+nv    & 0.258 & 0.725 & 0.380 & 0.811 & 244 \\
+\midrule
+\multicolumn{6}{l}{\textbf{Accuracy 32.46\%} (vs.\ 88.89\% in-distribution: $-$56 pp)} \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\begin{idea}[How to read the OOD result correctly]
+\textbf{A 56 pp drop is NOT a disaster.} It is the standard cost of zero-shot transfer from dermoscopy to smartphone (literature reports the same 50--60 pp range).
+\begin{itemize}[leftmargin=*]
+  \item Per-class AUC stays in 0.61--0.81 $\Rightarrow$ probability ranking transfers \textit{partially}, the model is not random.
+  \item NV recall 0.72 $\Rightarrow$ classical prior collapse onto the ISIC majority class.
+  \item MEL precision 0.06 $\Rightarrow$ the model over-calls melanoma on smartphone photos $\Rightarrow$ clinically dangerous if deployed without adaptation.
+\end{itemize}
+\textbf{Honest conclusion:} the pipeline is not ready for consumer-grade smartphone photographs. Closing the gap is an \textbf{engineering exercise} (domain adaptation, in-domain fine-tuning, style transfer), \textit{not a research mystery}.
+\end{idea}
+
+% ==========================================================
+\section{Comparison with state-of-the-art}
+% ==========================================================
+
+\begin{table}[h]
+\centering\small
+\begin{tabular}{lcccc}
+\toprule
+\textbf{Work} & \textbf{Year} & \textbf{Method} & \textbf{Acc} & \textbf{Macro F1} \\
+\midrule
+Codella et al.        & 2018 & ResNet-152                & 85.9 & 0.78 \\
+Gessert (ISIC winner) & 2018 & Ensemble EB$_n$ + SENet   & 88.5 & 0.82 \\
+Mahbod et al.         & 2020 & Multi-scale CNN ensemble  & 88.7 & 0.83 \\
+Pacheco \& Krohling   & 2020 & RN50 + metadata fusion    & 89.0 & 0.83 \\
+This thesis (image only) & 2026 & 4-model ensemble, 5 seeds & 89.93$\pm$0.66 & 0.852$\pm$0.010 \\
+\rowcolor{usthblue!10}
+\textbf{This thesis (+meta)} & 2026 & \textbf{4-model + metadata} & \textbf{90.49} & \textbf{0.873} \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+% ==========================================================
+\section{Honest contribution --- DO NOT over-claim}
+% ==========================================================
+
+\begin{idea}[Say this plainly at defense]
+\textbf{No technique in this thesis is novel.} Every component has prior literature:
+\begin{itemize}[leftmargin=*]
+  \item Pacheco-style metadata fusion = exactly Pacheco \& Krohling 2020.
+  \item PAD-UFES-20 OOD = Pacheco himself published the dataset.
+  \item Soft voting, Mixup, CutMix, Label Smoothing = industry standards.
+  \item CNN+Transformer ensembles = many published papers 2022--2024.
+\end{itemize}
+
+\textbf{The real contributions:}
+\begin{enumerate}[leftmargin=*]
+  \item \textbf{Transparent integration} --- open source code, YAML configs, 5 reproducible seeds, comprehensive study guide. Rare among SOTA papers.
+  \item \textbf{Quantitative Grad-CAM} --- focus\_ratio, peak\_distance measured on the test set. Most papers stop at qualitative heatmaps.
+  \item \textbf{Statistical robustness} --- multi-seed + McNemar with Fisher's method. Most ISIC papers use a single seed and skip significance tests.
+  \item \textbf{Honest OOD reporting} --- the 56 pp drop is reported openly. Many papers quietly hide OOD failures.
+  \item \textbf{Mild gain over Pacheco 2020} --- 90.49\% vs 89.0\% thanks to a CNN+Transformer ensemble. This is an \textit{increment}, not an \textit{innovation}.
+\end{enumerate}
+\end{idea}
+
+% ==========================================================
+\section{Ten hard questions and how to answer}
+% ==========================================================
+
+\begin{qa}[Q1: Why soft voting and not stacking?]
+Three reasons: (1) Stacking needs a second val set $\to$ overfits on small data. (2) Hard voting discards probability information. (3) Soft voting already reaches 89.49\% with McNemar $p < 10^{-7}$ vs.\ the strongest single model, leaving no clear headroom for stacking to beat.
+\end{qa}
+
+\begin{qa}[Q2: How do you know the Grad-CAM is ``correct''?]
+I measure four quantitative metrics: focus\_ratio, peak\_distance, entropy, coverage\_75. All four models achieve focus\_ratio $> 0.6$ and peak\_distance $< 0.2$. I caught the \texttt{model.bn2} bug because of the quantitative measurements --- by visual inspection alone the mistake would have slipped through.
+\end{qa}
+
+\begin{qa}[Q3: What is the difference between Macro F1 and balanced accuracy?]
+Balanced accuracy = mean of per-class recall $\to$ only penalises false negatives. Macro F1 = mean of per-class F1 $\to$ penalises both false positives and false negatives. I chose F1 because, clinically, both error types have costs (missing MEL is dangerous, false alarms cause unnecessary biopsies).
+\end{qa}
+
+\begin{qa}[Q4: Why does Swin overfit faster?]
+(1) Lack of inductive bias --- Transformers must learn locality and translation invariance from the data. (2) 28M parameters / 7K images = 4{,}000$\times$ --- extremely overfit-prone. (3) Quadratic self-attention can memorise specific spatial structures. I mitigated with LR 1e-4, weight decay 5e-2, 5-epoch warmup.
+\end{qa}
+
+\begin{qa}[Q5: What about images outside the 7 classes (acne, scars)?]
+The model is \textit{forced} to assign one of 7 classes; there is no ``other'' class. I handle this two ways: (1) a confidence threshold of 50\% triggers a low-confidence warning in the app. (2) high predictive entropy is an OOD signal. A production system needs a dedicated OOD detector (Mahalanobis distance, Energy score) --- I did not implement that, it is future work.
+\end{qa}
+
+\begin{qa}[Q6: How many melanoma false negatives are there?]
+167 true MEL images, the ensemble correctly identifies 124 $\to$ \textbf{43 misses} (recall 0.74). 35 are predicted as NV, 8 as BKL. Threshold tuning with Youden's J lowers the MEL threshold 0.143 $\to$ 0.100, which raises recall 0.74 $\to$ 0.83 at the cost of a slight rise in false positives.
+\end{qa}
+
+\begin{qa}[Q7: Why not use Focal Loss?]
+I tried it; the code lives in \texttt{losses.py}. Focal Loss combines poorly with Mixup/CutMix because mixed labels like $[0.7, 0.3]$ are not one-hot. I chose Label Smoothing, which is simpler and combines natively with Mixup, and the result 0.845 F1 is already strong enough.
+\end{qa}
+
+\begin{qa}[Q8: What is the ECE?]
+EB0: 0.041 $\to$ 0.018 after temperature scaling. Swin highest at 0.067 $\to$ 0.024. Ensembling models that have already been calibrated lowers ECE further. After temperature scaling, the probabilities are trustworthy enough for clinical decisions.
+\end{qa}
+
+\begin{qa}[Q9: White-skin bias --- what about Vietnam?]
+I acknowledge this limitation. HAM10000 is mostly Fitzpatrick I--III (Austria/USA). The OOD result on PAD-UFES-20 (Brazil, more Fitzpatrick III--IV) shows a 56 pp drop --- partly due to skin-tone shift. Remedies: (1) fine-tune on Vietnamese data, (2) Fitzpatrick-aware hue/saturation augmentation, (3) group fairness loss.
+\end{qa}
+
+\begin{qa}[Q10: What else is needed for production?]
+(1) CE marking / FDA 510(k). (2) In-domain data (500--5K hospital images). (3) Open-set detector. (4) Clinical UI integrated with PACS/EHR and an audit log. (5) Post-deployment monitoring (data drift, performance). (6) Clear liability assignment when errors occur. I do not claim production-readiness --- this is a research prototype.
+\end{qa}
+
+% ==========================================================
+\section{Defense kit checklist}
+% ==========================================================
+
+\subsection{Hardware}
+\begin{itemize}[leftmargin=*, itemsep=2pt]
+  \item Primary laptop + charger (check battery is full).
+  \item USB-C / HDMI adapter for the projector.
+  \item External mouse or presentation clicker.
+  \item Backup USB drive containing: slides VN + EN + thesis + study guide + 5 demo screenshots.
+  \item One printed copy of slides 4-up.
+\end{itemize}
+
+\subsection{Software and demo}
+\begin{itemize}[leftmargin=*, itemsep=2pt]
+  \item \textbf{15 minutes before defense:} \texttt{streamlit run app.py} $\to$ \url{http://localhost:8501}.
+  \item Set theme (Dark / Light) via menu $\vdots$ $\to$ Settings $\to$ Theme.
+  \item Upload one demo image, view Grad-CAM for all 4 models $\to$ warms up the cache.
+  \item Prepare 3 demo images: 1 clear MEL, 1 benign NV, 1 low-confidence case to demonstrate the warning.
+\end{itemize}
+
+\subsection{Backup plans}
+\begin{itemize}[leftmargin=*, itemsep=2pt]
+  \item Streamlit crashes $\to$ use the 5 demo screenshots embedded in the slide.
+  \item Projector does not recognise the laptop $\to$ open the slides PDF from USB on the room's machine.
+  \item No internet $\to$ app.py runs 100\% offline.
+\end{itemize}
+
+\subsection{One hour before}
+\begin{itemize}[leftmargin=*, itemsep=2pt]
+  \item Test on the actual projector (if possible).
+  \item Listen to the last recorded rehearsal.
+  \item Light snack (banana, almonds).
+  \item Restroom.
+  \item Phone $\to$ airplane mode.
+\end{itemize}
+
+% ==========================================================
+\section{One-page summary (print and carry)}
+% ==========================================================
+
+\begin{idea}[Project at a glance]
+\textbf{Problem:} 7-class skin lesion classification, ISIC 2018, 58:1 imbalance.
+
+\textbf{Pipeline:} fine-tune 4 ImageNet-pretrained backbones (EB0, RN50, DN121, Swin) + Weighted Sampler + Mixup($\alpha$=0.2) + CutMix($\alpha$=1.0) + Label Smoothing($\varepsilon$=0.1) + AdamW + cosine warmup + FP16.
+
+\textbf{Soft-voting ensemble} of 4 models $\Rightarrow$:
+\begin{itemize}[leftmargin=*]
+  \item 1 seed: \textbf{89.49\% Acc / 0.845 F1 / 0.980 AUC}
+  \item 5 seeds: \textbf{89.93 $\pm$ 0.66\% / 0.852 / 0.982}
+  \item McNemar Fisher $p < 10^{-7}$ vs.\ every single model.
+\end{itemize}
+
+\textbf{+ Metadata fusion} (19-dim: age + sex + localisation) $\Rightarrow$:
+\begin{itemize}[leftmargin=*]
+  \item Ensemble: \textbf{90.49\% Acc / 0.873 F1 / 0.984 AUC} (beats Pacheco 2020).
+  \item Swin + metadata 89.82\% --- alone beats the image-only ensemble.
+\end{itemize}
+
+\textbf{OOD on PAD-UFES-20:} 32.46\% (56 pp drop), per-class AUC 0.61--0.81.
+
+\textbf{Ablation:} Mixup/CutMix is the most important ($-4.51\%$ F1 when removed).
+
+\textbf{Quantitative Grad-CAM:} focus\_ratio $> 0.6$, peak\_distance $< 0.2$ across all 4 models.
+
+\textbf{Limitations:} poor smartphone OOD, no metadata $\to$ Vietnam (skin-tone bias), narrow 7-class scope.
+
+\textbf{Future work:} domain adaptation, open-set detection, active learning loop.
+
+\textbf{Honest contribution:} no novel techniques --- the contributions are \textit{transparent integration, quantitative Grad-CAM, statistical robustness, honest OOD, and a mild lift over Pacheco through architectural diversity}.
+\end{idea}
+
+\vspace{12pt}
+\hrule
+\vspace{6pt}
+\begin{center}
+\small \textit{Read this guide three times before defense. Master the 10 Q\&As. Memorise the one-page summary. You are ready.}
+\end{center}
+
+\end{document}

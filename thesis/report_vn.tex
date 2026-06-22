@@ -62,6 +62,28 @@
 {\large Ngày 26 tháng 2 năm 2026\par}
 \end{titlepage}
 
+% ======================= XÁC NHẬN CỦA NGƯỜI HƯỚNG DẪN ==========================
+\thispagestyle{empty}
+\begin{center}
+{\large Kính gửi:}
+\end{center}
+
+\vspace{0.6cm}
+
+Tôi, \textbf{TS.~Vũ Trọng Sinh}, xác nhận rằng báo cáo khóa luận tốt nghiệp / báo
+cáo thực tập của sinh viên \textbf{Nguyễn Trọng Bách} đủ điều kiện được trình bày
+trước Hội đồng Thực tập 2025--2026.
+
+\vspace{1.5cm}
+
+\hfill\begin{minipage}{0.45\textwidth}
+\centering
+Hà Nội, ngày 29 tháng 6 năm 2026 \\[0.3cm]
+\textbf{Chữ ký người hướng dẫn}
+\end{minipage}
+
+\newpage
+
 % ======================= LỜI CẢM ƠN ==========================
 \chapter*{Lời cảm ơn}
 \addcontentsline{toc}{chapter}{Lời cảm ơn}
@@ -110,11 +132,13 @@ Khóa luận này giải quyết cả hai vấn đề: xây dựng và đánh gi
 \section{Mục tiêu}
 
 \begin{enumerate}
-    \item \textbf{Phát triển Pipeline Huấn luyện Tối ưu:} Triển khai các kỹ thuật tăng cường dữ liệu nâng cao (Mixup, CutMix) và chiến lược lấy mẫu (Bộ lấy mẫu Ngẫu nhiên có Trọng số) để đối phó với mất cân bằng lớp nghiêm trọng.
-    \item \textbf{Thực hiện Phân tích So sánh:} Huấn luyện và đánh giá bốn kiến trúc học sâu --- EfficientNet-B0, ResNet50, DenseNet121 và Swin-Tiny.
-    \item \textbf{Đảm bảo Khả năng Giải thích Mô hình:} Áp dụng Grad-CAM để tạo bản đồ nhiệt trực quan hóa các vùng đóng góp vào quyết định của mô hình.
+    \item \textbf{Phát triển Pipeline Huấn luyện Tối ưu:} Triển khai các kỹ thuật tăng cường dữ liệu nâng cao (Mixup, CutMix) và chiến lược lấy mẫu (Weighted Random Sampler) để đối phó với mất cân bằng lớp nghiêm trọng.
+    \item \textbf{Thực hiện Phân tích So sánh:} Huấn luyện và đánh giá bốn kiến trúc học sâu --- EfficientNet-B0, ResNet50, DenseNet121 và Swin-Tiny --- trong cùng một pipeline.
+    \item \textbf{Khám phá Phương pháp Kết hợp (Ensemble):} Kết hợp dự đoán từ cả bốn kiến trúc bằng biểu quyết mềm và xác minh độ tin cậy thống kê qua đa hạt giống (5 seeds) cùng kiểm định McNemar tổ hợp Fisher.
+    \item \textbf{Mở rộng bằng Metadata Bệnh nhân:} Tích hợp tuổi, giới và vị trí giải phẫu qua late-fusion MLP để vượt mốc 90\% accuracy.
+    \item \textbf{Đảm bảo Khả năng Giải thích Mô hình:} Áp dụng Grad-CAM và định lượng chất lượng heatmap qua bốn chỉ số (focus\_ratio, peak\_distance, entropy, coverage\_75) trên toàn bộ tập kiểm tra.
     \item \textbf{Thực hiện Nghiên cứu Loại bỏ (Ablation Study):} Phân lập và định lượng đóng góp hiệu suất của từng kỹ thuật điều chuẩn.
-    \item \textbf{Khám phá Phương pháp Kết hợp (Ensemble):} Kết hợp dự đoán từ cả bốn kiến trúc sử dụng biểu quyết mềm.
+    \item \textbf{Đánh giá Ngoài Phân phối (OOD):} Kiểm tra zero-shot trên PAD-UFES-20 (ảnh smartphone lâm sàng) để định lượng khoảng cách modality và giới hạn kỳ vọng triển khai một cách trung thực.
 \end{enumerate}
 
 \section{Cấu trúc Khóa luận}

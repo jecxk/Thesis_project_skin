@@ -19,11 +19,17 @@ Swin-Tiny       & 0,8490 & 0,7855 & \textbf{0,9600} & 0,7157 & 0,7150 \\
 \end{tabular}
 \end{table}
 
-EfficientNet-B0 dẫn đầu mọi chỉ số phân loại cứng mặc dù có ít tham số nhất (5,3M). Macro F1 đạt 0,831 vượt trội ResNet50 (0,790) tới 4,1 điểm phần trăm. Một mẫu hình nổi bật: accuracy và AUC \textbf{đảo ngược} giữa các mô hình. EfficientNet-B0 dẫn đầu về accuracy trong khi Swin-Tiny tạo AUC cao nhất (0,960). Cơ chế tự chú ý dựa trên cửa sổ tạo phân phối xác suất được hiệu chỉnh tốt hơn ngay cả khi dự đoán cứng kém chính xác hơn.
+EfficientNet-B0 dẫn đầu mọi chỉ số phân loại cứng mặc dù có ít tham số hơn mọi mô hình khác: 5,3M so với 8M (DenseNet121), 25,6M (ResNet50) và 28M (Swin-Tiny). Macro F1 của nó đạt 0,831 vượt trội ResNet50 (0,790) tới 4,1 điểm phần trăm, dù ResNet50 có gần gấp năm lần số tham số. Điều này nhất quán với giả thuyết compound-scaling của Tan và Le: tối ưu hóa đồng thời chiều sâu, chiều rộng và độ phân giải đầu vào tạo ra một biên hiệu quả khác biệt về chất lượng thay vì các lợi ích cận biên gia tăng.\footnote{Giá trị cross-entropy loss trên test (0,75) tương đối cao cho mọi mô hình là hệ quả mong đợi của Label Smoothing: các mô hình huấn luyện với target mềm ($\epsilon=0{,}1$) xuất ra độ tin cậy tối đa khoảng $1 - \epsilon + \epsilon/C \approx 0{,}93$ thay vì 1,0, tạo giá trị loss thô cao hơn mà không phản ánh sự suy giảm chất lượng phân loại.}
+
+Một mẫu hình nổi bật khi so sánh accuracy với AUC giữa các mô hình: chúng \textbf{đảo ngược} nhau. EfficientNet-B0 dẫn đầu về các chỉ số phân loại cứng trong khi Swin-Tiny, kém 3,5 điểm phần trăm về accuracy, tạo ra AUC cao nhất (0,960). Cơ chế tự chú ý dựa trên cửa sổ của Transformer dường như tạo ra phân phối xác suất được hiệu chỉnh tốt hơn ngay cả khi các dự đoán cứng của nó kém chính xác hơn --- có thể vì việc tích hợp ngữ cảnh toàn cục pha trộn bằng chứng khắp toàn bộ tổn thương, làm mịn các ước tính tin cậy về phía tần suất lớp thực. Lợi thế calibration này không chuyển thành quyết định rời rạc tốt hơn trên 7.010 ảnh huấn luyện, nhất quán với phát hiện rằng Vision Transformer cần dữ liệu đáng kể nhiều hơn để thu hẹp khoảng cách với CNN về phân loại cứng. Trong một ứng dụng triage lâm sàng nơi output xác suất của mô hình được tiêu thụ trực tiếp cho xếp hạng rủi ro thay vì ra quyết định nhị phân, thứ tự AUC sẽ là so sánh liên quan.
 
 \subsection{Phân tích Theo Lớp}
 
-Melanoma (MEL) là lớp khó nhất cho mọi kiến trúc, F1 từ 0,625 đến 0,695. MEL chồng lấp với BKL về sắc tố và NV về kết cấu --- cùng sự nhập nhằng trong chẩn đoán lâm sàng. Dermatofibroma (DF) đạt F1 cao (0,800--0,938) dù chỉ có 81 mẫu huấn luyện, nhờ đặc trưng hình thái rõ ràng. Vascular Lesion (VASC) được phân loại tốt liên tục với AUC đạt 1,000 cho hai kiến trúc.
+Melanoma (MEL) là lớp khó nhất cho mọi kiến trúc, với F1 từ 0,625 (Swin-Tiny) đến 0,695 (EfficientNet-B0). Khó khăn này có tính cấu trúc: MEL chồng lấp với BKL về sắc tố và với NV về kết cấu, cùng sự nhập nhằng làm cho melanoma khó chẩn đoán trên lâm sàng. Các giá trị AUC kể một câu chuyện đáng khích lệ hơn --- 0,913 đến 0,930 --- chỉ ra rằng các mô hình liên tục xếp hạng các trường hợp melanoma thật trên các lựa chọn lành tính ngay cả khi ngưỡng cứng 0,5 không tách được chúng. Trong một workflow triage nơi các trường hợp được sắp xếp theo điểm rủi ro thay vì gắn cờ bằng cutoff nhị phân, thứ tự xác suất này là output có giá trị.
+
+Dermatofibroma (DF) nằm ở thái cực ngược lại: F1 từ 0,800 đến 0,938 dù chỉ có 81 mẫu huấn luyện và 17 mẫu test. Weighted Random Sampler đảm bảo Dermatofibroma xuất hiện trong mọi mini-batch thay vì bị nhấn chìm bởi NV, và đặc trưng lâm sàng riêng biệt của DF --- một tổn thương cứng giống nút bấm với các đặc điểm dermoscopy đặc trưng --- cung cấp tín hiệu phân biệt rõ ràng. Tuy nhiên, các con số này mang phương sai cao: với 17 mẫu test, một phân loại sai bổ sung dịch chuyển F1 khoảng 0,06, nên khoảng cách rõ ràng 14 điểm giữa EfficientNet-B0 (0,938) và ResNet50 (0,800) không nên được đọc như khác biệt hiệu suất đáng tin cậy.
+
+Vascular Lesion (VASC) được phân loại tốt một cách liên tục, với AUC đạt 1,000 cho hai kiến trúc. Sắc đỏ-tím của tổn thương mạch máu cung cấp tín hiệu màu mạnh, rõ ràng mà mọi mô hình đều nhận diện đáng tin cậy. Cũng như DF, tập test 22 mẫu nghĩa là các con số riêng lẻ có nhiễu, nhưng các giá trị AUC gần hoàn hảo ổn định qua các kiến trúc và phản ánh độ rõ ràng thị giác của lớp này.
 
 \subsection{Động lực Huấn luyện}
 
@@ -55,7 +61,14 @@ Melanoma (MEL) là lớp khó nhất cho mọi kiến trúc, F1 từ 0,625 đế
 \caption{Lịch sử huấn luyện (tiếp theo).}
 \end{figure}
 
-EfficientNet-B0 và ResNet50 đạt đỉnh tại epoch 39. DenseNet121 đạt checkpoint tốt nhất tại epoch 49/50. Swin-Tiny kích hoạt dừng sớm tại epoch 25 (tốt nhất tại epoch 13) --- mô hình Transformer dễ quá khớp hơn trên tập dữ liệu nhỏ.
+Tốc độ hội tụ khác nhau giữa các kiến trúc theo cách nhất quán với các tính chất đã biết của mỗi thiết kế:
+\begin{itemize}
+    \item EfficientNet-B0 và ResNet50 đều đạt đỉnh tại epoch 39, với dừng sớm kích hoạt sau 12 epoch tiếp theo không cải thiện.
+    \item DenseNet121 đạt checkpoint tốt nhất tại epoch 49 trên 50, phản ánh xu hướng của các mạng có kết nối dày đặc cải thiện dần qua nhiều epoch khi mô hình kết nối dày đặc khai thác đầy đủ việc tái sử dụng đặc trưng.
+    \item Swin-Tiny kích hoạt dừng sớm tại epoch 25 (tốt nhất tại epoch 13), tốc độ hội tụ nhanh nhất nhưng cũng là plateau sớm nhất. Điều này nhất quán với việc các mô hình Transformer dễ quá khớp hơn trên tập dữ liệu nhỏ --- warmup 5 epoch và weight decay cao hơn (0,05) làm chậm sự hội tụ ban đầu nhưng không thể bù đắp đầy đủ cho yêu cầu dữ liệu.
+\end{itemize}
+
+Tất cả các mô hình hội tụ mà không quá khớp đến mức cần can thiệp --- loss validation theo dõi loss huấn luyện xuyên suốt, xác nhận rằng tổ hợp các kỹ thuật điều chuẩn (Mixup, CutMix, Label Smoothing, Weight Decay) là đủ để ngăn sự sụp đổ về lớp đa số xuất hiện khi không có chúng.
 
 \subsection{Ma trận Nhầm lẫn}
 
@@ -87,7 +100,7 @@ EfficientNet-B0 và ResNet50 đạt đỉnh tại epoch 39. DenseNet121 đạt c
 \caption{Ma trận nhầm lẫn chuẩn hóa (tiếp theo).}
 \end{figure}
 
-Mẫu phân loại sai chiếm ưu thế trên cả bốn mô hình là MEL bị dự đoán thành NV hoặc ngược lại. Không mô hình nào sụp đổ về lớp NV cho đầu vào không phải NV.
+Mẫu phân loại sai chiếm ưu thế trên cả bốn mô hình là MEL bị dự đoán thành NV hoặc ngược lại --- một phản ánh trực tiếp của sự chồng lấp hình thái giữa melanoma giai đoạn sớm và nốt ruồi lành tính. BKL là mục tiêu nhầm lẫn phổ biến thứ hai cho MEL. Các mẫu hình này xuất hiện nhất quán bất kể kiến trúc và khớp với xếp hạng độ khó lâm sàng đã biết trong da liễu. Quan trọng là, không mô hình nào thể hiện chế độ thất bại sụp đổ về NV cho input không phải NV: Weighted Random Sampler đảm bảo các mẫu lớp thiểu số được thấy đủ thường xuyên trong huấn luyện để ranh giới quyết định cho mỗi lớp được học có ý nghĩa.
 
 \section{Kết quả Ensemble}
 
@@ -108,7 +121,7 @@ Swin-Tiny        & 0,8490 & 0,7855 & 0,9600 & 0,7157 & 0,7150 \\
 \end{tabular}
 \end{table}
 
-Ensemble nâng accuracy thêm 1,1 điểm phần trăm, đẩy Macro AUC từ 0,952 lên 0,980. F1 melanoma cải thiện từ 0,695 lên 0,744 (+4,9 điểm).
+Ensemble nâng accuracy thêm 1,1 điểm phần trăm so với EfficientNet-B0 và, một cách thực chất hơn, đẩy Macro AUC từ 0,952 lên 0,980. Lợi ích AUC là kết quả có ý nghĩa hơn: nó nghĩa là xếp hạng xác suất của ensemble đáng tin cậy đúng ngay cả cho các trường hợp MEL/NV mơ hồ nơi quyết định cứng ở ngưỡng cố định thất bại. F1 melanoma cải thiện từ 0,695 (EfficientNet-B0 đơn lẻ) lên 0,744, một lợi ích 4,9 điểm có ý nghĩa lâm sàng đáng kể vì hậu quả của việc bỏ sót melanoma.
 
 \begin{figure}[H]
 \centering
@@ -124,7 +137,7 @@ Ensemble nâng accuracy thêm 1,1 điểm phần trăm, đẩy Macro AUC từ 0,
 \caption{Hiệu suất mô hình ensemble: (a) ma trận nhầm lẫn chuẩn hóa và (b) đường cong ROC theo lớp.}
 \end{figure}
 
-Ensemble cải thiện AUC cho \textbf{mọi lớp} không có ngoại lệ.
+Ensemble cải thiện AUC cho \textbf{mọi lớp} không có ngoại lệ. F1 phân loại cứng pha trộn hơn: BCC và AKIEC giảm nhẹ (lần lượt 0,040 và 0,007) trong khi BKL, MEL, NV và VASC đều cải thiện. Các giảm F1 phản ánh một trade-off ensemble đã biết --- trung bình xác suất làm mềm các dự đoán cá nhân tự tin nhất, có thể dịch chuyển các trường hợp ranh giới theo hai hướng. Sự cải thiện AUC đơn điệu vì việc trung bình các phân phối bảo toàn thứ tự xếp hạng đồng thời giảm phương sai trong sai số mô hình cá nhân.
 
 \section{Độ tin cậy thống kê qua các hạt giống ngẫu nhiên}
 

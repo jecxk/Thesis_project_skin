@@ -1,0 +1,1072 @@
+% !TEX program = xelatex
+\documentclass[11pt,a4paper]{article}
+
+\usepackage[a4paper,top=2cm,bottom=2.2cm,left=2.2cm,right=2.2cm]{geometry}
+\usepackage{fontspec}
+\usepackage{polyglossia}
+\setdefaultlanguage{vietnamese}
+\setotherlanguage{english}
+\setmainfont{Times New Roman}
+\setmonofont{Consolas}[Scale=0.92]
+
+\usepackage{amsmath, amssymb}
+\usepackage{graphicx}
+\usepackage{xcolor}
+\usepackage{colortbl}
+\usepackage{booktabs}
+\usepackage{tabularx}
+\usepackage{array}
+\usepackage{enumitem}
+\usepackage{tcolorbox}
+\usepackage{listings}
+\usepackage{titlesec}
+\usepackage[hidelinks,colorlinks=true,linkcolor=blue!60!black,urlcolor=blue!60!black]{hyperref}
+
+\definecolor{usthblue}{HTML}{0054A6}
+\definecolor{darkblue}{HTML}{003366}
+\definecolor{softgray}{HTML}{F5F6F8}
+\definecolor{boxborder}{HTML}{D8E0EA}
+\definecolor{kwcol}{HTML}{0033CC}
+\definecolor{strcol}{HTML}{B30000}
+\definecolor{cmtcol}{HTML}{717171}
+\definecolor{numcol}{HTML}{8E5816}
+\definecolor{egbox}{HTML}{FFF8E6}
+\definecolor{egbord}{HTML}{E5C97A}
+\definecolor{qbox}{HTML}{FCEDE7}
+\definecolor{qbord}{HTML}{D88C6F}
+
+\lstdefinestyle{py}{
+  language=Python,
+  basicstyle=\ttfamily\footnotesize,
+  keywordstyle=\color{kwcol}\bfseries,
+  stringstyle=\color{strcol},
+  commentstyle=\color{cmtcol}\itshape,
+  numberstyle=\tiny\color{numcol},
+  numbers=left, numbersep=8pt,
+  showstringspaces=false, breaklines=true, breakatwhitespace=true,
+  frame=single, rulecolor=\color{boxborder},
+  backgroundcolor=\color{softgray},
+  framerule=0.4pt, xleftmargin=12pt, xrightmargin=4pt,
+  aboveskip=8pt, belowskip=8pt,
+  literate={→}{$\rightarrow$}{1}{≥}{$\geq$}{1}{≤}{$\leq$}{1}
+           {α}{$\alpha$}{1}{ε}{$\varepsilon$}{1}{λ}{$\lambda$}{1}{·}{$\cdot$}{1}
+}
+\lstset{style=py}
+
+\titleformat{\section}{\Large\bfseries\color{usthblue}}{\thesection.}{0.5em}{}
+\titleformat{\subsection}{\large\bfseries\color{darkblue}}{\thesubsection.}{0.5em}{}
+\titleformat{\subsubsection}{\normalsize\bfseries}{}{0pt}{}
+\titlespacing*{\section}{0pt}{16pt}{8pt}
+\titlespacing*{\subsection}{0pt}{12pt}{6pt}
+
+\newtcolorbox{idea}[1][]{
+  colback=blue!4, colframe=usthblue!60, boxrule=0.6pt,
+  arc=4pt, left=10pt, right=10pt, top=6pt, bottom=6pt,
+  title=#1, fonttitle=\bfseries\color{usthblue}
+}
+\newtcolorbox{example}[1][Ví dụ]{
+  colback=egbox, colframe=egbord, boxrule=0.6pt,
+  arc=4pt, left=10pt, right=10pt, top=6pt, bottom=6pt,
+  title={\footnotesize #1}, fonttitle=\bfseries\color{black!70},
+  before skip=8pt, after skip=8pt
+}
+\newtcolorbox{simple}[1][Giải thích kiểu trẻ con]{
+  colback=green!4, colframe=green!50!black, boxrule=0.6pt,
+  arc=4pt, left=10pt, right=10pt, top=6pt, bottom=6pt,
+  title={\footnotesize #1}, fonttitle=\bfseries\color{green!40!black},
+  before skip=6pt, after skip=6pt
+}
+\newtcolorbox{qa}[1][Hội đồng có thể hỏi]{
+  colback=qbox, colframe=qbord, boxrule=0.6pt,
+  arc=4pt, left=10pt, right=10pt, top=6pt, bottom=6pt,
+  title={\footnotesize #1}, fonttitle=\bfseries\color{qbord!60!black},
+  before skip=6pt, after skip=6pt
+}
+
+\setlength{\parskip}{6pt}
+\setlength{\parindent}{0pt}
+\renewcommand{\arraystretch}{1.2}
+
+\title{
+  \vspace{-1.5cm}
+  \color{usthblue}\Huge\textbf{Master Rehearsal Guide}\\[6pt]
+  \color{black!75}\large Đồ án Phân loại Tổn thương Da bằng Học sâu\\[2pt]
+  \normalsize\textit{Tất cả những gì cần biết để bảo vệ thành công}
+}
+\author{Nguyễn Trọng Bách --- 23BI14057 \\[2pt]\small USTH ICT 2026}
+\date{}
+
+\begin{document}
+\maketitle
+\vspace{-1cm}
+
+{\hypersetup{linkcolor=black}\tableofcontents}
+
+\newpage
+
+% ==========================================================
+\section{Cách dùng tài liệu này}
+% ==========================================================
+
+\begin{idea}[Định hướng]
+Tài liệu này là \textbf{một file duy nhất} bạn cần đọc khi rehearsal. Nó cover:
+\begin{itemize}[leftmargin=*]
+  \item Mọi kỹ thuật trong đồ án --- giải thích kiểu \textit{trẻ con} trước, sau đó nâng lên \textit{toán học chính xác}.
+  \item Mọi con số cập nhật tới Tuần 3 (multi-seed, metadata fusion, OOD).
+  \item Mỗi khái niệm có \textit{ví dụ cụ thể bằng số}.
+  \item 10 câu hỏi khó nhất hội đồng có thể hỏi $+$ cách trả lời.
+  \item Checklist defense-day.
+  \item Tóm tắt một trang để in.
+\end{itemize}
+\end{idea}
+
+\textbf{Quy ước hộp màu:}
+
+\begin{simple}
+Hộp xanh lá --- giải thích bằng ngôn ngữ đời thường, không công thức. Bạn nên hiểu \textit{cái này} trước khi đi vào toán.
+\end{simple}
+
+\begin{example}
+Hộp vàng --- ví dụ tính toán cụ thể bằng số thật của đồ án. Đây là cách trả lời ``cho em xin ví dụ'' khi hội đồng hỏi.
+\end{example}
+
+\begin{idea}[Hộp xanh dương --- ý chính / hiểu sâu]
+Bullet quan trọng nhất của một section. Đọc lại trước defense.
+\end{idea}
+
+\begin{qa}
+Hộp cam --- câu hỏi giả định của hội đồng kèm câu trả lời mẫu.
+\end{qa}
+
+\textbf{Lịch trình đọc đề xuất:}
+\begin{itemize}[leftmargin=*]
+  \item Lần 1 (90 phút): đọc tuần tự từ section 2 đến section 22.
+  \item Lần 2 (45 phút): chỉ đọc hộp \textit{xanh dương} và \textit{cam}.
+  \item Lần 3 (15 phút sáng defense): đọc section 23 (tóm tắt một trang).
+\end{itemize}
+
+% ==========================================================
+\section{Đồ án này là gì --- 1 trang elevator pitch}
+% ==========================================================
+
+\textbf{Bài toán.} Cho 1 ảnh dermoscopy (ảnh soi da bằng kính phóng đại), dự đoán nó thuộc \textbf{1 trong 7 loại tổn thương}: \texttt{akiec}, \texttt{bcc}, \texttt{bkl}, \texttt{df}, \texttt{mel}, \texttt{nv}, \texttt{vasc}. Trong đó \texttt{mel} (melanoma --- ung thư hắc tố) là lớp \textbf{nguy hiểm nhất}.
+
+\textbf{Dữ liệu.} ISIC 2018 Task 3 / HAM10000 --- 10.015 ảnh, mất cân bằng cực đoan (NV chiếm 67\%, DF chỉ 1.1\%, tỉ lệ \textbf{58:1}).
+
+\textbf{Phương pháp.} Fine-tune 4 mô hình pretrained ImageNet (\textit{EfficientNet-B0, ResNet50, DenseNet121, Swin-Tiny}) trên ISIC 2018, kết hợp bằng \textbf{soft-voting ensemble}, mở rộng bằng \textbf{metadata bệnh nhân} (tuổi, giới, vị trí giải phẫu).
+
+\textbf{Kết quả headline:}
+\begin{itemize}[leftmargin=*]
+  \item Mô hình đơn tốt nhất (hạt giống 42): EfficientNet-B0 --- Acc 88.36\%, F1 0.831.
+  \item Ensemble chỉ-ảnh (1 hạt giống): Acc \textbf{89.49\%}, F1 \textbf{0.845}, AUC \textbf{0.980}.
+  \item Ensemble chỉ-ảnh (5 hạt giống): Acc \textbf{89.93 $\pm$ 0.66\%}, F1 \textbf{0.852 $\pm$ 0.010}, AUC \textbf{0.982 $\pm$ 0.001}.
+  \item Ensemble $+$ metadata fusion: Acc \textbf{90.49\%}, F1 \textbf{0.873}, AUC \textbf{0.984} --- vượt Pacheco \& Krohling 2020.
+  \item OOD trên PAD-UFES-20 (ảnh smartphone, zero-shot): Acc \textbf{32.46\%} --- drop 56 pp, chi phí chuẩn của transfer dermoscopy$\to$smartphone.
+\end{itemize}
+
+\textbf{Khả diễn giải.} Grad-CAM (Selvaraju 2017) + định lượng 4 chỉ số: \texttt{focus\_ratio > 0.6} và \texttt{peak\_distance < 0.2} trên cả 4 mô hình $\Rightarrow$ mô hình thật sự nhìn vào tổn thương, không phải nhiễu.
+
+\textbf{Sản phẩm.} Prototype Streamlit (\texttt{app.py}) cho phép bác sĩ upload ảnh, nhận chẩn đoán $+$ heatmap real-time.
+
+\begin{idea}[Thông điệp một câu]
+Một pipeline điều chuẩn cẩn thận, ensemble đa kiến trúc, $+$ metadata bệnh nhân có thể đạt 90\%+ trên ISIC 2018, vượt một số công trình SOTA --- nhưng deploy thực tế trên ảnh smartphone vẫn cần domain adaptation (drop 56 pp).
+\end{idea}
+
+% ==========================================================
+\section{Định nghĩa nền tảng}
+% ==========================================================
+
+\subsection{Học sâu (Deep Learning)}
+
+\begin{simple}
+Học sâu = mạng nơ-ron có \textit{nhiều lớp} xếp chồng. Mỗi lớp nhận output của lớp trước, biến đổi thành biểu diễn ``trừu tượng hơn''. Với ảnh: lớp đầu nhìn \textit{cạnh}, lớp giữa nhìn \textit{bộ phận}, lớp cuối nhìn \textit{khái niệm}.
+\end{simple}
+
+Toán: cho dữ liệu $(x_i, y_i)$ và tham số $\theta$, mạng học bằng gradient descent:
+\[
+  \theta^* = \arg\min_\theta \; \frac{1}{N}\sum_{i=1}^N \mathcal{L}\bigl(f_\theta(x_i),\, y_i\bigr).
+\]
+
+\subsection{Pretrain --- huấn luyện ``từ đầu''}
+
+\begin{simple}
+Pretrain = bắt mạng học từ con số 0 trên một tập \textit{rất lớn}. Mục tiêu: dạy mạng cách ``nhìn'' nói chung. Ví dụ: dạy mạng phân biệt mèo, chó, xe hơi --- chưa biết gì về da liễu.
+\end{simple}
+
+\begin{example}[Pretrain trên ImageNet]
+ImageNet-1K có 1,28 \textit{triệu} ảnh, 1000 lớp. Huấn luyện EfficientNet-B0 trên ImageNet mất \textit{hàng tuần} trên nhiều GPU. Kết quả: file weights $\theta_{\text{pre}}$ --- mạng ``biết nhìn ảnh'' dù chưa biết gì về da.
+\end{example}
+
+\subsection{Fine-tune --- ``điều chỉnh nhỏ''}
+
+\begin{simple}
+Fine-tune = lấy mạng đã pretrain, sửa output cho task mới, rồi train tiếp trên data nhỏ hơn. Giống như: bạn đã biết tiếng Anh, giờ học tiếng Anh \textit{y khoa} --- không cần học lại từ A-Z, chỉ học thêm thuật ngữ chuyên ngành.
+\end{simple}
+
+\begin{example}[Fine-tune EB0 cho ISIC 2018]
+\begin{enumerate}[leftmargin=*]
+  \item Tải $\theta_{\text{pre}}$ (ImageNet weights) từ \texttt{timm}.
+  \item Thay classifier head: \texttt{Linear(1280, 1000)} $\to$ \texttt{Linear(1280, 7)} (khởi tạo random).
+  \item Train toàn bộ trên 7.010 ảnh ISIC với LR nhỏ 3e-4 trong 50 epoch.
+\end{enumerate}
+\end{example}
+
+\begin{idea}[Khi nào dùng cái nào?]
+\textbf{Train từ đầu} cần $>$ 100K ảnh, mất tuần GPU --- không khả thi trên 10K ảnh ISIC.
+\textbf{Fine-tune} cần vài nghìn ảnh, mất phút-giờ --- chính là cái đồ án dùng.
+\end{idea}
+
+\subsection{Đồ án này dùng cái nào?}
+
+\textbf{Đồ án dùng fine-tune.} Tải weights ImageNet sẵn từ \texttt{timm}, không tự pretrain. Code thực tế:
+
+\begin{lstlisting}[caption={\texttt{src/models/build\_model.py}}]
+import timm
+def build_model(model_cfg: dict):
+    model = timm.create_model(
+        model_cfg['name'],       # "tf_efficientnet_b0", "resnet50", ...
+        pretrained=True,         # load ImageNet weights
+        num_classes=7,           # thay head: 1000 -> 7
+        drop_rate=0.3,           # dropout truoc classifier
+    )
+    return model
+\end{lstlisting}
+
+\begin{qa}
+\textbf{Q:} Em pretrain hay fine-tune?\\
+\textbf{A:} Fine-tune. Em không có data để pretrain (cần triệu ảnh). Em tải weights ImageNet pretrained từ \texttt{timm}, thay classifier head từ 1000 lớp ImageNet về 7 lớp ISIC, rồi train toàn bộ mạng trên ISIC với learning rate nhỏ.
+\end{qa}
+
+% ==========================================================
+\section{Dữ liệu ISIC 2018 / HAM10000}
+% ==========================================================
+
+\subsection{7 lớp tổn thương}
+
+\begin{table}[h]
+\centering\small
+\begin{tabular}{llrrrr}
+\toprule
+\textbf{Mã} & \textbf{Tên đầy đủ} & \textbf{Train} & \textbf{Val} & \textbf{Test} & \textbf{Tổng} \\
+\midrule
+nv    & Melanocytic Nevus (nốt ruồi)           & 4.693 & 1.006 & 1.006 & 6.705 \\
+mel   & \textbf{Melanoma (ung thư hắc tố)}     &   779 &   167 &   167 & 1.113 \\
+bkl   & Benign Keratosis-like                  &   769 &   165 &   165 & 1.099 \\
+bcc   & Basal Cell Carcinoma                   &   360 &    77 &    77 &   514 \\
+akiec & Actinic Keratosis (tiền ung thư)       &   229 &    49 &    49 &   327 \\
+vasc  & Vascular Lesion (mạch máu)             &    99 &    21 &    22 &   142 \\
+df    & Dermatofibroma (u xơ)                  &    81 &    17 &    17 &   115 \\
+\midrule
+\multicolumn{2}{l}{\textbf{Tổng}} & 7.010 & 1.502 & 1.503 & \textbf{10.015}\\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\subsection{Mất cân bằng cực đoan}
+
+\begin{simple}
+Lớp đông nhất (NV: 4.693 ảnh) so với lớp ít nhất (DF: 81 ảnh) = tỉ lệ \textbf{58:1}. Tức là nếu chia bài thì trong 59 ảnh ngẫu nhiên có 58 NV và 1 DF. Mất cân bằng kiểu này làm mọi mô hình tự nhiên thiên về NV.
+\end{simple}
+
+\begin{idea}[Tại sao mất cân bằng nguy hiểm?]
+Mô hình \textit{lười} có thể dự đoán ``NV cho mọi ảnh'' và đạt \textbf{67\% accuracy} mà không học gì cả --- nhưng bỏ sót 100\% melanoma. Vì vậy ta dùng \textbf{Macro F1} (trung bình F1 \textit{không} trọng số 7 lớp), không phải Accuracy, làm metric chính.
+\end{idea}
+
+\subsection{Stratified split 70/15/15}
+
+\begin{simple}
+Stratified = chia dữ liệu giữ nguyên tỉ lệ 7 lớp trong cả train/val/test. Nếu chia ngẫu nhiên thuần túy, có nguy cơ val set không có DF nào (chỉ 17 ảnh trong 10K).
+\end{simple}
+
+% ==========================================================
+\section{Tiền xử lý + Augmentation}
+% ==========================================================
+
+\subsection{Tiền xử lý cơ bản}
+
+Mọi ảnh đều được:
+\begin{itemize}[leftmargin=*]
+  \item \textbf{Resize 224$\times$224} --- kích thước chuẩn ImageNet pretrained.
+  \item \textbf{ToTensor} --- pixel $[0, 255] \to [0, 1]$.
+  \item \textbf{Normalize} bằng mean/std ImageNet:
+  \[
+    x' = \frac{x - \mu_{\text{ImageNet}}}{\sigma_{\text{ImageNet}}}, \quad
+    \mu = (0.485, 0.456, 0.406), \quad \sigma = (0.229, 0.224, 0.225).
+  \]
+\end{itemize}
+
+\begin{simple}
+Tại sao dùng mean/std ImageNet? Mô hình pretrained đã ``quen'' với phân phối input chuẩn hóa kiểu đó. Nếu normalize sai cách, input lệch khỏi distribution training $\Rightarrow$ mô hình hoảng loạn.
+\end{simple}
+
+\subsection{Augmentation cho train (chỉ train, không val/test)}
+
+\begin{table}[h]
+\centering\small
+\begin{tabular}{lcc}
+\toprule
+\textbf{Phép biến đổi} & \textbf{Tham số} & \textbf{Lý do} \\
+\midrule
+RandomResizedCrop & scale 0.85--1.0   & Bất biến scale \\
+HorizontalFlip    & $p=0.5$            & Ảnh da đối xứng \\
+VerticalFlip      & $p=0.5$            & Không có ``lên/xuống'' cố định \\
+Rotation          & $\pm 90^\circ$     & Bất biến xoay \\
+ColorJitter       & b/c/s/h $= 0.25$   & Robust với thiết bị chụp \\
+GaussianBlur      & $p=0.1$            & Robust với độ nét \\
+RandomErasing     & $p=0.1$            & Robust với che khuất \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+% ==========================================================
+\section{Weighted Random Sampler}
+% ==========================================================
+
+\subsection{Ý tưởng}
+
+\begin{simple}
+DataLoader bình thường chọn ảnh đều nhau $\to$ trong 1 batch toàn NV. Weighted Sampler gán \textit{trọng số} cao cho lớp hiếm $\to$ DataLoader chọn DF thường xuyên hơn $\to$ mỗi batch cân bằng 7 lớp.
+\end{simple}
+
+\subsection{Công thức}
+
+\[
+  w_c = \frac{1}{n_c} \quad \text{(hoặc chuẩn hóa)} \quad w_c = \frac{N}{C \cdot n_c}
+\]
+
+\begin{example}[Trọng số 7 lớp ISIC train]
+$N = 7.010$, $C = 7$:
+
+\begin{center}\small
+\begin{tabular}{lrr}
+\toprule
+Lớp & $n_c$ & $w_c$ \\
+\midrule
+nv   & 4.693 & 0.213 \\
+mel  &   779 & 1.286 \\
+bkl  &   769 & 1.303 \\
+bcc  &   360 & 2.782 \\
+akiec&   229 & 4.373 \\
+vasc &    99 & 10.117 \\
+df   &    81 & \textbf{12.365} \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\textbf{Hệ quả}: 1 ảnh DF được chọn với xác suất gấp $12.365 / 0.213 \approx \mathbf{58\times}$ so với 1 ảnh NV. Sau khi sampling, mỗi mini-batch xấp xỉ cân bằng.
+\end{example}
+
+% ==========================================================
+\section{Mixup --- ``trộn 2 ảnh''}
+% ==========================================================
+
+\begin{simple}
+Mixup = lấy 2 ảnh khác nhau, ``trộn'' chúng theo tỉ lệ ngẫu nhiên, trộn cả nhãn theo cùng tỉ lệ. Ép mô hình hoạt động \textit{tuyến tính} giữa các mẫu $\to$ tránh memorize.
+\end{simple}
+
+\subsection{Công thức}
+
+Cho 2 mẫu $(x_i, y_i)$ và $(x_j, y_j)$, lấy $\lambda \sim \mathrm{Beta}(\alpha, \alpha)$ với $\alpha = 0.2$:
+\[
+  \tilde{x} = \lambda x_i + (1-\lambda) x_j, \qquad \tilde{y} = \lambda y_i + (1-\lambda) y_j.
+\]
+
+\begin{example}[Mixup melanoma + nốt ruồi]
+\begin{itemize}[leftmargin=*]
+  \item $x_i$ = ảnh melanoma, $y_i = [0,0,0,0,\mathbf{1},0,0]$ (mel)
+  \item $x_j$ = ảnh nốt ruồi, $y_j = [0,0,0,0,0,\mathbf{1},0]$ (nv)
+  \item $\lambda = 0.7$ ngẫu nhiên.
+\end{itemize}
+\textbf{Ảnh trộn:} $\tilde{x} = 0.7 \, x_i + 0.3 \, x_j$ --- ảnh mel ``rõ 70\%'' chồng lên ảnh nv ``mờ 30\%''.\\
+\textbf{Nhãn trộn:} $\tilde{y} = [0,0,0,0, \mathbf{0.7}, \mathbf{0.3}, 0]$.\\
+Mô hình phải dự đoán xác suất mel gần 0.7 \textit{và} nv gần 0.3.
+\end{example}
+
+\begin{idea}[Ablation: Mixup quan trọng nhất]
+Bỏ Mixup/CutMix khỏi pipeline làm Macro F1 \textbf{giảm 4.51\%} --- thành phần đóng góp lớn nhất. Vì với chỉ 81 ảnh DF train, không có Mixup mô hình sẽ \textit{nhớ thuộc lòng} 81 ảnh đó trong vài epoch đầu.
+\end{idea}
+
+% ==========================================================
+\section{CutMix --- ``cắt + dán patch''}
+% ==========================================================
+
+\begin{simple}
+CutMix khác Mixup: thay vì trộn toàn ảnh (kiểu mờ chồng), CutMix \textit{cắt một patch vuông} từ ảnh $j$ và \textit{dán đè} lên ảnh $i$. Nhãn lai theo \textit{diện tích} patch.
+\end{simple}
+
+\subsection{Công thức}
+
+\[
+  \tilde{x} = M \odot x_i + (1-M) \odot x_j, \qquad \tilde{y} = \lambda y_i + (1-\lambda) y_j,
+\]
+với $M \in \{0,1\}^{H\times W}$ là mask bounding box, $\lambda = 1 - \frac{\text{diện tích patch}}{H \cdot W}$.
+
+\begin{example}[CutMix patch 80$\times$80]
+\begin{itemize}[leftmargin=*]
+  \item $x_i$ = ảnh nốt ruồi 224$\times$224, $y_i$ = nv.
+  \item $x_j$ = ảnh melanoma 224$\times$224, $y_j$ = mel.
+  \item Sample bounding box ngẫu nhiên $80 \times 80$ ở góc trên-trái.
+\end{itemize}
+\textbf{Ảnh trộn:} ảnh nốt ruồi với vùng $80 \times 80$ được thay bằng pixel từ melanoma.\\
+\textbf{$\lambda$:} $1 - 80 \cdot 80 / (224 \cdot 224) = 1 - 0.128 = 0.872$.\\
+\textbf{Nhãn trộn:} $[0,0,0,0,\mathbf{0.128},\mathbf{0.872},0]$.
+\end{example}
+
+% ==========================================================
+\section{Label Smoothing --- ``làm mềm nhãn''}
+% ==========================================================
+
+\begin{simple}
+One-hot label nói: ``\textit{chắc chắn} 100\% là MEL, 0\% là mọi lớp khác''. Label Smoothing thay bằng ``\textbf{91\%} là MEL, mỗi lớp khác 1.5\%''. Ngăn mô hình quá tự tin.
+\end{simple}
+
+\subsection{Công thức}
+
+\[
+  y^{\text{LS}}_k = (1 - \varepsilon) \, \mathbb{1}[k = c] + \frac{\varepsilon}{C}, \quad \varepsilon = 0.1, \, C = 7.
+\]
+
+\begin{example}[Smoothing nhãn MEL]
+$y_{\text{onehot}} = [0,0,0,0,1,0,0]$ (mel).
+
+Với $\varepsilon = 0.1$, $C = 7$: phần ``đúng'' giảm còn $1 - 0.1 = 0.9$, phần $0.1$ rải đều 7 lớp: $0.1 / 7 \approx 0.0143$.
+\[
+  y^{\text{LS}} = [\mathbf{0.0143}, 0.0143, 0.0143, 0.0143, \mathbf{0.9143}, 0.0143, 0.0143].
+\]
+Kiểm tra: $0.9143 + 6 \cdot 0.0143 = 1.000$. ✓
+\end{example}
+
+\begin{idea}[Nghịch lý đã quan sát]
+Bỏ Label Smoothing làm AUC \textbf{tăng} (0.952 → 0.967) nhưng Macro F1 \textbf{giảm} 3.11\%. Hard target $\Rightarrow$ probability ranking sắc nét (AUC cao) nhưng ranh giới quyết định cứng sai nhiều ở vùng biên (F1 thấp).
+\end{idea}
+
+% ==========================================================
+\section{Bốn kiến trúc mô hình}
+% ==========================================================
+
+\subsection{EfficientNet-B0 (5.3M tham số)}
+
+\begin{simple}
+Mô hình \textit{nhỏ nhất} trong 4 mô hình. Ý tưởng: tăng đồng thời \textit{độ sâu} (số layer), \textit{độ rộng} (số channel), \textit{độ phân giải} (image size) bằng cùng một hệ số scaling --- gọi là ``compound scaling''. Có Squeeze-and-Excitation (SE) blocks học global context theo kênh.
+\end{simple}
+
+\subsection{ResNet50 (25.6M tham số)}
+
+\begin{simple}
+Kiến trúc \textit{kinh điển}. Ý tưởng cốt lõi: residual connection $f(x) = F(x) + x$. Cho phép mạng rất sâu (50+ layer) vẫn huấn luyện được mà không bị vanishing gradient.
+\end{simple}
+
+\subsection{DenseNet121 (8.0M tham số)}
+
+\begin{simple}
+Mỗi layer nhận concatenation của \textit{tất cả} layer trước đó --- gọi là dense connectivity. Tận dụng features đã học, giảm số tham số.
+\end{simple}
+
+\subsection{Swin-Tiny (28.0M tham số, Vision Transformer)}
+
+\begin{simple}
+Mô hình \textit{khác hẳn} 3 CNN trên. Dùng \textit{self-attention} thay convolution. Chia ảnh thành các cửa sổ nhỏ (window), tính attention trong window, rồi \textit{dịch cửa sổ} để các vùng giao tiếp với nhau. Hierarchical 4 stage.
+\end{simple}
+
+\begin{idea}[Tại sao chọn 4 kiến trúc đa dạng?]
+3 CNN (EB0, RN50, DN121) + 1 Transformer (Swin) $\Rightarrow$ \textit{lỗi không tương quan}. CNN focus local, Swin focus global. Khi ensemble, lỗi của mô hình này không trùng lỗi mô hình kia $\Rightarrow$ trung bình xác suất \textit{thật sự} cải thiện.
+\end{idea}
+
+% ==========================================================
+\section{Pipeline huấn luyện đầy đủ}
+% ==========================================================
+
+\subsection{Hàm mất mát}
+
+Cross-entropy với label smoothing:
+\[
+  \mathcal{L}_{\text{CE}}(p, y) = -\sum_{k=1}^C y^{\text{LS}}_k \log p_k.
+\]
+
+\subsection{Optimizer AdamW}
+
+\begin{simple}
+Adam = optimizer ``thông minh'' tự điều chỉnh learning rate cho từng tham số. AdamW = Adam với weight decay \textit{đúng cách} (áp trực tiếp lên tham số, không vào gradient). Phổ biến nhất hiện nay.
+\end{simple}
+
+\[
+  \theta_t = \theta_{t-1} - \eta \left( \frac{\hat{m}_t}{\sqrt{\hat{v}_t} + \epsilon} + \lambda \theta_{t-1} \right).
+\]
+
+\subsection{Cosine Annealing với Warmup}
+
+\begin{simple}
+Warmup: LR tăng từ $\sim 0$ lên đỉnh trong 3-5 epoch đầu --- tránh phá weights pretrained ngay đầu.
+Cosine: LR giảm dần theo đường cosine từ đỉnh xuống min --- hội tụ êm về cuối.
+\end{simple}
+
+\subsection{Siêu tham số}
+
+\begin{table}[h]
+\centering\small
+\begin{tabular}{lcccc}
+\toprule
+& \textbf{EB0} & \textbf{RN50} & \textbf{DN121} & \textbf{Swin} \\
+\midrule
+Learning rate       & 3e-4 & 3e-4 & 2.5e-4 & \textbf{1e-4} \\
+Weight decay        & 1e-3 & 1e-3 & 1e-3   & \textbf{5e-2} \\
+Warmup epochs       & 3    & 3    & 3      & 5 \\
+Max epochs          & 50   & 50   & 50     & 50 \\
+Batch size          & 16   & 16   & 16     & 16 \\
+Mixup / CutMix $\alpha$ & 0.2/1.0 & 0.2/1.0 & 0.2/1.0 & 0.2/1.0 \\
+Label smoothing $\varepsilon$ & 0.1 & 0.1 & 0.1 & 0.1 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\begin{idea}[Tại sao Swin khác?]
+Transformer thiếu inductive bias của CNN $\Rightarrow$ cần \textbf{LR thấp} để không phá pretrained attention weights, \textbf{weight decay cao} để hạn chế overfit (28M tham số trên 7K ảnh = tỉ lệ rất dễ overfit).
+\end{idea}
+
+% ==========================================================
+\section{Ensemble bằng Soft Voting}
+% ==========================================================
+
+\subsection{Tại sao cần ensemble?}
+
+\begin{simple}
+1 mô hình hay sai ở \textit{một số ảnh nhất định}. Mô hình khác sai ở \textit{ảnh khác}. Trung bình 4 mô hình $\Rightarrow$ lỗi cá nhân bị triệt tiêu, giữ lại sự đồng thuận.
+\end{simple}
+
+\subsection{Công thức Soft Voting}
+
+Với $M = 4$ mô hình, mỗi mô hình $m$ cho vector xác suất $p_m(x) \in [0,1]^7$:
+\[
+  \bar{p}(x) = \frac{1}{M} \sum_{m=1}^{M} p_m(x), \qquad \hat{y} = \arg\max_c \bar{p}_c(x).
+\]
+
+\begin{example}[Soft voting trên 1 ảnh test thật]
+4 mô hình cho 4 vector xác suất cho 7 lớp (akiec, bcc, bkl, df, \textbf{mel}, nv, vasc):
+
+\small
+\begin{tabular}{lccccccc}
+\toprule
+& akiec & bcc & bkl & df & \textbf{mel} & nv & vasc \\
+\midrule
+EB0    & 0.02 & 0.03 & 0.05 & 0.01 & \textbf{0.65} & 0.22 & 0.02 \\
+RN50   & 0.03 & 0.05 & 0.08 & 0.01 & \textbf{0.55} & 0.26 & 0.02 \\
+DN121  & 0.02 & 0.03 & 0.06 & 0.01 & \textbf{0.62} & 0.24 & 0.02 \\
+Swin   & 0.04 & 0.04 & 0.05 & 0.01 & \textbf{0.48} & 0.36 & 0.02 \\
+\midrule
+\textbf{TB} & 0.028 & 0.038 & 0.060 & 0.010 & \textbf{0.575} & 0.270 & 0.020 \\
+\bottomrule
+\end{tabular}
+\normalsize
+
+\textbf{Argmax:} \texttt{mel} với xác suất ensemble 57.5\%. Swin ``chưa chắc lắm'' (48\%) nhưng các CNN đẩy lên --- kết quả ensemble vẫn vững.
+\end{example}
+
+\subsection{Tại sao Soft Voting tốt hơn Hard Voting hay Stacking?}
+
+\begin{itemize}[leftmargin=*]
+  \item \textbf{Hard voting} (mỗi mô hình argmax rồi vote): mất thông tin xác suất. Không phân biệt được ``cả 4 chắc MEL'' và ``2 MEL 51\%, 2 NV 49\%''.
+  \item \textbf{Stacking} (meta-learner học trọng số ensemble): cần val set thứ hai, dễ overfit trên data nhỏ.
+  \item \textbf{Soft voting}: đơn giản, ổn định, không cần train thêm --- đã đạt 89.49\% in-distribution, không có headroom rõ ràng để stacking phá được.
+\end{itemize}
+
+% ==========================================================
+\section{Multi-seed + McNemar (Tuần 1)}
+% ==========================================================
+
+\subsection{Tại sao multi-seed?}
+
+\begin{simple}
+1 hạt giống = 1 lần ``tung xúc xắc'' tốt --- có thể may. Hội đồng sẽ hỏi: ``làm sao biết 89.49\% không phải may?'' Trả lời: chạy lại 5 lần với 5 hạt giống khác nhau, báo cáo \textit{trung bình $\pm$ độ lệch chuẩn}.
+\end{simple}
+
+\subsection{Kết quả 5 hạt giống}
+
+\begin{table}[h]
+\centering\small
+\begin{tabular}{lccc}
+\toprule
+\textbf{Mô hình} & \textbf{Accuracy} & \textbf{Macro F1} & \textbf{Macro AUC} \\
+\midrule
+EfficientNet-B0  & $87.31 \pm 1.32\%$ & $0.814 \pm 0.022$ & $0.965 \pm 0.006$ \\
+ResNet50         & $86.31 \pm 0.57\%$ & $0.792 \pm 0.011$ & $0.949 \pm 0.003$ \\
+DenseNet121      & $85.62 \pm 2.42\%$ & $0.797 \pm 0.025$ & $0.960 \pm 0.004$ \\
+\textbf{Swin-Tiny} & $\mathbf{88.33 \pm 1.96\%}$ & $\mathbf{0.839 \pm 0.030}$ & $0.966 \pm 0.008$ \\
+\midrule
+\rowcolor{usthblue!10}\textbf{Ensemble} & $\mathbf{89.93 \pm 0.66\%}$ & $\mathbf{0.852 \pm 0.010}$ & $\mathbf{0.982 \pm 0.001}$ \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\begin{idea}[3 phát hiện quan trọng]
+\textbf{(1)} 89.49\% (1 hạt giống) nằm trong 1$\sigma$ của trung bình 89.93\% $\Rightarrow$ \textbf{không lucky, robust}.\\
+\textbf{(2)} Swin-Tiny mới là mô hình đơn mạnh nhất khi average qua seeds (88.33\% > EB0 87.31\%). Hạt giống 42 là pha xui của Swin.\\
+\textbf{(3)} Std của ensemble cực nhỏ (Acc 0.66\%, AUC 0.001) $\Rightarrow$ soft voting hấp thụ phương sai cấp hạt giống.
+\end{idea}
+
+\subsection{McNemar test --- chứng minh thống kê}
+
+\begin{simple}
+McNemar = kiểm định thống kê so sánh 2 classifier trên \textit{cùng tập test}. Đếm: bao nhiêu ảnh A đúng B sai vs.\ bao nhiêu ảnh A sai B đúng. Nếu chênh lệch lớn $\Rightarrow$ classifier này \textit{thực sự} tốt hơn classifier kia, không phải ngẫu nhiên.
+\end{simple}
+
+Công thức McNemar (có continuity correction):
+\[
+  \chi^2 = \frac{(|n_{ab} - n_{ba}| - 1)^2}{n_{ab} + n_{ba}}, \quad p = \chi^2_1\text{-survival}(\chi^2).
+\]
+
+\begin{example}[McNemar: Swin vs.\ Ensemble, seed 42]
+1503 ảnh test:
+\begin{itemize}[leftmargin=*]
+  \item $n_{ab} = 33$ (Swin đúng, ensemble sai)
+  \item $n_{ba} = 93$ (Swin sai, ensemble đúng)
+  \item $\chi^2 = (|33-93| - 1)^2 / (33+93) = 59^2 / 126 = 27.63$
+  \item $p = 1.47 \times 10^{-7}$
+\end{itemize}
+$p \ll 0.05$ $\Rightarrow$ ensemble \textbf{thực sự} hơn Swin, không phải ngẫu nhiên.
+\end{example}
+
+\subsection{Tổ hợp qua 5 hạt giống bằng Fisher's method}
+
+\[
+  \chi^2_{\text{combined}} = -2 \sum_{i=1}^k \log p_i, \quad df = 2k.
+\]
+
+\begin{table}[h]
+\centering\small
+\begin{tabular}{lcc}
+\toprule
+\textbf{Mô hình đơn vs.\ Ensemble} & \textbf{Ensemble thắng} & \textbf{Fisher combined $p$} \\
+\midrule
+EfficientNet-B0 & 5/5 & $5.3 \times 10^{-18}$ \\
+ResNet50        & 5/5 & $4.5 \times 10^{-31}$ \\
+DenseNet121     & 5/5 & $6.7 \times 10^{-39}$ \\
+\textbf{Swin-Tiny} (mạnh nhất) & \textbf{5/5} & $\mathbf{1.2 \times 10^{-7}}$ \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+% ==========================================================
+\section{Grad-CAM --- khả diễn giải}
+% ==========================================================
+
+\subsection{Tại sao Grad-CAM xài được?}
+
+\begin{simple}
+Mô hình nói ``MEL 90\%'' nhưng \textit{tại sao}? Grad-CAM tạo bản đồ nhiệt: chỗ nào càng đỏ thì mô hình càng dựa vào để quyết định. Nếu mô hình nhìn vào tổn thương $\Rightarrow$ tin cậy. Nếu nhìn vào lông/ruler/góc ảnh $\Rightarrow$ chưa chắc tin được.
+\end{simple}
+
+\subsection{4 bước toán học}
+
+Cho ảnh $x$, lớp mục tiêu $c$, feature map $A \in \mathbb{R}^{K \times H \times W}$ tại layer conv cuối:
+
+\textbf{Bước 1 --- forward + backward:}
+\[
+  y^c = f_\theta(x)[c], \quad \frac{\partial y^c}{\partial A^k_{ij}}.
+\]
+
+\textbf{Bước 2 --- trọng số kênh (GAP gradient):}
+\[
+  \alpha_c^k = \frac{1}{HW} \sum_{i,j} \frac{\partial y^c}{\partial A^k_{ij}}.
+\]
+
+\textbf{Bước 3 --- heatmap (ReLU):}
+\[
+  L_c = \mathrm{ReLU}\left( \sum_k \alpha_c^k \, A^k \right).
+\]
+
+\textbf{Bước 4:} up-sample về $224\times 224$, normalize $[0,1]$, overlay colormap JET.
+
+\subsection{Target layer mỗi mô hình}
+
+\begin{table}[h]
+\centering\small
+\begin{tabular}{llc}
+\toprule
+\textbf{Mô hình} & \textbf{Target layer} & \textbf{Shape} \\
+\midrule
+EfficientNet-B0 & \texttt{model.blocks[-1][-1]}    & (320, 7, 7) \\
+ResNet50        & \texttt{model.layer4[-1]}        & (2048, 7, 7) \\
+DenseNet121     & \texttt{model.features.norm5}    & (1024, 7, 7) \\
+Swin-Tiny       & \texttt{model.layers[-1].blocks[-1].norm2} & (49, 768) \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\begin{idea}[Bài học sai lầm --- \texttt{model.bn2} story]
+Ban đầu dùng \texttt{model.bn2} của EfficientNet (BatchNormAct2d $+$ SiLU). SiLU$(x) \approx 0$ với $x < 0$, sau BN khoảng 50\% activation về 0 $\Rightarrow$ chỉ 18\% pixel có activation $\Rightarrow$ heatmap \textit{xanh đồng đều}, không tập trung.
+
+Chuyển sang \texttt{blocks[-1][-1]}: 51\% pixel active, heatmap \textit{khoanh đúng tổn thương}. \textbf{Nếu không có metric định lượng, sai lầm này trượt qua mắt thường.}
+\end{idea}
+
+\subsection{Grad-CAM định lượng (4 chỉ số)}
+
+\begin{table}[h]
+\centering\small
+\begin{tabular}{lp{8cm}}
+\toprule
+\texttt{focus\_ratio}      & Tỉ lệ activation nằm trong lesion mask (Otsu). Cao = focus đúng. \\
+\texttt{peak\_distance}    & Khoảng cách peak activation $\to$ centroid lesion. Thấp = focus đúng tâm. \\
+\texttt{entropy}           & Shannon entropy heatmap. Thấp = focus sắc nét. \\
+\texttt{coverage\_75}      & \% diện tích chứa top-25\% activation. Thấp = compact. \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+Cả 4 mô hình đều đạt \texttt{focus\_ratio} $> 0.6$ và \texttt{peak\_distance} $< 0.2$ trên test set.
+
+% ==========================================================
+\section{Các chỉ số đánh giá}
+% ==========================================================
+
+\subsection{Tại sao Accuracy không đủ?}
+
+\begin{simple}
+Trên data mất cân bằng 58:1, mô hình ``đoán NV cho mọi ảnh'' đạt Accuracy 67\% mà bỏ sót 100\% melanoma. Vậy Accuracy là metric \textit{lừa dối}.
+\end{simple}
+
+\subsection{Định nghĩa metric chính}
+
+\begin{table}[h]
+\centering\small
+\begin{tabular}{lll}
+\toprule
+\textbf{Metric} & \textbf{Công thức} & \textbf{Ý nghĩa} \\
+\midrule
+Accuracy        & $\sum TP_c / N$            & Đúng tổng thể (lệch với imbalance) \\
+\textbf{Macro F1} & $\frac{1}{C}\sum F1_c$  & \textbf{F1 trung bình không trọng số --- METRIC CHÍNH} \\
+Weighted F1     & $\sum F1_c \cdot n_c / N$  & F1 trọng số theo cỡ lớp \\
+Macro AUC       & $\frac{1}{C}\sum \mathrm{AUC}_c$ & Khả năng xếp hạng xác suất \\
+Cohen's $\kappa$ & $(P_o - P_e)/(1 - P_e)$  & Đồng thuận vs.\ random \\
+MCC             & cân bằng nhất             & Dùng cả 4 ô confusion \\
+Sensitivity     & $TP/(TP+FN)$              & Recall --- phát hiện đúng positive \\
+Specificity     & $TN/(TN+FP)$              & Xác định đúng negative \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\begin{example}[F1 melanoma của ensemble]
+167 ảnh MEL thật trong test. Ensemble dự đoán ``MEL'' 166 ảnh, đúng 124 ảnh.
+\begin{align*}
+TP &= 124, \quad FP = 166-124 = 42, \quad FN = 167-124 = 43\\
+\mathrm{Precision} &= 124/166 = 0.747\\
+\mathrm{Recall} &= 124/167 = 0.740\\
+F1 &= \frac{2 \cdot 0.747 \cdot 0.740}{0.747 + 0.740} = \mathbf{0.744}
+\end{align*}
+\end{example}
+
+% ==========================================================
+\section{Ablation Study}
+% ==========================================================
+
+\subsection{Phương pháp}
+
+\begin{simple}
+Lần lượt \textit{xóa 1 thành phần} của pipeline, giữ nguyên còn lại. Đo mức sụt giảm Macro F1. Thành phần xóa đi mà sụt nhiều = thành phần quan trọng nhất.
+\end{simple}
+
+\subsection{Kết quả}
+
+\begin{table}[h]
+\centering\small
+\begin{tabular}{lcccc}
+\toprule
+\textbf{Cấu hình} & \textbf{Acc} & \textbf{Macro F1} & \textbf{AUC} & \textbf{$\Delta$ F1} \\
+\midrule
+\textbf{Full pipeline} & \textbf{0.8836} & \textbf{0.8311} & 0.9522 & --- \\
+\midrule
+$-$ Mixup \& CutMix     & 0.8589 & 0.7860 & 0.9486 & \textcolor{red}{$\mathbf{-0.0451}$} \\
+$-$ Label Smoothing     & 0.8776 & 0.8000 & \textbf{0.9674} & \textcolor{red}{$-0.0311$} \\
+$-$ Weighted Sampler    & 0.8762 & 0.8041 & 0.9521 & \textcolor{red}{$-0.0270$} \\
+$-$ Advanced Aug        & \textbf{0.8896} & 0.8204 & 0.9664 & \textcolor{red}{$-0.0107$} \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\subsection{3 phát hiện và 2 nghịch lý}
+
+\textbf{1. Mixup/CutMix quan trọng nhất ($-4.51\%$ F1).} Với 81 ảnh DF train, không Mixup mô hình memorize sample hiếm.
+
+\textbf{2. Nghịch lý Label Smoothing.} Bỏ LS làm AUC \textit{tăng} (0.952 $\to$ 0.967) nhưng F1 \textit{giảm} 3.11\%. Hard target $\Rightarrow$ ranking sắc (AUC cao) nhưng boundary cứng sai ở MEL/NV/BKL (F1 thấp).
+
+\textbf{3. Nghịch lý Augmentation.} Bỏ aug mạnh thậm chí làm Accuracy \textit{nhỉnh hơn} (88.96\% > 88.36\%) vì model dễ fit NV. Nhưng Macro F1 giảm --- minority bị bỏ rơi.
+
+\begin{idea}[Bài học cốt lõi]
+Đóng góp lớn nhất \textbf{không phải kiến trúc lớn hơn} mà là \textbf{regularization tốt hơn}. Mixup/CutMix $+$ LS $+$ Weighted Sampler đóng góp tổng cộng \textbf{$\sim$10\% F1} --- nhiều hơn khoảng cách giữa các kiến trúc.
+\end{idea}
+
+% ==========================================================
+\section{Metadata fusion (Tuần 2) --- vượt 90\%}
+% ==========================================================
+
+\subsection{Ý tưởng}
+
+\begin{simple}
+Ảnh không đủ. Bác sĩ luôn cân nhắc tuổi, giới, vị trí trước khi chẩn đoán. Một u màu nâu trên lưng người 30 tuổi khác hẳn cùng u đó trên mặt người 75 tuổi. Pipeline cũ bỏ qua. Tuần 2 em thêm 19-dim vector metadata vào pipeline.
+\end{simple}
+
+\subsection{Vector metadata 19 chiều}
+
+\begin{itemize}[leftmargin=*]
+  \item 1 chiều: tuổi đã chuẩn hóa (mean 51.86, std 16.97, missing $\to$ mean).
+  \item 3 chiều: one-hot giới (male / female / unknown).
+  \item 15 chiều: one-hot vị trí giải phẫu (abdomen, back, chest, ear, face, foot, ..., unknown).
+\end{itemize}
+
+\subsection{Kiến trúc late fusion}
+
+\[
+  \text{logits} = \text{Linear}\bigl(\text{Concat}(f_{\text{img}}(x), \text{MLP}(\text{meta}))\bigr)
+\]
+MLP: $19 \to 64 \to 32$ với ReLU và dropout 0.1.
+
+\subsection{Kết quả}
+
+\begin{table}[h]
+\centering\small
+\begin{tabular}{lcccc}
+\toprule
+\textbf{Mô hình} & \textbf{Acc chỉ-ảnh} & \textbf{Acc +metadata} & \textbf{$\Delta$ Acc} & \textbf{F1 +meta} \\
+\midrule
+EfficientNet-B0 & 0.8796 & 0.8337 & $-$4.6 pp & 0.768 \\
+ResNet50        & 0.8636 & 0.8782 & $+$1.5 pp & 0.810 \\
+DenseNet121     & 0.8543 & 0.8550 & $+$0.1 pp & 0.793 \\
+Swin-Tiny       & 0.8490 & \textbf{0.8982} & \textbf{$+$4.9 pp} & \textbf{0.871} \\
+\midrule
+\rowcolor{usthblue!10}
+\textbf{Ensemble} & 0.8949 & $\mathbf{0.9049}$ & $\mathbf{+1.0}$ pp & $\mathbf{0.8728}$ \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\begin{idea}[3 phát hiện đột phá]
+\textbf{(1) Swin + metadata đơn lẻ vượt ensemble chỉ-ảnh!} 89.82\% > 88.89\%. Self-attention tích hợp metadata hiệu quả hơn CNN trong setting này.\\
+\textbf{(2) EB0 mất 4.6 pp.} Model nhỏ (5.3M) không đủ chỗ cho meta encoder mà không hi sinh image features.\\
+\textbf{(3) Ensemble đạt 90.49\% / 0.873 / 0.984 AUC} --- vượt Pacheco \& Krohling 2020 (89.0\% / 0.83), là image+metadata fusion mạnh nhất công bố trên ISIC 2018.
+\end{idea}
+
+\subsection{Bug story FP16}
+
+\begin{example}[Bug ``AMP FP16 softmax NaN'' --- bài học]
+Ban đầu train\_meta.py chạy softmax dưới AMP autocast $\to$ FP16 probability. Khi save vào CSV với pandas \texttt{.round(6)}, FP16 không đủ precision $\to$ \textbf{NaN toàn bộ}. Per-model metrics OK (compute in-memory) nhưng ensemble = NaN $\to$ accuracy 3.26\% (dưới random!).
+
+Fix: cast \texttt{logits.float()} trước softmax. Bài học: \textit{luôn} dùng float32 cho probabilities khi save xuống disk.
+\end{example}
+
+% ==========================================================
+\section{OOD evaluation (Tuần 3) --- trên ảnh smartphone}
+% ==========================================================
+
+\subsection{Tại sao OOD eval?}
+
+\begin{simple}
+Test cùng phân phối train (ISIC 2018 dermoscopy) không chứng minh được mô hình triển khai được trên ảnh thực tế. Em test zero-shot trên 2.298 ảnh smartphone PAD-UFES-20 (Brazil) --- modality khác hẳn dermoscopy.
+\end{simple}
+
+\subsection{Mapping 6 PAD-UFES $\to$ 5 ISIC}
+
+\begin{itemize}[leftmargin=*]
+  \item ACK $\to$ akiec
+  \item SCC $\to$ akiec (Pacheco cluster với AKIEC)
+  \item BCC $\to$ bcc
+  \item SEK $\to$ bkl
+  \item NEV $\to$ nv
+  \item MEL $\to$ mel
+\end{itemize}
+
+\subsection{Kết quả}
+
+\begin{table}[h]
+\centering\small
+\begin{tabular}{lccccr}
+\toprule
+\textbf{Lớp} & \textbf{Precision} & \textbf{Recall} & \textbf{F1} & \textbf{AUC} & \textbf{Support} \\
+\midrule
+akiec & 0.543 & 0.145 & 0.229 & 0.614 & 922 \\
+bcc   & 0.611 & 0.421 & 0.499 & 0.733 & 845 \\
+bkl   & 0.175 & 0.268 & 0.212 & 0.633 & 235 \\
+mel   & 0.057 & 0.308 & 0.097 & 0.684 &  52 \\
+nv    & 0.258 & 0.725 & 0.380 & 0.811 & 244 \\
+\midrule
+\multicolumn{6}{l}{\textbf{Accuracy 32.46\%} (vs.\ 88.89\% in-distribution: $-$56 pp)} \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\begin{idea}[Đọc đúng kết quả OOD]
+\textbf{Drop 56 pp KHÔNG phải thảm họa.} Là chi phí chuẩn của transfer zero-shot dermoscopy $\to$ smartphone (literature cùng range 50-60 pp).
+\begin{itemize}[leftmargin=*]
+  \item AUC theo lớp giữ 0.61--0.81 $\Rightarrow$ probability ranking transfer được \textit{một phần}, mô hình không random.
+  \item NV recall 0.72 $\Rightarrow$ prior collapse về lớp đa số ISIC (kinh điển).
+  \item MEL precision 0.06 $\Rightarrow$ mô hình gọi MEL quá thường xuyên $\Rightarrow$ nguy hiểm nếu deploy không adapt.
+\end{itemize}
+\textbf{Kết luận trung thực:} pipeline chưa sẵn sàng cho ảnh smartphone consumer. Đóng khoảng cách $=$ \textbf{bài tập kỹ thuật} (domain adaptation, fine-tune in-domain, style transfer), \textit{không phải bí ẩn nghiên cứu}.
+\end{idea}
+
+% ==========================================================
+\section{So sánh với State-of-the-Art}
+% ==========================================================
+
+\begin{table}[h]
+\centering\small
+\begin{tabular}{lcccc}
+\toprule
+\textbf{Công trình} & \textbf{Năm} & \textbf{Phương pháp} & \textbf{Acc} & \textbf{Macro F1} \\
+\midrule
+Codella et al.        & 2018 & ResNet-152                & 85.9 & 0.78 \\
+Gessert (winner ISIC) & 2018 & Ensemble EB$_n$ + SENet   & 88.5 & 0.82 \\
+Mahbod et al.         & 2020 & Multi-scale CNN ensemble  & 88.7 & 0.83 \\
+Pacheco \& Krohling   & 2020 & RN50 + metadata fusion    & 89.0 & 0.83 \\
+Đồ án (chỉ ảnh)       & 2026 & 4-model ensemble, 5 seeds & 89.93$\pm$0.66 & 0.852$\pm$0.010 \\
+\rowcolor{usthblue!10}
+\textbf{Đồ án (+meta)} & 2026 & \textbf{4-model + metadata} & \textbf{90.49} & \textbf{0.873} \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+% ==========================================================
+\section{Honest contribution --- KHÔNG over-claim}
+% ==========================================================
+
+\begin{idea}[Phải nói thẳng ở defense]
+\textbf{Không có kỹ thuật nào trong đồ án là MỚI.} Mọi thành phần đều có literature trước:
+\begin{itemize}[leftmargin=*]
+  \item Pacheco-style metadata fusion = Pacheco \& Krohling 2020 y hệt.
+  \item PAD-UFES-20 OOD = chính Pacheco phát hành dataset.
+  \item Soft voting, Mixup, CutMix, Label Smoothing = chuẩn industry.
+  \item Ensemble CNN+Transformer = đã có nhiều paper 2022-2024.
+\end{itemize}
+
+\textbf{Đóng góp THỰC SỰ:}
+\begin{enumerate}[leftmargin=*]
+  \item \textbf{Tích hợp minh bạch} --- code mở, configs YAML, 5 seeds tái lập, study guide đầy đủ. Hiếm ở SOTA.
+  \item \textbf{Grad-CAM định lượng} --- focus\_ratio, peak\_distance đo trên test set. Hầu hết paper chỉ qualitative.
+  \item \textbf{Statistical robustness} --- multi-seed + McNemar Fisher-combined. Đa số paper ISIC chỉ 1 seed.
+  \item \textbf{OOD honest reporting} --- drop 56 pp công khai. Nhiều paper giấu OOD failure.
+  \item \textbf{Vượt nhẹ Pacheco 2020} --- 90.49\% vs 89.0\% nhờ ensemble Transformer + CNN. Đây là \textit{increment}, không phải \textit{innovation}.
+\end{enumerate}
+\end{idea}
+
+% ==========================================================
+\section{10 câu hỏi khó nhất + cách trả lời}
+% ==========================================================
+
+\begin{qa}[Q1: Tại sao soft voting mà không stacking?]
+3 lý do: (1) Stacking cần val thứ hai $\to$ overfit trên data nhỏ. (2) Hard voting mất thông tin xác suất. (3) Soft voting đã đạt 89.49\%, McNemar $p < 10^{-7}$, không có headroom để stacking phá được.
+\end{qa}
+
+\begin{qa}[Q2: Làm sao biết Grad-CAM là ``đúng''?]
+Em đo 4 chỉ số định lượng: focus\_ratio, peak\_distance, entropy, coverage\_75. Cả 4 mô hình đạt focus\_ratio $> 0.6$ và peak\_distance $< 0.2$. Em phát hiện bug \texttt{model.bn2} nhờ định lượng --- nếu chỉ nhìn heatmap thì sai lầm này đã trượt qua.
+\end{qa}
+
+\begin{qa}[Q3: Macro F1 vs balanced accuracy khác gì?]
+Balanced accuracy = mean recall theo lớp $\to$ chỉ phạt false negative. Macro F1 = mean F1 $\to$ phạt cả false positive. Em chọn F1 vì lâm sàng cả 2 loại lỗi đều có chi phí (bỏ sót MEL nguy hiểm, báo động giả gây sinh thiết không cần).
+\end{qa}
+
+\begin{qa}[Q4: Tại sao Swin overfit nhanh?]
+(1) Thiếu inductive bias --- Transformer học cả locality và translation invariance từ data. (2) 28M tham số / 7K ảnh = 4.000$\times$ --- cực dễ overfit. (3) Self-attention bậc 2 dễ memorize cấu trúc cụ thể. Đã đối phó: LR 1e-4, weight decay 5e-2, warmup 5 epoch.
+\end{qa}
+
+\begin{qa}[Q5: Ảnh ngoài 7 lớp (mụn, sẹo) thì sao?]
+Mô hình \textit{buộc phải} gán 1 trong 7 lớp, không có lớp ``other''. Em xử lý 2 cách: (1) Confidence threshold 50\% $\to$ low-conf hiển thị warning. (2) Predictive entropy cao $\to$ OOD signal. Production cần OOD detector riêng (Mahalanobis, Energy score) --- em chưa làm, là future work.
+\end{qa}
+
+\begin{qa}[Q6: Bao nhiêu false negative MEL?]
+167 ảnh MEL thật, ensemble nhận đúng 124 $\to$ \textbf{43 bỏ sót} (recall 0.74). 35 ca nhầm thành NV, 8 ca thành BKL. Threshold tuning với Youden's J hạ ngưỡng MEL 0.143 $\to$ 0.100 đẩy recall 0.74 $\to$ 0.83, đổi lại tăng false positive nhẹ.
+\end{qa}
+
+\begin{qa}[Q7: Sao không Focal Loss?]
+Em đã thử, code sẵn trong \texttt{losses.py}. Focal Loss không kết hợp Mixup/CutMix mượt vì nhãn lai $[0.7, 0.3]$ không phải one-hot. Em chọn Label Smoothing đơn giản hơn, kết hợp Mixup natively, kết quả 0.845 F1 đã đủ tốt.
+\end{qa}
+
+\begin{qa}[Q8: ECE bao nhiêu?]
+EB0: 0.041 $\to$ 0.018 sau temperature scaling. Swin cao nhất 0.067 $\to$ 0.024. Ensemble các mô hình đã calibrate giảm ECE thêm. Sau temp scaling, xác suất tin cậy được cho clinical decision.
+\end{qa}
+
+\begin{qa}[Q9: Bias da trắng $\to$ Việt Nam?]
+Em thừa nhận. HAM10000 chủ yếu Fitzpatrick I-III (Áo/Mỹ). OOD trên PAD-UFES-20 (Brazil, nhiều Fitzpatrick III-IV) cho thấy drop 56 pp --- một phần do skin tone shift. Hướng giải: (1) Fine-tune trên data Việt Nam, (2) Augmentation hue/saturation theo Fitzpatrick, (3) Group fairness loss.
+\end{qa}
+
+\begin{qa}[Q10: Production cần gì hơn?]
+(1) CE marking / FDA 510(k). (2) Data in-domain (500-5K ảnh bệnh viện). (3) Open-set detector. (4) UI bác sĩ tích hợp PACS/EHR, audit log. (5) Monitoring sau deploy (data drift, performance). (6) Phân chia trách nhiệm khi sai sót. Em không claim production-ready --- là research prototype.
+\end{qa}
+
+% ==========================================================
+\section{Defense kit checklist}
+% ==========================================================
+
+\subsection{Phần cứng}
+\begin{itemize}[leftmargin=*, itemsep=2pt]
+  \item Laptop chính + sạc (kiểm tra pin đầy).
+  \item Adapter USB-C / HDMI cho máy chiếu.
+  \item Chuột rời / clicker.
+  \item USB dự phòng chứa: slides VN + EN + thesis + study guide + 5 screenshot demo.
+  \item 1 bản in slides 4-up.
+\end{itemize}
+
+\subsection{Software \& demo}
+\begin{itemize}[leftmargin=*, itemsep=2pt]
+  \item \textbf{15 phút trước defense:} \texttt{streamlit run app.py} $\to$ \url{http://localhost:8501}.
+  \item Set theme (Dark / Light) menu $\vdots$ $\to$ Settings $\to$ Theme.
+  \item Upload sẵn 1 ảnh demo, xem Grad-CAM cho cả 4 mô hình $\to$ warm-up cache.
+  \item Chuẩn bị 3 ảnh: 1 MEL rõ, 1 NV lành, 1 ca low-confidence để show warning.
+\end{itemize}
+
+\subsection{Backup plans}
+\begin{itemize}[leftmargin=*, itemsep=2pt]
+  \item Streamlit crash $\to$ 5 screenshot demo trong slide.
+  \item Máy chiếu không nhận $\to$ PDF slides trên USB, mở từ máy phòng.
+  \item Mất Internet $\to$ app.py chạy 100\% offline.
+\end{itemize}
+
+\subsection{1 tiếng trước}
+\begin{itemize}[leftmargin=*, itemsep=2pt]
+  \item Test trên máy chiếu thật (nếu cho).
+  \item Nghe lại bản ghi rehearsal cuối.
+  \item Ăn nhẹ (chuối, hạnh nhân).
+  \item Đi WC.
+  \item Điện thoại $\to$ máy bay mode.
+\end{itemize}
+
+% ==========================================================
+\section{Tóm tắt một trang (in mang theo)}
+% ==========================================================
+
+\begin{idea}[Project tóm tắt]
+\textbf{Bài toán:} 7-class skin lesion classification, ISIC 2018, 58:1 imbalance.
+
+\textbf{Pipeline:} fine-tune 4 backbone pretrained ImageNet (EB0, RN50, DN121, Swin) + Weighted Sampler + Mixup($\alpha$=0.2) + CutMix($\alpha$=1.0) + Label Smoothing($\varepsilon$=0.1) + AdamW + cosine warmup + FP16.
+
+\textbf{Soft-voting ensemble} 4 mô hình $\Rightarrow$:
+\begin{itemize}[leftmargin=*]
+  \item 1 seed: \textbf{89.49\% Acc / 0.845 F1 / 0.980 AUC}
+  \item 5 seeds: \textbf{89.93 $\pm$ 0.66\% / 0.852 / 0.982}
+  \item McNemar Fisher $p < 10^{-7}$ vs.\ mọi mô hình đơn.
+\end{itemize}
+
+\textbf{+ Metadata fusion} (19-dim: age + sex + localization) $\Rightarrow$:
+\begin{itemize}[leftmargin=*]
+  \item Ensemble: \textbf{90.49\% Acc / 0.873 F1 / 0.984 AUC} (vượt Pacheco 2020).
+  \item Swin + metadata 89.82\% --- đơn lẻ vượt ensemble chỉ-ảnh.
+\end{itemize}
+
+\textbf{OOD trên PAD-UFES-20:} 32.46\% (drop 56 pp), AUC per-class 0.61--0.81.
+
+\textbf{Ablation:} Mixup/CutMix quan trọng nhất ($-4.51\%$ F1 khi bỏ).
+
+\textbf{Grad-CAM định lượng:} focus\_ratio $> 0.6$, peak\_distance $< 0.2$ cả 4 mô hình.
+
+\textbf{Hạn chế:} OOD smartphone tệ, không metadata $\to$ Việt Nam (bias da), 7 lớp hẹp.
+
+\textbf{Hướng phát triển:} domain adaptation, open-set detection, active learning loop.
+
+\textbf{Honest contribution:} không có technique mới --- đóng góp ở \textit{tích hợp minh bạch, định lượng Grad-CAM, statistical robustness, OOD honest, vượt nhẹ Pacheco bằng ensemble đa kiến trúc}.
+\end{idea}
+
+\vspace{12pt}
+\hrule
+\vspace{6pt}
+\begin{center}
+\small \textit{Đọc tài liệu này 3 lần trước defense. Nắm chắc 10 câu Q\&A. Thuộc 1-page summary. Bạn sẵn sàng.}
+\end{center}
+
+\end{document}
