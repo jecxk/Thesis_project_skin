@@ -18,6 +18,8 @@ wandb/
 data/images/
 data/raw/
 data/processed/
+data/pad_ufes/*.zip
+data/pad_ufes/imgs_part_*/
 *.pt
 *.pth
 *.ckpt

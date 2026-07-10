@@ -12,6 +12,8 @@
 \usepackage{caption}
 \usepackage{subcaption}
 \usepackage[hidelinks]{hyperref}
+\usepackage[backend=biber,style=ieee]{biblatex}
+\addbibresource{references.bib}
 \usepackage{fontspec}
 \usepackage{polyglossia}
 \setdefaultlanguage{vietnamese}
@@ -59,7 +61,7 @@
 \end{tabular}
 
 \vfill
-{\large Ngày 26 tháng 2 năm 2026\par}
+{\large Tháng 7 năm 2026\par}
 \end{titlepage}
 
 % ======================= XÁC NHẬN CỦA NGƯỜI HƯỚNG DẪN ==========================
@@ -154,5 +156,7 @@ Khóa luận này giải quyết cả hai vấn đề: xây dựng và đánh gi
 \input{report_vn_ch3}
 \input{report_vn_ch4}
 \input{report_vn_ch5}
+
+\printbibliography[title={Tài liệu tham khảo}]
 
 \end{document}

@@ -41,6 +41,13 @@
 \setbeamertemplate{itemize item}{\color{usthblue}$\blacktriangleright$}
 \setbeamertemplate{itemize subitem}{\color{usthaccent}$\bullet$}
 
+% Framesubtitle rendered in the white body, just below the blue header, left-aligned
+\makeatletter
+\renewcommand{\framesubtitle}[1]{%
+  \vspace*{-0.3em}\noindent{\large\bfseries\textcolor{usthdark}{#1}}\par\vspace{0.6em}%
+}
+\makeatother
+
 \setbeamertemplate{footline}{%
   \leavevmode%
   \hbox{%
@@ -88,59 +95,46 @@
 % =========================================================
 \section{Introduction}
 % =========================================================
-\begin{frame}{Background and Motivation}
-    \begin{columns}[T]
-        \column{0.55\textwidth}
-        \begin{block}{The clinical problem}
-            \footnotesize
-            Melanoma is responsible for the majority of skin-cancer deaths, yet the 5-year survival rate exceeds \textbf{99\%} when detected early. Dermoscopy enables non-invasive observation of lesions, but its interpretation depends heavily on dermatologist expertise.
-        \end{block}
-        \vspace{0.2cm}
-        \textbf{Three barriers to AI-assisted diagnosis:}
-        \begin{itemize}\footnotesize
-            \item \textbf{Data imbalance} --- the majority class overwhelms rare malignant classes.
-            \item \textbf{Morphological similarity} --- melanoma and nevi are easily confused.
-            \item \textbf{Black-box behaviour} --- without explanation, clinicians cannot trust the system.
-        \end{itemize}
-
-        \column{0.45\textwidth}
-        \begin{figure}
-            \centering
-            \includegraphics[width=\linewidth,height=5cm,keepaspectratio]{../thesis/figures/class_distribution.png}
-            \captionsetup{font=scriptsize}
-            \caption{Class distribution of ISIC 2018 --- the NV:DF ratio reaches 58:1.}
-        \end{figure}
-    \end{columns}
+\begin{frame}{Introduction}
+    \framesubtitle{Background and Motivation}
+    \begin{block}{The clinical problem}
+        \small
+        Melanoma is the deadliest form of skin cancer --- yet when it is caught early, more than \textbf{99\%} of patients live past five years. Dermoscopy lets doctors look at a lesion up close without any incision, but the final call still comes down to how experienced the dermatologist is.
+    \end{block}
+    \vspace{0.3cm}
+    \textbf{Three barriers to AI-assisted diagnosis:}
+    \begin{itemize}\small
+        \item \textbf{Data imbalance} --- the majority class overwhelms rare malignant classes.
+        \item \textbf{Morphological similarity} --- melanoma and nevi are easily confused.
+        \item \textbf{Black-box behaviour} --- without explanation, clinicians cannot trust the system.
+    \end{itemize}
 \end{frame}
 
-\begin{frame}{Thesis Objectives}
+\begin{frame}{Introduction}
+    \framesubtitle{Thesis Objectives}
     \begin{columns}[T]
         \column{0.5\textwidth}
         \begin{block}{Primary goal}
             \footnotesize
-            Develop an automated pipeline classifying \textbf{7 types of skin lesions} from dermoscopic images, achieving high accuracy while remaining \textbf{interpretable} for clinical use.
+            Build an automated system that recognises \textbf{7 types of skin lesions} from dermoscopy images --- \textbf{accurate enough} to be useful, and \textbf{transparent enough} for doctors to trust.
         \end{block}
 
         \column{0.5\textwidth}
         \textbf{Four concrete contributions}
         \begin{enumerate}\footnotesize
-            \item An imbalance-aware pipeline using Weighted Sampler, Mixup, CutMix and Label Smoothing.
-            \item A fair comparison of \textbf{four architectures} (CNNs + Transformer) under the same pipeline.
-            \item A \textbf{soft-voting ensemble} that surpasses every single model.
-            \item \textbf{Grad-CAM} together with a Streamlit prototype so doctors can inspect predictions visually.
+            \item A training pipeline that handles imbalanced data (Weighted Sampler, Mixup, CutMix, Label Smoothing).
+            \item A fair comparison of \textbf{four architectures} (three CNNs and one Transformer) under identical conditions.
+            \item A \textbf{soft-voting ensemble} of the four models that beats every single one.
+            \item \textbf{Grad-CAM} and a Streamlit web app so doctors can see where the model is ``looking''.
         \end{enumerate}
     \end{columns}
-
-    \vspace{0.3cm}
-    \begin{center}
-    \footnotesize \textcolor{usthdark}{\textbf{Guiding principle:} prioritise \textit{Macro F1} and \textit{Macro AUC} --- do not let Accuracy mislead.}
-    \end{center}
 \end{frame}
 
 % =========================================================
 \section{Data and Challenges}
 % =========================================================
-\begin{frame}{The ISIC 2018 Task 3 Dataset}
+\begin{frame}{Data and Challenges}
+    \framesubtitle{The ISIC 2018 Task 3 Dataset}
     \begin{columns}[T]
         \column{0.46\textwidth}
         \footnotesize
@@ -183,7 +177,8 @@
     \end{columns}
 \end{frame}
 
-\begin{frame}{Consequences of Data Imbalance}
+\begin{frame}{Data and Challenges}
+    \framesubtitle{Consequences of Data Imbalance}
     \begin{columns}[T]
         \column{0.55\textwidth}
         \footnotesize
@@ -218,16 +213,18 @@
 % =========================================================
 \section{Methodology}
 % =========================================================
-\begin{frame}{Pipeline Overview}
+\begin{frame}{Methodology}
+    \framesubtitle{Pipeline Overview}
     \vspace{0.1cm}
     \begin{center}
-        \includegraphics[width=\textwidth,keepaspectratio]{../thesis/figures/training_pipeline_cropped.png}
+        \includegraphics[width=0.88\textwidth,height=0.72\textheight,keepaspectratio]{../thesis/figures/training_pipeline_cropped.png}
     \end{center}
     \vspace{0.15cm}
     {\centering \scriptsize \textit{End-to-end pipeline: preprocessing, augmentation, weighted sampler, Mixup/CutMix, fine-tuning from pretrained weights, evaluation on the test set.}\par}
 \end{frame}
 
-\begin{frame}{The Four Architectures Compared}
+\begin{frame}{Methodology}
+    \framesubtitle{The Four Architectures Compared}
     \scriptsize
     \begin{table}[]
         \centering
@@ -253,7 +250,8 @@
     \end{itemize}
 \end{frame}
 
-\begin{frame}{Training Strategy}
+\begin{frame}{Methodology}
+    \framesubtitle{Training Strategy}
     \begin{columns}[T]
         \column{0.5\textwidth}
         \begin{block}{Mixup \& CutMix\ \footnotesize($p = 0.5$ each)}
@@ -286,7 +284,8 @@
     \end{columns}
 \end{frame}
 
-\begin{frame}{Per-Model Hyperparameters}
+\begin{frame}{Methodology}
+    \framesubtitle{Per-Model Hyperparameters}
     \scriptsize
     \begin{table}[]
         \centering
@@ -317,7 +316,8 @@
 % =========================================================
 \section{Experimental Results}
 % =========================================================
-\begin{frame}{Single-Model Performance}
+\begin{frame}{Experimental Results}
+    \framesubtitle{Single-Model Performance}
     \scriptsize
     \begin{table}[]
         \centering
@@ -350,7 +350,8 @@
     \end{columns}
 \end{frame}
 
-\begin{frame}{Ensemble: Combining Four Models via Soft Voting}
+\begin{frame}{Experimental Results}
+    \framesubtitle{Ensemble: Combining Four Models via Soft Voting}
     \begin{columns}[T]
         \column{0.5\textwidth}
         \footnotesize
@@ -381,7 +382,8 @@
     \end{columns}
 \end{frame}
 
-\begin{frame}{Per-Class Analysis (EB0 vs.\ Ensemble)}
+\begin{frame}{Experimental Results}
+    \framesubtitle{Per-Class Analysis (EB0 vs.\ Ensemble)}
     \scriptsize
     \begin{table}[]
         \centering
@@ -410,7 +412,8 @@
     \end{itemize}
 \end{frame}
 
-\begin{frame}{Ensemble Confusion Matrix}
+\begin{frame}{Experimental Results}
+    \framesubtitle{Ensemble Confusion Matrix}
     \begin{columns}[T]
         \column{0.42\textwidth}
         \footnotesize
@@ -433,7 +436,8 @@
 % =========================================================
 \section{Ablation Study}
 % =========================================================
-\begin{frame}{Ablation Study --- Contribution of Each Component}
+\begin{frame}{Ablation Study}
+    \framesubtitle{Contribution of Each Component}
     \scriptsize
     \textit{Starting from EfficientNet-B0, we remove one component at a time to measure its impact on Macro F1.}
     \vspace{0.2cm}
@@ -462,7 +466,8 @@
     \end{itemize}
 \end{frame}
 
-\begin{frame}{Interpreting the Ablation Results}
+\begin{frame}{Ablation Study}
+    \framesubtitle{Interpreting the Ablation Results}
     \footnotesize
     \begin{block}{1.\ Mixup/CutMix --- the most important component ($-4.51$\% F1)}
         With only 81 DF and 99 VASC training images, removing Mixup/CutMix lets the model \textit{memorise} rare samples within a few epochs. Mixed images force the model to learn generic features and prevent it from assigning probability 1.0 to any single sample.
@@ -480,7 +485,8 @@
 % =========================================================
 \section{Interpretability and Application}
 % =========================================================
-\begin{frame}{Grad-CAM --- Looking at the Model's "Reasons"}
+\begin{frame}{Interpretability and Application}
+    \framesubtitle{Grad-CAM --- Looking at the Model's "Reasons"}
     \begin{columns}[T]
         \column{0.45\textwidth}
         \footnotesize
@@ -508,7 +514,8 @@
     \end{columns}
 \end{frame}
 
-\begin{frame}{Streamlit Prototype --- A Real-Time "Second Opinion"}
+\begin{frame}{Interpretability and Application}
+    \framesubtitle{Streamlit Prototype --- A Real-Time "Second Opinion"}
     \begin{columns}[T]
         \column{0.55\textwidth}
         \footnotesize
@@ -540,6 +547,7 @@
 \section{Conclusion}
 % =========================================================
 \begin{frame}{Conclusion}
+    \framesubtitle{Six Main Contributions}
     \begin{block}{Six main contributions of the thesis}
         \footnotesize
         \begin{enumerate}
@@ -558,7 +566,8 @@
     \end{center}
 \end{frame}
 
-\begin{frame}{Future Work}
+\begin{frame}{Conclusion}
+    \framesubtitle{Future Work}
     \footnotesize
     \begin{enumerate}
         \item \textbf{Domain adaptation for clinical photographs:} OOD evaluation on PAD-UFES-20 (appendix A23) shows a $-56$ pp accuracy drop on smartphone images. Closing this gap requires fine-tuning on in-domain data or style-transfer preprocessing.

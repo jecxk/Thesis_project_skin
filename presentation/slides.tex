@@ -44,6 +44,13 @@
 \setbeamertemplate{itemize item}{\color{usthblue}$\blacktriangleright$}
 \setbeamertemplate{itemize subitem}{\color{usthaccent}$\bullet$}
 
+% Tiêu đề phụ: hiển thị ở vùng trắng, ngay dưới khung xanh, căn trái
+\makeatletter
+\renewcommand{\framesubtitle}[1]{%
+  \vspace*{-0.3em}\noindent{\large\bfseries\textcolor{usthdark}{#1}}\par\vspace{0.6em}%
+}
+\makeatother
+
 % Footer gọn
 \setbeamertemplate{footline}{%
   \leavevmode%
@@ -92,59 +99,46 @@
 % =========================================================
 \section{Giới thiệu}
 % =========================================================
-\begin{frame}{Bối cảnh và động lực}
-    \begin{columns}[T]
-        \column{0.55\textwidth}
-        \begin{block}{Vấn đề lâm sàng}
-            \footnotesize
-            Ung thư hắc tố chiếm phần lớn số tử vong do ung thư da, nhưng tỷ lệ sống sau 5 năm vượt \textbf{99\%} nếu phát hiện sớm. Dermoscopy giúp quan sát tổn thương ở mức không xâm lấn, song việc diễn giải phụ thuộc nặng vào kinh nghiệm bác sĩ.
-        \end{block}
-        \vspace{0.2cm}
-        \textbf{Ba trở ngại của AI hỗ trợ chẩn đoán:}
-        \begin{itemize}\footnotesize
-            \item \textbf{Mất cân bằng dữ liệu} — lớp đa số áp đảo các lớp ác tính hiếm.
-            \item \textbf{Tương đồng hình thái} — Melanoma và Nevus dễ nhầm lẫn.
-            \item \textbf{Hộp đen} — bác sĩ khó tin cậy nếu không có giải thích.
-        \end{itemize}
-
-        \column{0.45\textwidth}
-        \begin{figure}
-            \centering
-            \includegraphics[width=\linewidth,height=5cm,keepaspectratio]{../thesis/figures/class_distribution.png}
-            \captionsetup{font=scriptsize}
-            \caption{Phân bố 7 lớp trong ISIC 2018 — tỉ lệ NV:DF lên tới 58:1.}
-        \end{figure}
-    \end{columns}
+\begin{frame}{Giới thiệu}
+    \framesubtitle{Bối cảnh và động lực}
+    \begin{block}{Vấn đề lâm sàng}
+        \small
+        Ung thư hắc tố (melanoma) là dạng ung thư da nguy hiểm nhất --- nhưng nếu phát hiện sớm, hơn \textbf{99\%} bệnh nhân sống khỏe sau 5 năm. Kính soi da (dermoscopy) giúp bác sĩ nhìn rõ tổn thương mà không cần chích rạch, tuy nhiên kết luận cuối cùng vẫn phụ thuộc nhiều vào kinh nghiệm người khám.
+    \end{block}
+    \vspace{0.3cm}
+    \textbf{Ba trở ngại của AI hỗ trợ chẩn đoán:}
+    \begin{itemize}\small
+        \item \textbf{Mất cân bằng dữ liệu} --- lớp đa số áp đảo các lớp ác tính hiếm.
+        \item \textbf{Tương đồng hình thái} --- Melanoma và Nevus dễ nhầm lẫn.
+        \item \textbf{Hộp đen} --- bác sĩ khó tin cậy nếu không có giải thích.
+    \end{itemize}
 \end{frame}
 
-\begin{frame}{Mục tiêu khóa luận}
+\begin{frame}{Giới thiệu}
+    \framesubtitle{Mục tiêu khóa luận}
     \begin{columns}[T]
         \column{0.5\textwidth}
         \begin{block}{Mục tiêu chính}
             \footnotesize
-            Xây dựng pipeline tự động phân loại \textbf{7 loại tổn thương da} từ ảnh dermoscopy, đạt độ chính xác cao đồng thời \textbf{khả diễn giải} cho mục đích lâm sàng.
+            Xây dựng một hệ thống tự động nhận biết \textbf{7 loại tổn thương da} từ ảnh soi da, vừa \textbf{đủ chính xác} vừa \textbf{giải thích được} để bác sĩ có thể tin dùng.
         \end{block}
 
         \column{0.5\textwidth}
         \textbf{Bốn đóng góp cụ thể}
         \begin{enumerate}\footnotesize
-            \item Pipeline xử lý mất cân bằng bằng Weighted Sampler, Mixup, CutMix, Label Smoothing.
-            \item So sánh \textbf{4 kiến trúc} (CNN $+$ Transformer) trên cùng một pipeline.
-            \item \textbf{Soft-voting ensemble} đẩy hiệu năng vượt mô hình đơn.
-            \item \textbf{Grad-CAM} cùng prototype Streamlit để bác sĩ kiểm tra trực quan.
+            \item Pipeline huấn luyện chống lệch dữ liệu (Weighted Sampler, Mixup, CutMix, Label Smoothing).
+            \item So sánh công bằng \textbf{4 kiến trúc} (3 CNN $+$ 1 Transformer) trên cùng điều kiện.
+            \item \textbf{Kết hợp 4 mô hình theo soft-voting}, vượt mọi mô hình đơn lẻ.
+            \item \textbf{Grad-CAM} và ứng dụng web Streamlit để bác sĩ thấy mô hình đang ``nhìn'' vào đâu.
         \end{enumerate}
     \end{columns}
-
-    \vspace{0.3cm}
-    \begin{center}
-    \footnotesize \textcolor{usthdark}{\textbf{Kim chỉ nam:} ưu tiên \textit{Macro F1} và \textit{Macro AUC} — không để Accuracy lừa.}
-    \end{center}
 \end{frame}
 
 % =========================================================
 \section{Dữ liệu và thách thức}
 % =========================================================
-\begin{frame}{Bộ dữ liệu ISIC 2018 Task 3}
+\begin{frame}{Dữ liệu và thách thức}
+    \framesubtitle{Bộ dữ liệu ISIC 2018 Task 3}
     \begin{columns}[T]
         \column{0.46\textwidth}
         \footnotesize
@@ -187,7 +181,8 @@
     \end{columns}
 \end{frame}
 
-\begin{frame}{Hệ quả của mất cân bằng dữ liệu}
+\begin{frame}{Dữ liệu và thách thức}
+    \framesubtitle{Hệ quả của mất cân bằng dữ liệu}
     \begin{columns}[T]
         \column{0.55\textwidth}
         \footnotesize
@@ -222,16 +217,18 @@
 % =========================================================
 \section{Phương pháp}
 % =========================================================
-\begin{frame}{Pipeline tổng quan}
+\begin{frame}{Phương pháp}
+    \framesubtitle{Pipeline tổng quan}
     \vspace{0.1cm}
     \begin{center}
-        \includegraphics[width=\textwidth,keepaspectratio]{../thesis/figures/training_pipeline_cropped.png}
+        \includegraphics[width=0.88\textwidth,height=0.72\textheight,keepaspectratio]{../thesis/figures/training_pipeline_cropped.png}
     \end{center}
     \vspace{0.15cm}
     {\centering \scriptsize \textit{Sơ đồ pipeline: tiền xử lý ảnh, augmentation, weighted sampler, Mixup/CutMix, fine-tune mô hình pretrained, đánh giá trên test set.}\par}
 \end{frame}
 
-\begin{frame}{Bốn kiến trúc được so sánh}
+\begin{frame}{Phương pháp}
+    \framesubtitle{Bốn kiến trúc được so sánh}
     \scriptsize
     \begin{table}[]
         \centering
@@ -257,7 +254,8 @@
     \end{itemize}
 \end{frame}
 
-\begin{frame}{Chiến lược huấn luyện}
+\begin{frame}{Phương pháp}
+    \framesubtitle{Chiến lược huấn luyện}
     \begin{columns}[T]
         \column{0.5\textwidth}
         \begin{block}{Mixup \& CutMix\ \footnotesize($p = 0.5$ mỗi loại)}
@@ -290,7 +288,8 @@
     \end{columns}
 \end{frame}
 
-\begin{frame}{Siêu tham số theo mô hình}
+\begin{frame}{Phương pháp}
+    \framesubtitle{Siêu tham số theo mô hình}
     \scriptsize
     \begin{table}[]
         \centering
@@ -321,7 +320,8 @@
 % =========================================================
 \section{Kết quả thực nghiệm}
 % =========================================================
-\begin{frame}{Hiệu năng từng mô hình đơn}
+\begin{frame}{Kết quả thực nghiệm}
+    \framesubtitle{Hiệu năng từng mô hình đơn}
     \scriptsize
     \begin{table}[]
         \centering
@@ -354,7 +354,8 @@
     \end{columns}
 \end{frame}
 
-\begin{frame}{Ensemble: kết hợp 4 mô hình bằng soft voting}
+\begin{frame}{Kết quả thực nghiệm}
+    \framesubtitle{Ensemble: kết hợp 4 mô hình bằng soft voting}
     \begin{columns}[T]
         \column{0.5\textwidth}
         \footnotesize
@@ -385,7 +386,8 @@
     \end{columns}
 \end{frame}
 
-\begin{frame}{Phân tích chi tiết theo lớp (EB0 vs.\ Ensemble)}
+\begin{frame}{Kết quả thực nghiệm}
+    \framesubtitle{Phân tích chi tiết theo lớp (EB0 vs.\ Ensemble)}
     \scriptsize
     \begin{table}[]
         \centering
@@ -414,7 +416,8 @@
     \end{itemize}
 \end{frame}
 
-\begin{frame}{Ma trận nhầm lẫn của Ensemble}
+\begin{frame}{Kết quả thực nghiệm}
+    \framesubtitle{Ma trận nhầm lẫn của Ensemble}
     \begin{columns}[T]
         \column{0.42\textwidth}
         \footnotesize
@@ -437,7 +440,8 @@
 % =========================================================
 \section{Nghiên cứu loại bỏ thành phần}
 % =========================================================
-\begin{frame}{Ablation Study --- đóng góp của từng thành phần}
+\begin{frame}{Nghiên cứu loại bỏ thành phần}
+    \framesubtitle{Ablation Study --- đóng góp của từng thành phần}
     \scriptsize
     \textit{Cùng EfficientNet-B0, lần lượt loại bỏ một thành phần để đo mức suy giảm Macro F1.}
     \vspace{0.2cm}
@@ -466,7 +470,8 @@
     \end{itemize}
 \end{frame}
 
-\begin{frame}{Diễn giải kết quả Ablation}
+\begin{frame}{Nghiên cứu loại bỏ thành phần}
+    \framesubtitle{Diễn giải kết quả Ablation}
     \footnotesize
     \begin{block}{1.\ Mixup/CutMix --- thành phần quan trọng nhất ($-4.51$\% F1)}
         Với chỉ 81 ảnh DF và 99 ảnh VASC trong train set, không có Mixup/CutMix mô hình sẽ \textit{memorize} sample hiếm sau vài epoch. Ảnh lai buộc model học features tổng quát, không gán xác suất 1.0 cho bất kỳ ảnh đơn lẻ nào.
@@ -484,7 +489,8 @@
 % =========================================================
 \section{Khả diễn giải và ứng dụng}
 % =========================================================
-\begin{frame}{Grad-CAM --- nhìn vào "lý do" mô hình quyết định}
+\begin{frame}{Khả diễn giải và ứng dụng}
+    \framesubtitle{Grad-CAM --- nhìn vào "lý do" mô hình quyết định}
     \begin{columns}[T]
         \column{0.45\textwidth}
         \footnotesize
@@ -512,7 +518,8 @@
     \end{columns}
 \end{frame}
 
-\begin{frame}{Prototype Streamlit --- "second opinion" thời gian thực}
+\begin{frame}{Khả diễn giải và ứng dụng}
+    \framesubtitle{Prototype Streamlit --- "second opinion" thời gian thực}
     \begin{columns}[T]
         \column{0.55\textwidth}
         \footnotesize
@@ -544,6 +551,7 @@
 \section{Kết luận}
 % =========================================================
 \begin{frame}{Kết luận}
+    \framesubtitle{Sáu đóng góp chính}
     \begin{block}{Sáu đóng góp chính của khóa luận}
         \footnotesize
         \begin{enumerate}
@@ -562,7 +570,8 @@
     \end{center}
 \end{frame}
 
-\begin{frame}{Hướng phát triển}
+\begin{frame}{Kết luận}
+    \framesubtitle{Hướng phát triển}
     \footnotesize
     \begin{enumerate}
         \item \textbf{Domain adaptation cho ảnh smartphone:} kết quả OOD trên PAD-UFES-20 (phụ lục A23) cho thấy drop $-56$ pp accuracy. Đóng khoảng cách cần fine-tune trên data in-domain hoặc style-transfer preprocessing.
