@@ -463,6 +463,8 @@
         \item Out-of-distribution evaluation on PAD-UFES-20
         \item Per-model hyperparameters
         \item Detailed ablation interpretation
+        \item Confusion matrix comparison across all four backbones
+        \item Grad-CAM in action --- from image to heatmap
     \end{enumerate}
     \end{multicols}
 \end{frame}
@@ -1142,6 +1144,56 @@
     \begin{block}{3.\ The augmentation trade-off --- Accuracy up, Macro F1 down}
         Removing strong augmentation \textbf{beats the baseline on Accuracy} (88.96\% vs 88.36\%) because the model fits NV more easily. But Macro F1 drops --- minority classes are abandoned. This is exactly why \textit{we do not use Accuracy as the primary criterion}.
     \end{block}
+\end{frame}
+
+% --- A26 ---
+\begin{frame}{A26. Confusion Matrix Comparison --- Four Backbones}
+    \scriptsize
+    \begin{columns}[T]
+        \column{0.5\textwidth}
+        \centering \textbf{EfficientNet-B0}\\[2pt]
+        \includegraphics[width=\linewidth,height=3.4cm,keepaspectratio]{../thesis/figures/eb0_confusion_matrix.png}\\[4pt]
+        \centering \textbf{DenseNet121}\\[2pt]
+        \includegraphics[width=\linewidth,height=3.4cm,keepaspectratio]{../thesis/figures/dn121_confusion_matrix.png}
+
+        \column{0.5\textwidth}
+        \centering \textbf{ResNet50}\\[2pt]
+        \includegraphics[width=\linewidth,height=3.4cm,keepaspectratio]{../thesis/figures/rn50_confusion_matrix.png}\\[4pt]
+        \centering \textbf{Swin-Tiny}\\[2pt]
+        \includegraphics[width=\linewidth,height=3.4cm,keepaspectratio]{../thesis/figures/swin_confusion_matrix.png}
+    \end{columns}
+    \vspace{0.15cm}
+    \scriptsize \textit{Every model shares the same failure mode --- confusion inside the \textbf{MEL $\leftrightarrow$ NV $\leftrightarrow$ BKL} cluster --- but each fails differently, which is exactly why the soft-voting ensemble improves over any single one.}
+\end{frame}
+
+% --- A27 ---
+\begin{frame}{A27. Grad-CAM in Action --- From Image to Heatmap}
+    \footnotesize
+    \textit{Intuitive walkthrough. The rigorous formulas are in A7; the target layer per backbone is in A8.}
+    \vspace{0.2cm}
+
+    \begin{block}{Step 1 --- Forward pass}
+        \scriptsize
+        The image is pushed through the network. At the last convolutional block we tap the feature maps $A^k$: about $K=320$ (EB0) or $K=2048$ (RN50) channels, each a small $7 \times 7$ grid. Each channel encodes a different visual concept --- ``dark blob'', ``ring border'', ``streak''.
+    \end{block}
+
+    \begin{block}{Step 2 --- Backward pass through the predicted class}
+        \scriptsize
+        We call \texttt{loss.backward()} but only on the score of the predicted class $c$ (say, MEL). PyTorch fills the gradient $\partial y^c / \partial A^k$ --- ``if I nudged this channel up, would the MEL score go up too?''.
+    \end{block}
+
+    \begin{block}{Step 3 --- Channel importance $\alpha_c^k$}
+        \scriptsize
+        Average each channel's gradient over its $7 \times 7$ grid. A large positive $\alpha_c^k$ means channel $k$ pushes toward MEL; a negative one pushes away.
+    \end{block}
+
+    \begin{block}{Step 4 --- Weighted sum + ReLU + upsample}
+        \scriptsize
+        Multiply each channel by its $\alpha$ and add them up: $L_c = \mathrm{ReLU}(\sum_k \alpha_c^k A^k)$. ReLU discards the negative parts (only ``evidence for MEL'', never ``evidence against''). Upsample the resulting $7 \times 7$ heatmap back to $224 \times 224$, colour it with JET, blend over the original image.
+    \end{block}
+
+    \vspace{0.1cm}
+    {\centering \scriptsize \textbf{One-line summary:} the heatmap answers ``\textit{which pixels, if brightened, would make the model more confident about the predicted class}''.\par}
 \end{frame}
 
 % =====================  Final slide  =====================

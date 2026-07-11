@@ -467,6 +467,8 @@
         \item Đánh giá out-of-distribution trên PAD-UFES-20
         \item Siêu tham số theo mô hình
         \item Diễn giải chi tiết kết quả Ablation
+        \item So sánh ma trận nhầm lẫn giữa 4 backbone
+        \item Grad-CAM hoạt động ra sao --- từ ảnh đến heatmap
     \end{enumerate}
     \end{multicols}
 \end{frame}
@@ -1145,6 +1147,56 @@
     \begin{block}{3.\ Trade-off Augmentation --- Accuracy tăng, Macro F1 giảm}
         Bỏ aug mạnh, Accuracy \textbf{cao hơn baseline} (88.96\% vs 88.36\%) vì mô hình dễ học lớp NV. Nhưng Macro F1 giảm --- các lớp minority bị bỏ rơi. Đây chính là lý do \textit{không dùng Accuracy làm tiêu chí chính}.
     \end{block}
+\end{frame}
+
+% --- A26 ---
+\begin{frame}{A26. So sánh ma trận nhầm lẫn --- Bốn backbone}
+    \scriptsize
+    \begin{columns}[T]
+        \column{0.5\textwidth}
+        \centering \textbf{EfficientNet-B0}\\[2pt]
+        \includegraphics[width=\linewidth,height=3.4cm,keepaspectratio]{../thesis/figures/eb0_confusion_matrix.png}\\[4pt]
+        \centering \textbf{DenseNet121}\\[2pt]
+        \includegraphics[width=\linewidth,height=3.4cm,keepaspectratio]{../thesis/figures/dn121_confusion_matrix.png}
+
+        \column{0.5\textwidth}
+        \centering \textbf{ResNet50}\\[2pt]
+        \includegraphics[width=\linewidth,height=3.4cm,keepaspectratio]{../thesis/figures/rn50_confusion_matrix.png}\\[4pt]
+        \centering \textbf{Swin-Tiny}\\[2pt]
+        \includegraphics[width=\linewidth,height=3.4cm,keepaspectratio]{../thesis/figures/swin_confusion_matrix.png}
+    \end{columns}
+    \vspace{0.15cm}
+    \scriptsize \textit{Cả bốn mô hình đều có cùng kiểu lỗi --- nhầm lẫn trong cụm \textbf{MEL $\leftrightarrow$ NV $\leftrightarrow$ BKL} --- nhưng mỗi mô hình sai theo cách khác nhau, và đó chính là lý do soft-voting ensemble vượt mọi mô hình đơn lẻ.}
+\end{frame}
+
+% --- A27 ---
+\begin{frame}{A27. Grad-CAM hoạt động ra sao --- Từ ảnh đến heatmap}
+    \footnotesize
+    \textit{Giải thích trực quan. Công thức chặt chẽ nằm ở A7; target layer từng backbone ở A8.}
+    \vspace{0.2cm}
+
+    \begin{block}{Bước 1 --- Forward pass}
+        \scriptsize
+        Ảnh được đẩy qua mạng. Tại lớp convolution cuối, ta ``chộp'' các feature map $A^k$: khoảng $K=320$ kênh (EB0) hoặc $K=2048$ kênh (RN50), mỗi kênh là lưới nhỏ $7 \times 7$. Mỗi kênh mã hoá một khái niệm thị giác --- ``ổ sắc tố tối'', ``viền vòng cung'', ``vệt kẻ''.
+    \end{block}
+
+    \begin{block}{Bước 2 --- Backward pass qua lớp được dự đoán}
+        \scriptsize
+        Ta gọi \texttt{loss.backward()} nhưng chỉ trên điểm số của lớp được dự đoán $c$ (ví dụ MEL). PyTorch điền gradient $\partial y^c / \partial A^k$ --- ``nếu tăng kênh này lên, điểm MEL có tăng theo không?''.
+    \end{block}
+
+    \begin{block}{Bước 3 --- Tầm quan trọng của kênh $\alpha_c^k$}
+        \scriptsize
+        Trung bình gradient của mỗi kênh trên lưới $7 \times 7$. $\alpha_c^k$ dương lớn nghĩa kênh $k$ đẩy về phía MEL; âm nghĩa đẩy ra xa.
+    \end{block}
+
+    \begin{block}{Bước 4 --- Tổng có trọng số + ReLU + phóng to}
+        \scriptsize
+        Nhân mỗi kênh với $\alpha$ của nó rồi cộng lại: $L_c = \mathrm{ReLU}(\sum_k \alpha_c^k A^k)$. ReLU vứt phần âm (chỉ giữ ``bằng chứng ủng hộ MEL'', không giữ ``bằng chứng phản đối''). Phóng to heatmap $7 \times 7$ về $224 \times 224$, tô màu JET, overlay lên ảnh gốc.
+    \end{block}
+
+    \vspace{0.1cm}
+    {\centering \scriptsize \textbf{Tóm gọn:} heatmap trả lời câu hỏi ``\textit{nếu làm sáng những pixel nào lên, mô hình sẽ tự tin hơn về lớp được dự đoán}''.\par}
 \end{frame}
 
 % =====================  Slide cuối  =====================
