@@ -121,23 +121,29 @@ def get_transform(img_size):
     ])
 
 
-def predict_ensemble(image_pil, models_dict):
-    """Run inference on all models and average probabilities."""
-    all_probs = []
-    
+ENSEMBLE_LABEL = "Ensemble (soft-voting)"
+
+
+def predict(image_pil, models_dict, backbone_name):
+    """Run inference either on a single backbone or on the soft-voting ensemble."""
     with torch.no_grad():
-        for name, data in models_dict.items():
-            transform = get_transform(data['img_size'])
-            img_t = transform(image_pil).unsqueeze(0).to(DEVICE)
-            
-            outputs = data['model'](img_t)
-            probs = F.softmax(outputs, dim=1).cpu().numpy()[0]
-            all_probs.append(probs)
-            
-    # Soft voting: average probabilities
-    avg_probs = np.mean(all_probs, axis=0)
-    pred_idx = np.argmax(avg_probs)
-    return avg_probs, pred_idx
+        if backbone_name == ENSEMBLE_LABEL:
+            all_probs = []
+            for name, data in models_dict.items():
+                transform = get_transform(data['img_size'])
+                img_t = transform(image_pil).unsqueeze(0).to(DEVICE)
+                outputs = data['model'](img_t)
+                probs = F.softmax(outputs, dim=1).cpu().numpy()[0]
+                all_probs.append(probs)
+            avg_probs = np.mean(all_probs, axis=0)
+            return avg_probs, int(np.argmax(avg_probs))
+
+        data = models_dict[backbone_name]
+        transform = get_transform(data['img_size'])
+        img_t = transform(image_pil).unsqueeze(0).to(DEVICE)
+        outputs = data['model'](img_t)
+        probs = F.softmax(outputs, dim=1).cpu().numpy()[0]
+        return probs, int(np.argmax(probs))
 
 
 import subprocess
@@ -196,16 +202,21 @@ def main():
         models_dict = load_all_models()
         model_names = list(models_dict.keys())
 
+        st.markdown("**Prediction backbone**")
+        prediction_choices = [ENSEMBLE_LABEL] + model_names
+        selected_pred_model = st.selectbox(
+            "Model used for classification",
+            prediction_choices,
+            index=0,
+            help="Pick the Ensemble to average all four backbones (best accuracy), or a single backbone to compare.",
+        )
+
         st.markdown("**Grad-CAM viewer**")
         selected_cam_model = st.selectbox(
             "Backbone to inspect",
             model_names,
             index=0,
-            help="Prediction uses an ensemble of all four models. This dropdown only changes the heatmap shown below.",
-        )
-        st.caption(
-            "Prediction always runs the soft-voting ensemble of all four "
-            "backbones. The choice here only affects the Grad-CAM heatmap."
+            help="Grad-CAM is always computed on a single backbone (soft-voting cannot produce a heatmap).",
         )
 
         st.markdown("---")
@@ -231,9 +242,14 @@ def main():
                 st.image(image, width='stretch')
 
             with col2:
-                st.markdown("### Ensemble prediction")
-                with st.spinner("Running ensemble..."):
-                    probs, pred_idx = predict_ensemble(image, models_dict)
+                if selected_pred_model == ENSEMBLE_LABEL:
+                    st.markdown("### Ensemble prediction")
+                    spinner_msg = "Running ensemble..."
+                else:
+                    st.markdown(f"### {selected_pred_model} prediction")
+                    spinner_msg = f"Running {selected_pred_model}..."
+                with st.spinner(spinner_msg):
+                    probs, pred_idx = predict(image, models_dict, selected_pred_model)
 
                 pred_class = CLASSES[pred_idx]
                 confidence = probs[pred_idx] * 100
