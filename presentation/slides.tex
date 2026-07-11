@@ -467,7 +467,8 @@
         \item Đánh giá out-of-distribution trên PAD-UFES-20
         \item Siêu tham số theo mô hình
         \item Diễn giải chi tiết kết quả Ablation
-        \item So sánh ma trận nhầm lẫn giữa 4 backbone
+        \item Ma trận nhầm lẫn --- các backbone gọn (EB0 vs.\ DN121)
+        \item Ma trận nhầm lẫn --- các backbone lớn (ResNet50 vs.\ Swin-Tiny)
         \item Grad-CAM hoạt động ra sao --- từ ảnh đến heatmap
     \end{enumerate}
     \end{multicols}
@@ -1150,27 +1151,37 @@
 \end{frame}
 
 % --- A26 ---
-\begin{frame}{A26. So sánh ma trận nhầm lẫn --- Bốn backbone}
-    \scriptsize
+\begin{frame}{A26. Ma trận nhầm lẫn --- Các backbone gọn (EB0 vs.\ DN121)}
     \begin{columns}[T]
         \column{0.5\textwidth}
-        \centering \textbf{EfficientNet-B0}\\[2pt]
-        \includegraphics[width=\linewidth,height=3.4cm,keepaspectratio]{../thesis/figures/eb0_confusion_matrix.png}\\[4pt]
-        \centering \textbf{DenseNet121}\\[2pt]
-        \includegraphics[width=\linewidth,height=3.4cm,keepaspectratio]{../thesis/figures/dn121_confusion_matrix.png}
+        \centering \textbf{EfficientNet-B0} \scriptsize (5.3M)\\[3pt]
+        \includegraphics[width=\linewidth,height=5.5cm,keepaspectratio]{../thesis/figures/eb0_confusion_matrix.png}
 
         \column{0.5\textwidth}
-        \centering \textbf{ResNet50}\\[2pt]
-        \includegraphics[width=\linewidth,height=3.4cm,keepaspectratio]{../thesis/figures/rn50_confusion_matrix.png}\\[4pt]
-        \centering \textbf{Swin-Tiny}\\[2pt]
-        \includegraphics[width=\linewidth,height=3.4cm,keepaspectratio]{../thesis/figures/swin_confusion_matrix.png}
+        \centering \textbf{DenseNet121} \scriptsize (8.0M)\\[3pt]
+        \includegraphics[width=\linewidth,height=5.5cm,keepaspectratio]{../thesis/figures/dn121_confusion_matrix.png}
     \end{columns}
-    \vspace{0.15cm}
-    \scriptsize \textit{Cả bốn mô hình đều có cùng kiểu lỗi --- nhầm lẫn trong cụm \textbf{MEL $\leftrightarrow$ NV $\leftrightarrow$ BKL} --- nhưng mỗi mô hình sai theo cách khác nhau, và đó chính là lý do soft-voting ensemble vượt mọi mô hình đơn lẻ.}
+    \vspace{0.2cm}
+    \scriptsize \textit{EB0 là mô hình đơn mạnh nhất (F1 0.831). DN121 nhờ feature reuse nên đuổi kịp EB0 trên lớp MEL dù tổng thể yếu hơn. Cả hai CNN có cùng kiểu lỗi: nhầm lẫn trong cụm \textbf{MEL $\leftrightarrow$ NV $\leftrightarrow$ BKL}.}
 \end{frame}
 
 % --- A27 ---
-\begin{frame}{A27. Grad-CAM hoạt động ra sao --- Từ ảnh đến heatmap}
+\begin{frame}{A27. Ma trận nhầm lẫn --- Các backbone lớn (ResNet50 vs.\ Swin-Tiny)}
+    \begin{columns}[T]
+        \column{0.5\textwidth}
+        \centering \textbf{ResNet50} \scriptsize (25.6M)\\[3pt]
+        \includegraphics[width=\linewidth,height=5.5cm,keepaspectratio]{../thesis/figures/rn50_confusion_matrix.png}
+
+        \column{0.5\textwidth}
+        \centering \textbf{Swin-Tiny} \scriptsize (28.0M)\\[3pt]
+        \includegraphics[width=\linewidth,height=5.5cm,keepaspectratio]{../thesis/figures/swin_confusion_matrix.png}
+    \end{columns}
+    \vspace{0.2cm}
+    \scriptsize \textit{ResNet50 là CNN sâu cổ điển làm baseline. Swin-Tiny là Transformer duy nhất --- overfit sớm nhất nhưng xếp hạng xác suất tốt nhất (AUC cao nhất). Mỗi backbone sai theo cách khác nhau --- chính lỗi không tương quan này là thứ soft-voting ensemble khai thác.}
+\end{frame}
+
+% --- A28 ---
+\begin{frame}{A28. Grad-CAM hoạt động ra sao --- Từ ảnh đến heatmap}
     \footnotesize
     \textit{Giải thích trực quan. Công thức chặt chẽ nằm ở A7; target layer từng backbone ở A8.}
     \vspace{0.2cm}

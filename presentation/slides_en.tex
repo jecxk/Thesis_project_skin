@@ -463,7 +463,8 @@
         \item Out-of-distribution evaluation on PAD-UFES-20
         \item Per-model hyperparameters
         \item Detailed ablation interpretation
-        \item Confusion matrix comparison across all four backbones
+        \item Confusion matrix --- compact backbones (EB0 vs.\ DN121)
+        \item Confusion matrix --- larger backbones (ResNet50 vs.\ Swin-Tiny)
         \item Grad-CAM in action --- from image to heatmap
     \end{enumerate}
     \end{multicols}
@@ -1147,27 +1148,37 @@
 \end{frame}
 
 % --- A26 ---
-\begin{frame}{A26. Confusion Matrix Comparison --- Four Backbones}
-    \scriptsize
+\begin{frame}{A26. Confusion Matrix --- Compact Backbones (EB0 vs.\ DN121)}
     \begin{columns}[T]
         \column{0.5\textwidth}
-        \centering \textbf{EfficientNet-B0}\\[2pt]
-        \includegraphics[width=\linewidth,height=3.4cm,keepaspectratio]{../thesis/figures/eb0_confusion_matrix.png}\\[4pt]
-        \centering \textbf{DenseNet121}\\[2pt]
-        \includegraphics[width=\linewidth,height=3.4cm,keepaspectratio]{../thesis/figures/dn121_confusion_matrix.png}
+        \centering \textbf{EfficientNet-B0} \scriptsize (5.3M)\\[3pt]
+        \includegraphics[width=\linewidth,height=5.5cm,keepaspectratio]{../thesis/figures/eb0_confusion_matrix.png}
 
         \column{0.5\textwidth}
-        \centering \textbf{ResNet50}\\[2pt]
-        \includegraphics[width=\linewidth,height=3.4cm,keepaspectratio]{../thesis/figures/rn50_confusion_matrix.png}\\[4pt]
-        \centering \textbf{Swin-Tiny}\\[2pt]
-        \includegraphics[width=\linewidth,height=3.4cm,keepaspectratio]{../thesis/figures/swin_confusion_matrix.png}
+        \centering \textbf{DenseNet121} \scriptsize (8.0M)\\[3pt]
+        \includegraphics[width=\linewidth,height=5.5cm,keepaspectratio]{../thesis/figures/dn121_confusion_matrix.png}
     \end{columns}
-    \vspace{0.15cm}
-    \scriptsize \textit{Every model shares the same failure mode --- confusion inside the \textbf{MEL $\leftrightarrow$ NV $\leftrightarrow$ BKL} cluster --- but each fails differently, which is exactly why the soft-voting ensemble improves over any single one.}
+    \vspace{0.2cm}
+    \scriptsize \textit{EB0 is the strongest single model (F1 0.831). DN121 leans on feature reuse and matches EB0 on MEL despite being weaker overall. Both CNNs share the same failure mode: confusion inside the \textbf{MEL $\leftrightarrow$ NV $\leftrightarrow$ BKL} cluster.}
 \end{frame}
 
 % --- A27 ---
-\begin{frame}{A27. Grad-CAM in Action --- From Image to Heatmap}
+\begin{frame}{A27. Confusion Matrix --- Larger Backbones (ResNet50 vs.\ Swin-Tiny)}
+    \begin{columns}[T]
+        \column{0.5\textwidth}
+        \centering \textbf{ResNet50} \scriptsize (25.6M)\\[3pt]
+        \includegraphics[width=\linewidth,height=5.5cm,keepaspectratio]{../thesis/figures/rn50_confusion_matrix.png}
+
+        \column{0.5\textwidth}
+        \centering \textbf{Swin-Tiny} \scriptsize (28.0M)\\[3pt]
+        \includegraphics[width=\linewidth,height=5.5cm,keepaspectratio]{../thesis/figures/swin_confusion_matrix.png}
+    \end{columns}
+    \vspace{0.2cm}
+    \scriptsize \textit{ResNet50 is the classical deep CNN baseline. Swin-Tiny is the only Transformer --- it overfits earliest yet ranks probabilities best (highest AUC). Each backbone fails differently, and those uncorrelated errors are exactly what the soft-voting ensemble exploits.}
+\end{frame}
+
+% --- A28 ---
+\begin{frame}{A28. Grad-CAM in Action --- From Image to Heatmap}
     \footnotesize
     \textit{Intuitive walkthrough. The rigorous formulas are in A7; the target layer per backbone is in A8.}
     \vspace{0.2cm}
