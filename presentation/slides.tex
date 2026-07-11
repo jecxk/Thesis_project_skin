@@ -100,36 +100,28 @@
 \section{Giới thiệu}
 % =========================================================
 \begin{frame}{Giới thiệu}
-    \framesubtitle{Bối cảnh và động lực}
+    \framesubtitle{Vấn đề và mục tiêu}
     \begin{block}{Vấn đề lâm sàng}
         \small
-        Ung thư hắc tố (melanoma) là dạng ung thư da nguy hiểm nhất --- nhưng nếu phát hiện sớm, hơn \textbf{99\%} bệnh nhân sống khỏe sau 5 năm. Kính soi da (dermoscopy) giúp bác sĩ nhìn rõ tổn thương mà không cần chích rạch, tuy nhiên kết luận cuối cùng vẫn phụ thuộc nhiều vào kinh nghiệm người khám.
+        Ung thư hắc tố (melanoma) là dạng ung thư da nguy hiểm nhất --- nhưng nếu phát hiện sớm, hơn \textbf{99\%} bệnh nhân sống khỏe sau 5 năm. Kính soi da (dermoscopy) giúp bác sĩ nhìn rõ tổn thương, nhưng kết luận cuối cùng vẫn phụ thuộc nhiều vào kinh nghiệm người khám.
     \end{block}
-    \vspace{0.3cm}
-    \textbf{Ba trở ngại của AI hỗ trợ chẩn đoán:}
-    \begin{itemize}\small
-        \item \textbf{Mất cân bằng dữ liệu} --- lớp đa số áp đảo các lớp ác tính hiếm.
-        \item \textbf{Tương đồng hình thái} --- Melanoma và Nevus dễ nhầm lẫn.
-        \item \textbf{Hộp đen} --- bác sĩ khó tin cậy nếu không có giải thích.
-    \end{itemize}
-\end{frame}
-
-\begin{frame}{Giới thiệu}
-    \framesubtitle{Mục tiêu khóa luận}
+    \vspace{0.15cm}
     \begin{columns}[T]
         \column{0.5\textwidth}
-        \begin{block}{Mục tiêu chính}
-            \footnotesize
-            Xây dựng một hệ thống tự động nhận biết \textbf{7 loại tổn thương da} từ ảnh soi da, vừa \textbf{đủ chính xác} vừa \textbf{giải thích được} để bác sĩ có thể tin dùng.
-        \end{block}
+        \textbf{Ba trở ngại:}
+        \begin{itemize}\footnotesize
+            \item \textbf{Mất cân bằng dữ liệu} --- lớp đa số áp đảo lớp ác tính hiếm.
+            \item \textbf{Tương đồng hình thái} --- Melanoma và Nevus dễ nhầm.
+            \item \textbf{Hộp đen} --- bác sĩ không thể tin quyết định không có lời giải thích.
+        \end{itemize}
 
         \column{0.5\textwidth}
-        \textbf{Bốn đóng góp cụ thể}
+        \textbf{Bốn đóng góp:}
         \begin{enumerate}\footnotesize
-            \item Pipeline huấn luyện chống lệch dữ liệu (Weighted Sampler, Mixup, CutMix, Label Smoothing).
-            \item So sánh công bằng \textbf{4 kiến trúc} (3 CNN $+$ 1 Transformer) trên cùng điều kiện.
-            \item \textbf{Kết hợp 4 mô hình theo soft-voting}, vượt mọi mô hình đơn lẻ.
-            \item \textbf{Grad-CAM} và ứng dụng web Streamlit để bác sĩ thấy mô hình đang ``nhìn'' vào đâu.
+            \item Pipeline huấn luyện chống lệch dữ liệu.
+            \item So sánh công bằng 3 CNN + 1 Transformer.
+            \item Soft-voting ensemble vượt mọi mô hình đơn.
+            \item Grad-CAM + demo Streamlit để bác sĩ tin cậy.
         \end{enumerate}
     \end{columns}
 \end{frame}
@@ -138,79 +130,47 @@
 \section{Dữ liệu và thách thức}
 % =========================================================
 \begin{frame}{Dữ liệu và thách thức}
-    \framesubtitle{Bộ dữ liệu ISIC 2018 Task 3}
+    \framesubtitle{ISIC 2018 Task 3 (HAM10000) --- 10.015 ảnh dermoscopy, 7 lớp}
     \begin{columns}[T]
-        \column{0.46\textwidth}
-        \footnotesize
-        \textbf{HAM10000 — chuẩn benchmark dermoscopy:}
-        \begin{itemize}
-            \item \textbf{10.015} ảnh, \textbf{7} lớp tổn thương.
-            \item Chia theo \textit{stratified sampling} 70/15/15.
-            \item Mỗi split giữ nguyên tỉ lệ 7 lớp.
-        \end{itemize}
-
-        \vspace{0.2cm}
-        \begin{block}{Chỉ số ưu tiên}
-            \footnotesize Vì lớp NV chiếm 67\% nên Accuracy không phản ánh đúng. Ta đo bằng \textbf{Macro F1} và \textbf{Macro AUC} — bình đẳng với mọi lớp.
-        \end{block}
-
-        \column{0.54\textwidth}
+        \column{0.5\textwidth}
         \scriptsize
         \begin{table}[]
             \centering
-            \begin{tabular}{lrrrrr}
+            \begin{tabular}{lrrrr}
             \toprule
-            \rowcolor{usthblue!25} \textbf{Lớp} & \textbf{Train} & \textbf{Val} & \textbf{Test} & \textbf{Tổng} & \textbf{\%} \\
+            \rowcolor{usthblue!25} \textbf{Lớp} & \textbf{Train} & \textbf{Val} & \textbf{Test} & \textbf{\%} \\
             \midrule
-            NV (Nevus)          & 4\,693 & 1\,006 & 1\,006 & \textbf{6\,705} & 66.9 \\
-            MEL (Melanoma)      &   779  &  167   &  167   & 1\,113 & 11.1 \\
-            BKL (Benign Ker.)   &   769  &  165   &  165   & 1\,099 & 11.0 \\
-            BCC (Basal Cell)    &   360  &   77   &   77   &   514  &  5.1 \\
-            AKIEC (Actinic)     &   229  &   49   &   49   &   327  &  3.3 \\
-            VASC (Vascular)     &    99  &   21   &   22   &   142  &  1.4 \\
-            DF (Dermatofibroma) &    81  &   17   &   17   &   115  &  1.1 \\
+            NV (Nevus)          & 4\,693 & 1\,006 & 1\,006 & 66.9 \\
+            MEL (Melanoma)      &   779  &  167   &  167   & 11.1 \\
+            BKL (Benign Ker.)   &   769  &  165   &  165   & 11.0 \\
+            BCC (Basal Cell)    &   360  &   77   &   77   &  5.1 \\
+            AKIEC (Actinic)     &   229  &   49   &   49   &  3.3 \\
+            VASC (Vascular)     &    99  &   21   &   22   &  1.4 \\
+            DF (Dermatofibroma) &    81  &   17   &   17   &  1.1 \\
             \midrule
-            \textbf{Tổng}       & \textbf{7\,010} & \textbf{1\,502} & \textbf{1\,503} & \textbf{10\,015} & 100 \\
+            \textbf{Tổng}       & \textbf{7\,010} & \textbf{1\,502} & \textbf{1\,503} & 100 \\
             \bottomrule
             \end{tabular}
         \end{table}
-
-        \vspace{0.15cm}
+        \vspace{0.1cm}
         \centering
-        \textcolor{usthred}{\footnotesize Tỉ lệ mất cân bằng cực đoan: \textbf{NV : DF $\approx$ 58 : 1}}
-    \end{columns}
-\end{frame}
+        \textcolor{usthred}{\footnotesize Mất cân bằng cực đoan: \textbf{NV : DF $\approx$ 58 : 1}}
 
-\begin{frame}{Dữ liệu và thách thức}
-    \framesubtitle{Hệ quả của mất cân bằng dữ liệu}
-    \begin{columns}[T]
-        \column{0.55\textwidth}
-        \footnotesize
-        \textbf{Tại sao mất cân bằng là vấn đề nghiêm trọng?}
-        \begin{itemize}
-            \item Mạng nơ-ron tối thiểu hóa loss tổng thể $\Rightarrow$ ưu tiên lớp đa số.
-            \item Dự đoán "NV cho mọi ảnh" vẫn cho $\sim$67\% Accuracy --- nhưng vô dụng lâm sàng.
-            \item Lớp DF, VASC, AKIEC có $<$\,250 ảnh huấn luyện --- rất dễ \textit{memorize} thay vì học features.
-        \end{itemize}
-
+        \column{0.5\textwidth}
+        \begin{block}{Vì sao đây là vấn đề}
+            \footnotesize
+            Dự đoán ``NV cho mọi ảnh'' đã cho $\sim$67\% Accuracy --- nhưng vô dụng lâm sàng. Ta tối ưu \textbf{Macro F1} và \textbf{Macro AUC} để mọi lớp bình đẳng.
+        \end{block}
         \vspace{0.2cm}
-        \begin{block}{Bốn cơ chế đối phó trong pipeline}
+        \begin{block}{Bốn cơ chế đối phó}
             \footnotesize
             \begin{enumerate}
-                \item \textbf{Weighted Random Sampler} cân bằng mini-batch.
-                \item \textbf{Mixup / CutMix} làm mịn ranh giới quyết định.
-                \item \textbf{Label Smoothing} chống over-confidence.
+                \item \textbf{Weighted Sampler} --- cân bằng mini-batch.
+                \item \textbf{Mixup / CutMix} --- làm mịn ranh giới quyết định.
+                \item \textbf{Label Smoothing} --- chống over-confidence.
                 \item \textbf{Macro F1} làm tiêu chí chọn checkpoint.
             \end{enumerate}
         \end{block}
-
-        \column{0.45\textwidth}
-        \begin{figure}
-            \centering
-            \includegraphics[width=\linewidth,height=5cm,keepaspectratio]{../thesis/figures/transfer_learning.png}
-            \captionsetup{font=scriptsize}
-            \caption{Transfer learning từ ImageNet sang ISIC: tái sử dụng features tổng quát, chỉ thay classifier head.}
-        \end{figure}
     \end{columns}
 \end{frame}
 
@@ -286,134 +246,47 @@
             \textbf{Early stopping:} patience $= 12$ epoch theo Macro F1.
         \end{block}
     \end{columns}
-\end{frame}
-
-\begin{frame}{Phương pháp}
-    \framesubtitle{Siêu tham số theo mô hình}
-    \scriptsize
-    \begin{table}[]
-        \centering
-        \begin{tabular}{lcccc}
-        \toprule
-        \rowcolor{usthblue!25}
-        \textbf{Hyperparameter} & \textbf{EfficientNet-B0} & \textbf{ResNet50} & \textbf{DenseNet121} & \textbf{Swin-Tiny} \\
-        \midrule
-        Learning rate       & 3e-4  & 3e-4 & 2.5e-4 & \textbf{1e-4} \\
-        Weight decay        & 1e-3  & 1e-3 & 1e-3   & \textbf{5e-2} \\
-        Warmup epochs       & 3     & 3    & 3      & 5 \\
-        Max epochs          & 50    & 50   & 50     & 50 \\
-        Batch size          & 16    & 16   & 16     & 16 \\
-        Dropout             & 0.30  & 0.30 & 0.25   & 0.30 \\
-        Mixup / CutMix $\alpha$ & 0.2 / 1.0 & 0.2 / 1.0 & 0.2 / 1.0 & 0.2 / 1.0 \\
-        Label smoothing $\varepsilon$ & 0.1 & 0.1 & 0.1 & 0.1 \\
-        \bottomrule
-        \end{tabular}
-    \end{table}
-
-    \vspace{0.3cm}
-    \begin{block}{Swin-Tiny tại sao khác biệt?}
-        \footnotesize
-        Transformer thiếu \textit{inductive bias} của CNN $\Rightarrow$ cần \textbf{learning rate thấp} (1e-4) để không phá vỡ attention weights pretrained, và \textbf{weight decay cao} (5e-2) để hạn chế overfit trên dataset nhỏ.
-    \end{block}
+    \vspace{0.15cm}
+    {\centering \scriptsize \textit{Siêu tham số cụ thể từng backbone (learning rate, weight decay, warmup): xem phụ lục A24.}\par}
 \end{frame}
 
 % =========================================================
 \section{Kết quả thực nghiệm}
 % =========================================================
 \begin{frame}{Kết quả thực nghiệm}
-    \framesubtitle{Hiệu năng từng mô hình đơn}
+    \framesubtitle{Mô hình đơn và Ensemble}
     \scriptsize
     \begin{table}[]
         \centering
-        \begin{tabular}{lcccccc}
+        \begin{tabular}{lcccc}
         \toprule
         \rowcolor{usthblue!25}
-        \textbf{Mô hình} & \textbf{Params} & \textbf{Epoch tốt nhất} & \textbf{Accuracy} & \textbf{Macro F1} & \textbf{AUC} & \textbf{Kappa} \\
+        \textbf{Mô hình} & \textbf{Params} & \textbf{Accuracy} & \textbf{Macro F1} & \textbf{Macro AUC} \\
         \midrule
-        \textbf{EfficientNet-B0} & \textbf{5.3M} & 39 & \textbf{0.8836} & \textbf{0.8311} & 0.9522 & \textbf{0.7710} \\
-        ResNet50                 & 25.6M & 39 & 0.8603 & 0.7902 & 0.9565 & 0.7309 \\
-        DenseNet121              & 8.0M  & 49 & 0.8543 & 0.7967 & 0.9587 & 0.7206 \\
-        Swin-Tiny                & 28.0M & \textbf{13} & 0.8490 & 0.7855 & \textbf{0.9600} & 0.7150 \\
+        EfficientNet-B0 & 5.3M  & 0.8836 & 0.8311 & 0.9522 \\
+        ResNet50        & 25.6M & 0.8603 & 0.7902 & 0.9565 \\
+        DenseNet121     & 8.0M  & 0.8543 & 0.7967 & 0.9587 \\
+        Swin-Tiny       & 28.0M & 0.8490 & 0.7855 & 0.9600 \\
+        \rowcolor{usthlight} \textbf{Ensemble (soft-voting)} & --- & \textbf{0.8949} & \textbf{0.8450} & \textbf{0.9803} \\
         \bottomrule
         \end{tabular}
     \end{table}
 
     \vspace{0.3cm}
     \begin{columns}[T]
-        \column{0.5\textwidth}
-        \begin{block}{EfficientNet-B0 — quán quân đơn lẻ}
-            \scriptsize
-            Ít tham số nhất (5.3M) mà Accuracy và Macro F1 cao nhất. Compound scaling cộng với SE-blocks rất hợp với ảnh dermoscopy 224$\times$224.
+        \column{0.55\textwidth}
+        \begin{block}{Độ ổn định qua 5 hạt giống ngẫu nhiên}
+            \footnotesize
+            Ensemble Acc \textbf{89.93 $\pm$ 0.66\%}, F1 \textbf{0.852 $\pm$ 0.010}, AUC \textbf{0.982 $\pm$ 0.001}. \\[2pt]
+            Kiểm định McNemar: ensemble vượt mọi backbone với $p < 10^{-7}$ so với mạnh nhất, $p < 10^{-38}$ so với yếu nhất.
         \end{block}
 
-        \column{0.5\textwidth}
-        \begin{block}{Swin-Tiny — paradox calibration}
-            \scriptsize
-            Overfit sớm nhất (epoch 13) nhưng AUC cao nhất 0.960. Cho thấy Swin xếp hạng xác suất tốt, nhưng quyết định cứng (argmax) thì kém hơn CNN.
+        \column{0.45\textwidth}
+        \begin{block}{Vì sao soft voting hiệu quả}
+            \footnotesize
+            CNN bắt kết cấu cục bộ, Swin bắt cấu trúc toàn cục. Trung bình 4 vector xác suất không tương quan giảm phương sai --- không cần huấn luyện thêm, chỉ 4 lần inference.
         \end{block}
     \end{columns}
-\end{frame}
-
-\begin{frame}{Kết quả thực nghiệm}
-    \framesubtitle{Ensemble: kết hợp 4 mô hình bằng soft voting}
-    \begin{columns}[T]
-        \column{0.5\textwidth}
-        \footnotesize
-        \textbf{Cơ chế:} trung bình các vector xác suất đầu ra.
-        \[
-            \bar{p}(x) = \frac{1}{M}\sum_{m=1}^{M} p_m(x), \quad M = 4
-        \]
-        \begin{itemize}
-            \item CNN bắt features cục bộ, Swin bắt ngữ cảnh toàn cục $\Rightarrow$ lỗi không tương quan.
-            \item Trung bình xác suất \textbf{giảm phương sai dự đoán}.
-            \item Không cần huấn luyện thêm, chỉ inference 4 lần.
-        \end{itemize}
-
-        \vspace{0.15cm}
-        \begin{block}{Kết quả Ensemble (test set 1\,503 ảnh)}
-            \centering \footnotesize
-            1 hạt giống: Acc \textbf{89.49\%} \quad F1 \textbf{0.845} \quad AUC \textbf{0.980}\\[2pt]
-            5 hạt giống: \textbf{$89.93 \pm 0.66\%$} \quad \textbf{$0.852 \pm 0.010$} \quad \textbf{$0.982 \pm 0.001$}
-        \end{block}
-
-        \column{0.5\textwidth}
-        \begin{figure}
-            \centering
-            \includegraphics[width=\linewidth,height=5.5cm,keepaspectratio]{../thesis/figures/ensemble_architecture.png}
-            \captionsetup{font=scriptsize}
-            \caption{Kiến trúc soft-voting ensemble: 4 mô hình cùng inference, xác suất được trung bình trước khi argmax.}
-        \end{figure}
-    \end{columns}
-\end{frame}
-
-\begin{frame}{Kết quả thực nghiệm}
-    \framesubtitle{Phân tích chi tiết theo lớp (EB0 vs.\ Ensemble)}
-    \scriptsize
-    \begin{table}[]
-        \centering
-        \begin{tabular}{l|ccc|ccc}
-        \toprule
-        \rowcolor{usthblue!25} & \multicolumn{3}{c|}{\textbf{F1 theo lớp}} & \multicolumn{3}{c}{\textbf{AUC theo lớp}} \\
-        \rowcolor{usthblue!25} \multirow{-2}{*}{\textbf{Lớp}} & \textbf{EB0} & \textbf{Ensemble} & \textbf{$\Delta$} & \textbf{EB0} & \textbf{Ensemble} & \textbf{$\Delta$} \\
-        \midrule
-        AKIEC & 0.717 & 0.710 & $-0.007$ & 0.921 & \textbf{0.972} & \textcolor{goodgreen}{$+0.051$} \\
-        BCC   & 0.865 & 0.825 & $-0.040$ & 0.984 & \textbf{0.996} & $+0.012$ \\
-        BKL   & 0.758 & \textbf{0.796} & \textcolor{goodgreen}{$+0.038$} & 0.938 & \textbf{0.968} & $+0.030$ \\
-        DF    & 0.938 & 0.938 & $\phantom{-}0.000$ & 0.963 & \textbf{0.996} & $+0.033$ \\
-        \rowcolor{usthlight} \textbf{MEL} & 0.695 & \textbf{0.744} & \textcolor{goodgreen}{\textbf{$+0.049$}} & 0.913 & \textbf{0.958} & \textcolor{goodgreen}{\textbf{$+0.045$}} \\
-        NV    & 0.940 & \textbf{0.946} & $+0.006$ & 0.946 & \textbf{0.972} & $+0.026$ \\
-        VASC  & 0.905 & \textbf{0.955} & \textcolor{goodgreen}{$+0.050$} & 1.000 & 1.000 & $\phantom{-}0.000$ \\
-        \bottomrule
-        \end{tabular}
-    \end{table}
-
-    \vspace{0.25cm}
-    \begin{itemize}
-        \footnotesize
-        \item \textbf{Melanoma cải thiện rõ rệt} — lớp lâm sàng quan trọng nhất, F1 tăng $+4.9$\%, AUC tăng $+4.5$\%.
-        \item \textbf{AUC tăng đồng đều} trên cả 7 lớp $\Rightarrow$ ensemble là công cụ \textit{xếp hạng rủi ro} mạnh.
-        \item BCC giảm nhẹ F1 do Swin overconfident; bù lại AUC vẫn rất cao 0.996.
-    \end{itemize}
 \end{frame}
 
 \begin{frame}{Kết quả thực nghiệm}
@@ -465,85 +338,39 @@
     \vspace{0.3cm}
     \footnotesize
     \begin{itemize}
-        \item Mỗi thành phần đều có đóng góp dương lên \textbf{Macro F1} --- không có module thừa.
-        \item Hai hàng cuối thú vị: bỏ Label Smoothing tăng AUC, bỏ Aug mạnh tăng Accuracy --- chính là các \textbf{trade-off thiết kế}.
+        \item Mỗi thành phần đều đóng góp dương cho \textbf{Macro F1} --- không có module thừa.
+        \item \textbf{Mixup/CutMix} là đòn bẩy lớn nhất (giảm $-4.5$\% F1 khi bỏ).
+        \item Hai hàng cuối là \textbf{trade-off kinh điển}: bỏ smoothing tăng AUC, bỏ aug mạnh tăng Accuracy --- nhưng Macro F1 luôn giảm.
     \end{itemize}
-\end{frame}
-
-\begin{frame}{Nghiên cứu loại bỏ thành phần}
-    \framesubtitle{Diễn giải kết quả Ablation}
-    \footnotesize
-    \begin{block}{1.\ Mixup/CutMix --- thành phần quan trọng nhất ($-4.51$\% F1)}
-        Với chỉ 81 ảnh DF và 99 ảnh VASC trong train set, không có Mixup/CutMix mô hình sẽ \textit{memorize} sample hiếm sau vài epoch. Ảnh lai buộc model học features tổng quát, không gán xác suất 1.0 cho bất kỳ ảnh đơn lẻ nào.
-    \end{block}
-
-    \begin{block}{2.\ Nghịch lý Label Smoothing --- AUC tăng nhưng F1 giảm}
-        Bỏ Label Smoothing \textbf{tăng AUC} ($0.952 \rightarrow 0.967$) nhưng \textbf{giảm F1} 3.11\%. Hard target khiến model tự tin hơn (xếp hạng tốt $\Rightarrow$ AUC cao), nhưng ranh giới quyết định cứng làm sai nhiều ở cụm MEL/NV/BKL.
-    \end{block}
-
-    \begin{block}{3.\ Trade-off Augmentation --- Accuracy tăng, Macro F1 giảm}
-        Bỏ aug mạnh, Accuracy thậm chí \textbf{nhỉnh hơn baseline} (88.96\% vs 88.36\%) vì model dễ học lớp NV. Nhưng Macro F1 giảm --- minority class bị bỏ rơi. Đây là lý do \textit{không dùng Accuracy làm tiêu chí chính}.
-    \end{block}
+    \vspace{0.05cm}
+    {\centering \scriptsize \textit{Diễn giải chi tiết từng dòng ablation: xem phụ lục A25.}\par}
 \end{frame}
 
 % =========================================================
 \section{Khả diễn giải và ứng dụng}
 % =========================================================
 \begin{frame}{Khả diễn giải và ứng dụng}
-    \framesubtitle{Grad-CAM --- nhìn vào "lý do" mô hình quyết định}
+    \framesubtitle{Grad-CAM và ứng dụng demo Streamlit}
     \begin{columns}[T]
-        \column{0.45\textwidth}
-        \footnotesize
-        \textbf{Quy trình Grad-CAM:}
-        \begin{enumerate}
-            \item Hook activation $A^k$ và gradient $\partial y_c / \partial A^k$ tại layer conv cuối.
-            \item Trọng số $\alpha_c^k = \mathrm{GAP}(\nabla A^k)$.
-            \item Heatmap: $L_c = \mathrm{ReLU}\!\left(\sum_k \alpha_c^k A^k\right)$.
-            \item Up-sample về kích thước ảnh gốc và overlay.
-        \end{enumerate}
-
-        \vspace{0.2cm}
-        \begin{block}{Phát hiện thực nghiệm}
-            \scriptsize
-            Heatmap khoanh \textbf{đúng vùng tổn thương} trên cả 4 mô hình, vững trước nhiễu (lông, bọt gel, viền tối) --- cơ sở để bác sĩ tin cậy hệ thống.
-        \end{block}
-
-        \column{0.55\textwidth}
+        \column{0.5\textwidth}
         \begin{figure}
             \centering
-            \includegraphics[width=\linewidth,height=5.8cm,keepaspectratio]{../thesis/figures/gradcam_mel_sample.png}
+            \includegraphics[width=\linewidth,height=5.2cm,keepaspectratio]{../thesis/figures/gradcam_mel_sample.png}
             \captionsetup{font=scriptsize}
-            \caption{Grad-CAM trên một mẫu Melanoma: cả 4 mô hình tập trung vào ổ sắc tố trung tâm.}
+            \caption{Grad-CAM trên một mẫu Melanoma --- cả 4 mô hình tập trung vào ổ sắc tố trung tâm.}
         \end{figure}
-    \end{columns}
-\end{frame}
 
-\begin{frame}{Khả diễn giải và ứng dụng}
-    \framesubtitle{Prototype Streamlit --- "second opinion" thời gian thực}
-    \begin{columns}[T]
-        \column{0.55\textwidth}
+        \column{0.5\textwidth}
         \footnotesize
-        \textbf{Tính năng chính:}
-        \begin{itemize}
-            \item Upload ảnh $\Rightarrow$ inference ensemble trong $<$2 giây.
-            \item Hiển thị \textbf{phân bố xác suất 7 lớp}, không chỉ nhãn cứng.
-            \item Cho phép chọn mô hình bất kỳ để xem Grad-CAM riêng.
-            \item \textbf{Subprocess isolation} (\texttt{gradcam\_worker.py}) ngăn rò GPU memory khi chạy liên tục.
-        \end{itemize}
-
-        \column{0.45\textwidth}
-        \begin{block}{Giá trị lâm sàng}
-            \footnotesize
-            Hệ thống đóng vai trò \textit{second opinion} cho bác sĩ:\\
-            cung cấp \textbf{xác suất} $+$ \textbf{bằng chứng trực quan}, không thay thế chẩn đoán mà hỗ trợ quyết định.
-        \end{block}
-
-        \vspace{0.2cm}
-        \begin{block}{Có thể demo trực tiếp}
+        \textbf{Grad-CAM cho thấy ``lý do'' đằng sau dự đoán} --- heatmap tại lớp convolution cuối, có trọng số theo gradient của lớp được dự đoán. Trên cả 4 mô hình, heatmap khoanh đúng vùng tổn thương, vững trước nhiễu (lông, bọt gel, viền tối).
+        \vspace{0.15cm}
+        \begin{block}{Prototype Streamlit}
             \scriptsize
-            \texttt{streamlit run app.py} \\
-            \texttt{$\rightarrow$ http://localhost:8501}
+            Upload ảnh $\Rightarrow$ xác suất 7 lớp và Grad-CAM trong $<$2 giây. Người dùng có thể chọn backbone dùng để phân loại (ensemble hoặc từng mô hình đơn) và backbone hiển thị Grad-CAM.\\[2pt]
+            \texttt{streamlit run app.py} $\rightarrow$ \texttt{localhost:8501}
         \end{block}
+        \vspace{0.05cm}
+        {\scriptsize \textit{Vai trò: \textbf{second opinion} cho bác sĩ --- xác suất kèm bằng chứng trực quan, không thay thế chẩn đoán.}}
     \end{columns}
 \end{frame}
 
@@ -551,39 +378,35 @@
 \section{Kết luận}
 % =========================================================
 \begin{frame}{Kết luận}
-    \framesubtitle{Sáu đóng góp chính}
-    \begin{block}{Sáu đóng góp chính của khóa luận}
-        \footnotesize
-        \begin{enumerate}
-            \item \textbf{Ensemble chỉ-ảnh:} \textbf{89.49\%} Acc, \textbf{0.980} AUC, \textbf{0.744} F1 cho Melanoma ở hạt giống đại diện; \textbf{89.93 $\pm$ 0.66\%} qua 5 hạt giống.
-            \item \textbf{Robustness thống kê:} McNemar xác nhận ensemble vượt mọi backbone với $p < 10^{-7}$ so với mạnh nhất, $p < 10^{-38}$ so với yếu nhất.
-            \item \textbf{Metadata fusion vượt 90\%:} thêm metadata bệnh nhân HAM10000 đạt \textbf{90.49\% / 0.873 F1} --- vượt Pacheco \& Krohling 2020.
-            \item \textbf{Đánh giá OOD trung thực:} zero-shot trên PAD-UFES-20 (ảnh smartphone) đạt 32.5\% --- định lượng khoảng cách modality.
-            \item \textbf{Khả diễn giải định lượng:} Grad-CAM \texttt{focus\_ratio} > 0.6 trên cả 4 backbone, được validate qua story debug \texttt{model.bn2}.
-            \item \textbf{Ứng dụng thực tế:} prototype Streamlit ổn định với subprocess-isolated Grad-CAM.
-        \end{enumerate}
-    \end{block}
+    \framesubtitle{Đóng góp chính và hướng phát triển}
+    \begin{columns}[T]
+        \column{0.5\textwidth}
+        \begin{block}{Đóng góp chính}
+            \footnotesize
+            \begin{enumerate}
+                \item Ensemble đạt \textbf{89.49\%} Accuracy và \textbf{0.980} AUC --- ngang tầm SOTA trên ISIC 2018 (chỉ-ảnh).
+                \item Ổn định qua nhiều hạt giống: \textbf{89.93 $\pm$ 0.66\%}, McNemar $p < 10^{-7}$.
+                \item Mọi thành phần được ablation đều đóng góp dương.
+                \item Grad-CAM \texttt{focus\_ratio} $> 0.6$ --- mô hình tập trung vào tổn thương, không vào nhiễu.
+                \item Prototype Streamlit hoạt động ổn định cho bác sĩ.
+            \end{enumerate}
+        \end{block}
 
-    \vspace{0.2cm}
-    \begin{center}
-    \footnotesize \textcolor{usthdark}{\textbf{Thông điệp:} Pipeline được điều chuẩn cẩn thận có thể thu hẹp phần lớn khoảng cách giữa mô hình nhẹ và mô hình lớn trên dữ liệu y tế hạn chế.}
-    \end{center}
-\end{frame}
-
-\begin{frame}{Kết luận}
-    \framesubtitle{Hướng phát triển}
-    \footnotesize
-    \begin{enumerate}
-        \item \textbf{Domain adaptation cho ảnh smartphone:} kết quả OOD trên PAD-UFES-20 (phụ lục A23) cho thấy drop $-56$ pp accuracy. Đóng khoảng cách cần fine-tune trên data in-domain hoặc style-transfer preprocessing.
+        \column{0.5\textwidth}
+        \begin{block}{Hướng phát triển}
+            \footnotesize
+            \begin{itemize}
+                \item \textbf{Domain adaptation} cho ảnh smartphone (OOD, xem A23).
+                \item \textbf{Open-set detection} --- phát hiện ảnh không phải tổn thương da.
+                \item \textbf{Active learning} --- bác sĩ chỉnh nhãn sai để retrain định kỳ.
+                \item \textbf{Triển khai biên} --- xuất ensemble sang ONNX / TensorRT.
+            \end{itemize}
+        \end{block}
         \vspace{0.15cm}
-        \item \textbf{Open-set / OOD detection:} classifier hiện tại bị buộc gán 1 trong 7 lớp. Production cần component nhận diện input \textit{không phải} tổn thương da (mụn, sẹo, ảnh sai vùng).
-        \vspace{0.15cm}
-        \item \textbf{Active learning loop:} cho phép bác sĩ chỉnh sửa nhãn sai trong prototype, định kỳ retrain mô hình.
-        \vspace{0.15cm}
-        \item \textbf{Calibration sâu hơn:} áp dụng temperature scaling, focal loss để mô hình "tự biết khi nó không biết".
-        \vspace{0.15cm}
-        \item \textbf{Triển khai biên (edge):} chuyển ensemble sang ONNX/TensorRT, hướng tới chạy trên thiết bị dermoscopy di động.
-    \end{enumerate}
+        \begin{center}
+        \scriptsize \textcolor{usthdark}{\textbf{Thông điệp:} pipeline được điều chuẩn cẩn thận có thể thu hẹp phần lớn khoảng cách giữa mô hình nhẹ và mô hình lớn trên dữ liệu y tế hạn chế.}
+        \end{center}
+    \end{columns}
 \end{frame}
 
 % =========================================================
@@ -639,6 +462,11 @@
         \item Threshold Tuning
         \item So sánh với SOTA trên ISIC 2018
         \item Hạn chế \& rủi ro lâm sàng
+        \item Độ ổn định qua các hạt giống ngẫu nhiên
+        \item Metadata fusion --- vượt mốc 90\%
+        \item Đánh giá out-of-distribution trên PAD-UFES-20
+        \item Siêu tham số theo mô hình
+        \item Diễn giải chi tiết kết quả Ablation
     \end{enumerate}
     \end{multicols}
 \end{frame}
@@ -1272,6 +1100,51 @@
     \textbf{Kết luận trung thực.} Pipeline \textbf{chưa} sẵn sàng cho triển khai
     consumer-grade. Đóng khoảng cách là việc kỹ thuật (domain adaptation, fine-tune
     in-domain, style transfer) --- không phải bí ẩn nghiên cứu.
+\end{frame}
+
+% --- A24 ---
+\begin{frame}{A24. Siêu tham số theo mô hình}
+    \scriptsize
+    \begin{table}[]
+        \centering
+        \begin{tabular}{lcccc}
+        \toprule
+        \rowcolor{usthblue!25}
+        \textbf{Hyperparameter} & \textbf{EfficientNet-B0} & \textbf{ResNet50} & \textbf{DenseNet121} & \textbf{Swin-Tiny} \\
+        \midrule
+        Learning rate       & 3e-4  & 3e-4 & 2.5e-4 & \textbf{1e-4} \\
+        Weight decay        & 1e-3  & 1e-3 & 1e-3   & \textbf{5e-2} \\
+        Warmup epochs       & 3     & 3    & 3      & 5 \\
+        Max epochs          & 50    & 50   & 50     & 50 \\
+        Batch size          & 16    & 16   & 16     & 16 \\
+        Dropout             & 0.30  & 0.30 & 0.25   & 0.30 \\
+        Mixup / CutMix $\alpha$ & 0.2 / 1.0 & 0.2 / 1.0 & 0.2 / 1.0 & 0.2 / 1.0 \\
+        Label smoothing $\varepsilon$ & 0.1 & 0.1 & 0.1 & 0.1 \\
+        \bottomrule
+        \end{tabular}
+    \end{table}
+
+    \vspace{0.3cm}
+    \begin{block}{Vì sao Swin-Tiny cần cấu hình riêng?}
+        \footnotesize
+        Transformer thiếu \textit{inductive bias} của CNN $\Rightarrow$ cần \textbf{learning rate thấp} (1e-4) để không phá attention weights pretrained, và \textbf{weight decay cao} (5e-2) để chống overfit trên dataset nhỏ.
+    \end{block}
+\end{frame}
+
+% --- A25 ---
+\begin{frame}{A25. Diễn giải chi tiết kết quả Ablation}
+    \footnotesize
+    \begin{block}{1.\ Mixup/CutMix --- thành phần quan trọng nhất ($-4.51$\% F1)}
+        Với chỉ 81 ảnh DF và 99 ảnh VASC trong train set, không có Mixup/CutMix mô hình sẽ \textit{memorize} sample hiếm sau vài epoch. Ảnh lai buộc mô hình học đặc trưng tổng quát, không gán xác suất 1.0 cho bất kỳ mẫu đơn lẻ.
+    \end{block}
+
+    \begin{block}{2.\ Nghịch lý Label Smoothing --- AUC tăng nhưng F1 giảm}
+        Bỏ Label Smoothing \textbf{tăng AUC} ($0.952 \rightarrow 0.967$) nhưng \textbf{giảm F1} 3.11\%. Hard target khiến mô hình tự tin hơn (xếp hạng xác suất tốt $\Rightarrow$ AUC cao), song ranh giới quyết định cứng gây sai ở cụm MEL/NV/BKL.
+    \end{block}
+
+    \begin{block}{3.\ Trade-off Augmentation --- Accuracy tăng, Macro F1 giảm}
+        Bỏ aug mạnh, Accuracy \textbf{cao hơn baseline} (88.96\% vs 88.36\%) vì mô hình dễ học lớp NV. Nhưng Macro F1 giảm --- các lớp minority bị bỏ rơi. Đây chính là lý do \textit{không dùng Accuracy làm tiêu chí chính}.
+    \end{block}
 \end{frame}
 
 % =====================  Slide cuối  =====================
