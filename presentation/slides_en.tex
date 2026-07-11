@@ -466,6 +466,8 @@
         \item Confusion matrix --- compact backbones (EB0 vs.\ DN121)
         \item Confusion matrix --- larger backbones (ResNet50 vs.\ Swin-Tiny)
         \item Grad-CAM in action --- from image to heatmap
+        \item Ablation confusion --- removing the biggest levers
+        \item Ablation confusion --- removing the smaller levers
     \end{enumerate}
     \end{multicols}
 \end{frame}
@@ -1205,6 +1207,36 @@
 
     \vspace{0.1cm}
     {\centering \scriptsize \textbf{One-line summary:} the heatmap answers ``\textit{which pixels, if brightened, would make the model more confident about the predicted class}''.\par}
+\end{frame}
+
+% --- A29 ---
+\begin{frame}{A29. Ablation Confusion --- Removing the Biggest Levers}
+    \begin{columns}[T]
+        \column{0.5\textwidth}
+        \centering \textbf{$-$ Mixup / CutMix} \scriptsize (F1 $-4.5$\%)\\[3pt]
+        \includegraphics[width=\linewidth,height=5.5cm,keepaspectratio]{../thesis/figures/ablation_no_mixup_cm.png}
+
+        \column{0.5\textwidth}
+        \centering \textbf{$-$ Label Smoothing} \scriptsize (F1 $-3.1$\%)\\[3pt]
+        \includegraphics[width=\linewidth,height=5.5cm,keepaspectratio]{../thesis/figures/ablation_no_smooth_cm.png}
+    \end{columns}
+    \vspace{0.2cm}
+    \scriptsize \textit{Without Mixup/CutMix, DF and VASC recall collapses --- the model memorises the 81 DF training images instead of learning generic features. Without Label Smoothing the model becomes over-confident: MEL and BKL start to split off into hard, wrong decisions inside the MEL/NV/BKL cluster.}
+\end{frame}
+
+% --- A30 ---
+\begin{frame}{A30. Ablation Confusion --- Removing the Smaller Levers}
+    \begin{columns}[T]
+        \column{0.5\textwidth}
+        \centering \textbf{$-$ Weighted Sampler} \scriptsize (F1 $-2.7$\%)\\[3pt]
+        \includegraphics[width=\linewidth,height=5.5cm,keepaspectratio]{../thesis/figures/ablation_no_sampler_cm.png}
+
+        \column{0.5\textwidth}
+        \centering \textbf{$-$ Advanced Augmentation} \scriptsize (F1 $-1.1$\%)\\[3pt]
+        \includegraphics[width=\linewidth,height=5.5cm,keepaspectratio]{../thesis/figures/ablation_no_adv_aug_cm.png}
+    \end{columns}
+    \vspace{0.2cm}
+    \scriptsize \textit{Removing the Weighted Sampler starves rare classes at the batch level --- DF, VASC and AKIEC recall drop noticeably. Removing advanced augmentation (colour jitter, blur, erasing) slightly raises Accuracy on NV but hurts every minority class --- the textbook trade-off that motivated Macro F1 as the primary metric.}
 \end{frame}
 
 % =====================  Final slide  =====================
