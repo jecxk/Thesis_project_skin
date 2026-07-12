@@ -130,7 +130,7 @@
 \section{Dữ liệu và thách thức}
 % =========================================================
 \begin{frame}{Dữ liệu và thách thức}
-    \framesubtitle{ISIC 2018 Task 3 (HAM10000) --- 10.015 ảnh dermoscopy, 7 lớp, chia stratified 70/15/15}
+    \framesubtitle{ISIC 2018 Task 3 (HAM10000) --- 10.015 ảnh dermoscopy, 7 lớp}
     \begin{columns}[T]
         \column{0.5\textwidth}
         \scriptsize
@@ -294,7 +294,7 @@
     \begin{columns}[T]
         \column{0.42\textwidth}
         \footnotesize
-        \textbf{Đọc ma trận:}
+
         \begin{itemize}
             \item Đường chéo cao $\Rightarrow$ recall tốt trên mọi lớp.
             \item \textbf{DF, VASC} hiếm nhưng vẫn được nhận diện chính xác --- nhờ Mixup $+$ Weighted Sampler.
@@ -467,11 +467,8 @@
         \item Đánh giá out-of-distribution trên PAD-UFES-20
         \item Siêu tham số theo mô hình
         \item Diễn giải chi tiết kết quả Ablation
-        \item Ma trận nhầm lẫn --- các backbone gọn (EB0 vs.\ DN121)
-        \item Ma trận nhầm lẫn --- các backbone lớn (ResNet50 vs.\ Swin-Tiny)
+        \item So sánh ma trận nhầm lẫn giữa 4 backbone
         \item Grad-CAM hoạt động ra sao --- từ ảnh đến heatmap
-        \item Ma trận ablation --- bỏ hai đòn bẩy lớn nhất
-        \item Ma trận ablation --- bỏ hai đòn bẩy nhỏ hơn
     \end{enumerate}
     \end{multicols}
 \end{frame}
@@ -1153,37 +1150,27 @@
 \end{frame}
 
 % --- A26 ---
-\begin{frame}{A26. Ma trận nhầm lẫn --- Các backbone gọn (EB0 vs.\ DN121)}
+\begin{frame}{A26. So sánh ma trận nhầm lẫn --- Bốn backbone}
+    \scriptsize
     \begin{columns}[T]
         \column{0.5\textwidth}
-        \centering \textbf{EfficientNet-B0} \scriptsize (5.3M)\\[3pt]
-        \includegraphics[width=\linewidth,height=5.5cm,keepaspectratio]{../thesis/figures/eb0_confusion_matrix.png}
+        \centering \textbf{EfficientNet-B0}\\[2pt]
+        \includegraphics[width=\linewidth,height=3.4cm,keepaspectratio]{../thesis/figures/eb0_confusion_matrix.png}\\[4pt]
+        \centering \textbf{DenseNet121}\\[2pt]
+        \includegraphics[width=\linewidth,height=3.4cm,keepaspectratio]{../thesis/figures/dn121_confusion_matrix.png}
 
         \column{0.5\textwidth}
-        \centering \textbf{DenseNet121} \scriptsize (8.0M)\\[3pt]
-        \includegraphics[width=\linewidth,height=5.5cm,keepaspectratio]{../thesis/figures/dn121_confusion_matrix.png}
+        \centering \textbf{ResNet50}\\[2pt]
+        \includegraphics[width=\linewidth,height=3.4cm,keepaspectratio]{../thesis/figures/rn50_confusion_matrix.png}\\[4pt]
+        \centering \textbf{Swin-Tiny}\\[2pt]
+        \includegraphics[width=\linewidth,height=3.4cm,keepaspectratio]{../thesis/figures/swin_confusion_matrix.png}
     \end{columns}
-    \vspace{0.2cm}
-    \scriptsize \textit{EB0 là mô hình đơn mạnh nhất (F1 0.831). DN121 nhờ feature reuse nên đuổi kịp EB0 trên lớp MEL dù tổng thể yếu hơn. Cả hai CNN có cùng kiểu lỗi: nhầm lẫn trong cụm \textbf{MEL $\leftrightarrow$ NV $\leftrightarrow$ BKL}.}
+    \vspace{0.15cm}
+    \scriptsize \textit{Cả bốn mô hình đều có cùng kiểu lỗi --- nhầm lẫn trong cụm \textbf{MEL $\leftrightarrow$ NV $\leftrightarrow$ BKL} --- nhưng mỗi mô hình sai theo cách khác nhau, và đó chính là lý do soft-voting ensemble vượt mọi mô hình đơn lẻ.}
 \end{frame}
 
 % --- A27 ---
-\begin{frame}{A27. Ma trận nhầm lẫn --- Các backbone lớn (ResNet50 vs.\ Swin-Tiny)}
-    \begin{columns}[T]
-        \column{0.5\textwidth}
-        \centering \textbf{ResNet50} \scriptsize (25.6M)\\[3pt]
-        \includegraphics[width=\linewidth,height=5.5cm,keepaspectratio]{../thesis/figures/rn50_confusion_matrix.png}
-
-        \column{0.5\textwidth}
-        \centering \textbf{Swin-Tiny} \scriptsize (28.0M)\\[3pt]
-        \includegraphics[width=\linewidth,height=5.5cm,keepaspectratio]{../thesis/figures/swin_confusion_matrix.png}
-    \end{columns}
-    \vspace{0.2cm}
-    \scriptsize \textit{ResNet50 là CNN sâu cổ điển làm baseline. Swin-Tiny là Transformer duy nhất --- overfit sớm nhất nhưng xếp hạng xác suất tốt nhất (AUC cao nhất). Mỗi backbone sai theo cách khác nhau --- chính lỗi không tương quan này là thứ soft-voting ensemble khai thác.}
-\end{frame}
-
-% --- A28 ---
-\begin{frame}{A28. Grad-CAM hoạt động ra sao --- Từ ảnh đến heatmap}
+\begin{frame}{A27. Grad-CAM hoạt động ra sao --- Từ ảnh đến heatmap}
     \footnotesize
     \textit{Giải thích trực quan. Công thức chặt chẽ nằm ở A7; target layer từng backbone ở A8.}
     \vspace{0.2cm}
@@ -1210,36 +1197,6 @@
 
     \vspace{0.1cm}
     {\centering \scriptsize \textbf{Tóm gọn:} heatmap trả lời câu hỏi ``\textit{nếu làm sáng những pixel nào lên, mô hình sẽ tự tin hơn về lớp được dự đoán}''.\par}
-\end{frame}
-
-% --- A29 ---
-\begin{frame}{A29. Ma trận Ablation --- Bỏ hai đòn bẩy lớn nhất}
-    \begin{columns}[T]
-        \column{0.5\textwidth}
-        \centering \textbf{$-$ Mixup / CutMix} \scriptsize (F1 $-4.5$\%)\\[3pt]
-        \includegraphics[width=\linewidth,height=5.5cm,keepaspectratio]{../thesis/figures/ablation_no_mixup_cm.png}
-
-        \column{0.5\textwidth}
-        \centering \textbf{$-$ Label Smoothing} \scriptsize (F1 $-3.1$\%)\\[3pt]
-        \includegraphics[width=\linewidth,height=5.5cm,keepaspectratio]{../thesis/figures/ablation_no_smooth_cm.png}
-    \end{columns}
-    \vspace{0.2cm}
-    \scriptsize \textit{Bỏ Mixup/CutMix, recall của DF và VASC sụp đổ --- mô hình memorize 81 ảnh DF thay vì học đặc trưng tổng quát. Bỏ Label Smoothing, mô hình trở nên quá tự tin: MEL và BKL bắt đầu bị đẩy về các quyết định cứng, sai trong cụm MEL/NV/BKL.}
-\end{frame}
-
-% --- A30 ---
-\begin{frame}{A30. Ma trận Ablation --- Bỏ hai đòn bẩy nhỏ hơn}
-    \begin{columns}[T]
-        \column{0.5\textwidth}
-        \centering \textbf{$-$ Weighted Sampler} \scriptsize (F1 $-2.7$\%)\\[3pt]
-        \includegraphics[width=\linewidth,height=5.5cm,keepaspectratio]{../thesis/figures/ablation_no_sampler_cm.png}
-
-        \column{0.5\textwidth}
-        \centering \textbf{$-$ Advanced Augmentation} \scriptsize (F1 $-1.1$\%)\\[3pt]
-        \includegraphics[width=\linewidth,height=5.5cm,keepaspectratio]{../thesis/figures/ablation_no_adv_aug_cm.png}
-    \end{columns}
-    \vspace{0.2cm}
-    \scriptsize \textit{Bỏ Weighted Sampler, lớp hiếm bị bỏ đói ngay từ mini-batch --- DF, VASC và AKIEC recall giảm rõ rệt. Bỏ augmentation nâng cao (color jitter, blur, erasing), Accuracy trên NV tăng nhẹ nhưng mọi lớp minority đều bị tổn thương --- đúng trade-off kinh điển vì sao ta chọn Macro F1 làm tiêu chí chính.}
 \end{frame}
 
 % =====================  Slide cuối  =====================
