@@ -121,7 +121,7 @@
             \item Pipeline huấn luyện chống lệch dữ liệu.
             \item So sánh công bằng 3 CNN + 1 Transformer.
             \item Soft-voting ensemble vượt mọi mô hình đơn.
-            \item Grad-CAM + demo Streamlit để bác sĩ tin cậy.
+            \item Giải thích trực quan bằng Grad-CAM để bác sĩ tin cậy.
         \end{enumerate}
     \end{columns}
 \end{frame}
@@ -187,66 +187,61 @@
 \end{frame}
 
 \begin{frame}{Phương pháp}
+    \framesubtitle{Tiền xử lý Dữ liệu và Tăng cường khi Huấn luyện}
+    \footnotesize
+    \begin{columns}[T]
+        \column{0.5\textwidth}
+        \begin{block}{Tiền xử lý (mọi tập)}
+            \footnotesize
+            \begin{itemize}
+                \item Resize về $224 \times 224$, chuẩn hóa theo mean/std ImageNet.
+                \item Chia stratified $70/15/15$ --- train/val/test giữ đúng tỷ lệ các lớp.
+            \end{itemize}
+        \end{block}
+
+        \column{0.5\textwidth}
+        \begin{block}{Tăng cường dữ liệu (chỉ tập train, online)}
+            \footnotesize
+            \begin{itemize}
+                \item RandomResizedCrop, lật ngang $+$ dọc, xoay ($\pm 90^\circ$).
+                \item ColorJitter ($0.25$), Gaussian Blur ($p=0.1$), Random Erasing ($p=0.1$).
+            \end{itemize}
+        \end{block}
+    \end{columns}
+    \begin{figure}
+        \centering
+        \includegraphics[height=4.1cm,keepaspectratio]{../thesis/figures/augmentation_examples.png}
+    \end{figure}
+\end{frame}
+
+\begin{frame}{Phương pháp}
     \framesubtitle{Bốn kiến trúc được so sánh}
     \scriptsize
     \begin{table}[]
         \centering
-        \begin{tabular}{lcll}
+        \begin{tabular}{lcl}
         \toprule
         \rowcolor{usthblue!25}
-        \textbf{Mô hình} & \textbf{Tham số} & \textbf{Nguyên tắc thiết kế} & \textbf{Vai trò trong ensemble} \\
+        \textbf{Mô hình} & \textbf{Tham số} & \textbf{Vai trò trong ensemble} \\
         \midrule
-        EfficientNet-B0 & 5.3M  & MBConv $+$ SE, compound scaling           & CNN gọn, đặc trưng local mịn  \\
-        ResNet50        & 25.6M & Bottleneck residual                       & CNN sâu, baseline cổ điển     \\
-        DenseNet121     & 8.0M  & Dense connectivity, tái sử dụng features  & CNN tận dụng feature reuse    \\
-        Swin-Tiny       & 28.0M & Shifted-window self-attention             & Vision Transformer, ngữ cảnh toàn cục \\
+        EfficientNet-B0 & 5.3M  & CNN gọn, đặc trưng local mịn  \\
+        ResNet50        & 25.6M & CNN sâu, baseline cổ điển     \\
+        DenseNet121     & 8.0M  & CNN tận dụng feature reuse    \\
+        Swin-Tiny       & 28.0M & Vision Transformer, ngữ cảnh toàn cục \\
         \bottomrule
         \end{tabular}
     \end{table}
 
-    \vspace{0.3cm}
     \footnotesize
-    \begin{itemize}
-        \item Tất cả mô hình \textbf{fine-tune từ ImageNet pretrained} qua thư viện \texttt{timm}.
-        \item Đầu ra thay bằng \texttt{Linear($d$, 7)}, dropout 0.25--0.30 trước classifier.
-        \item Lựa chọn 4 kiến trúc đa dạng để ensemble khai thác \textbf{lỗi không tương quan} giữa CNN và Transformer.
-    \end{itemize}
+    Cả 4 mô hình đều \textbf{fine-tune từ ImageNet pretrained} qua thư viện \texttt{timm}; việc trộn CNN và Transformer giúp ensemble khai thác \textbf{lỗi không tương quan}.
+
+    \begin{figure}
+        \centering
+        \includegraphics[height=3.0cm,keepaspectratio]{../thesis/figures_new/training_loss_all_models.png}
+        \caption*{\scriptsize Swin-Tiny dừng sớm nhất (epoch 13/25) --- dấu hiệu overfit sớm.}
+    \end{figure}
 \end{frame}
 
-\begin{frame}{Phương pháp}
-    \framesubtitle{Chiến lược huấn luyện}
-    \begin{columns}[T]
-        \column{0.5\textwidth}
-        \begin{block}{Mixup \& CutMix\ \footnotesize($p = 0.5$ mỗi loại)}
-            \scriptsize
-            \textbf{Mixup:} $\tilde{x} = \lambda x_i + (1-\lambda) x_j$ với $\lambda \sim \mathrm{Beta}(0.2, 0.2)$.\\[2pt]
-            \textbf{CutMix:} dán patch ngẫu nhiên giữa hai ảnh, nhãn lai theo tỉ lệ diện tích.\\[3pt]
-            $\Rightarrow$ ngăn memorize sample hiếm, làm mịn ranh giới quyết định.
-        \end{block}
-
-        \begin{block}{Label Smoothing\ \footnotesize($\varepsilon = 0.1$)}
-            \scriptsize
-            $y_{\text{smooth}} = (1-\varepsilon) \cdot y_{\text{onehot}} + \varepsilon / C$\\[2pt]
-            $\Rightarrow$ giảm over-confidence, cải thiện calibration.
-        \end{block}
-
-        \column{0.5\textwidth}
-        \begin{block}{Weighted Random Sampler}
-            \scriptsize
-            Trọng số mỗi mẫu: $w_c = \dfrac{N}{C \cdot n_c}$\\[2pt]
-            Mỗi batch xấp xỉ cân bằng 7 lớp \textemdash{} tăng exposure cho DF/VASC.
-        \end{block}
-
-        \begin{block}{Cấu hình tối ưu}
-            \scriptsize
-            \textbf{Optimizer:} AdamW, cosine annealing $+$ linear warmup.\\
-            \textbf{Mixed precision:} FP16 (giảm $\sim$40\% bộ nhớ GPU).\\
-            \textbf{Gradient clipping:} $\|\nabla\|_{\max} = 1.0$.\\
-            \textbf{Early stopping:} patience $= 12$ epoch theo Macro F1.
-        \end{block}
-    \end{columns}
-    \vspace{0.15cm}
-\end{frame}
 
 % =========================================================
 \section{Kết quả thực nghiệm}
@@ -346,7 +341,7 @@
 \section{Khả diễn giải và ứng dụng}
 % =========================================================
 \begin{frame}{Khả diễn giải và ứng dụng}
-    \framesubtitle{Grad-CAM và ứng dụng demo Streamlit}
+    \framesubtitle{Grad-CAM --- Giải thích trực quan}
     \begin{columns}[T]
         \column{0.5\textwidth}
         \begin{figure}
@@ -360,10 +355,9 @@
         \footnotesize
         \textbf{Grad-CAM cho thấy ``lý do'' đằng sau dự đoán} --- heatmap tại lớp convolution cuối, có trọng số theo gradient của lớp được dự đoán. Trên cả 4 mô hình, heatmap khoanh đúng vùng tổn thương, vững trước nhiễu (lông, bọt gel, viền tối).
         \vspace{0.15cm}
-        \begin{block}{Prototype Streamlit}
+        \begin{block}{Kiểm chứng định lượng}
             \scriptsize
-            Upload ảnh $\Rightarrow$ xác suất 7 lớp và Grad-CAM trong $<$2 giây. Người dùng có thể chọn backbone dùng để phân loại (ensemble hoặc từng mô hình đơn) và backbone hiển thị Grad-CAM.\\[2pt]
-            \texttt{streamlit run app.py} $\rightarrow$ \texttt{localhost:8501}
+            Không chỉ đánh giá bằng mắt: trên tập test, hơn \textbf{60\% vùng ``nóng nhất''} của heatmap nằm đúng trong tổn thương --- ở cả 4 mô hình, không lan ra da xung quanh.
         \end{block}
     \end{columns}
 \end{frame}
@@ -381,8 +375,7 @@
                 \item Ensemble đạt \textbf{89.49\%} Accuracy và \textbf{0.980} AUC --- ngang tầm SOTA trên ISIC 2018 (chỉ-ảnh).
                 \item Ổn định qua nhiều hạt giống: \textbf{89.93 $\pm$ 0.66\%}, McNemar $p < 10^{-7}$.
                 \item Mọi thành phần được ablation đều đóng góp dương.
-                \item Grad-CAM \texttt{focus\_ratio} $> 0.6$ --- mô hình tập trung vào tổn thương, không vào nhiễu.
-                \item Prototype Streamlit hoạt động ổn định cho bác sĩ.
+                \item Heatmap Grad-CAM tập trung đúng chỗ --- hơn 60\% vùng ``nóng'' nằm trong tổn thương, không vào nhiễu.
             \end{enumerate}
         \end{block}
 
@@ -396,9 +389,6 @@
                 \item \textbf{Triển khai biên} --- xuất ensemble sang ONNX / TensorRT.
             \end{itemize}
         \end{block}
-        \vspace{0.15cm}
-        \begin{center}
-        \end{center}
     \end{columns}
 \end{frame}
 
@@ -460,6 +450,7 @@
         \item Diễn giải chi tiết kết quả Ablation
         \item So sánh ma trận nhầm lẫn giữa 4 backbone
         \item Grad-CAM hoạt động ra sao --- từ ảnh đến heatmap
+        \item Chiến lược huấn luyện --- Mixup/CutMix, Label Smoothing, Weighted Sampler, tối ưu hóa
     \end{enumerate}
     \end{multicols}
 \end{frame}
@@ -1181,6 +1172,40 @@
         Nhân mỗi kênh với $\alpha$ của nó rồi cộng lại: $L_c = \mathrm{ReLU}(\sum_k \alpha_c^k A^k)$. ReLU vứt phần âm (chỉ giữ ``bằng chứng ủng hộ MEL'', không giữ ``bằng chứng phản đối''). Phóng to heatmap $7 \times 7$ về $224 \times 224$, tô màu JET, overlay lên ảnh gốc.
     \end{block}
 
+\end{frame}
+
+% --- A28 ---
+\begin{frame}{A28. Chiến lược huấn luyện}
+    \begin{columns}[T]
+        \column{0.5\textwidth}
+        \begin{block}{Mixup \& CutMix\ \footnotesize($p = 0.5$ mỗi loại)}
+            \scriptsize
+            \textbf{Mixup:} $\tilde{x} = \lambda x_i + (1-\lambda) x_j$ với $\lambda \sim \mathrm{Beta}(0.2, 0.2)$.\\[2pt]
+            \textbf{CutMix:} dán patch ngẫu nhiên giữa hai ảnh, nhãn lai theo tỉ lệ diện tích.\\[3pt]
+            $\Rightarrow$ ngăn memorize sample hiếm, làm mịn ranh giới quyết định.
+        \end{block}
+
+        \begin{block}{Label Smoothing\ \footnotesize($\varepsilon = 0.1$)}
+            \scriptsize
+            $y_{\text{smooth}} = (1-\varepsilon) \cdot y_{\text{onehot}} + \varepsilon / C$\\[2pt]
+            $\Rightarrow$ giảm over-confidence, cải thiện calibration.
+        \end{block}
+
+        \column{0.5\textwidth}
+        \begin{block}{Weighted Random Sampler}
+            \scriptsize
+            Trọng số mỗi mẫu: $w_c = \dfrac{N}{C \cdot n_c}$\\[2pt]
+            Mỗi batch xấp xỉ cân bằng 7 lớp \textemdash{} tăng exposure cho DF/VASC.
+        \end{block}
+
+        \begin{block}{Cấu hình tối ưu}
+            \scriptsize
+            \textbf{Optimizer:} AdamW, cosine annealing $+$ linear warmup.\\
+            \textbf{Mixed precision:} FP16 (giảm $\sim$40\% bộ nhớ GPU).\\
+            \textbf{Gradient clipping:} $\|\nabla\|_{\max} = 1.0$.\\
+            \textbf{Early stopping:} patience $= 12$ epoch theo Macro F1.
+        \end{block}
+    \end{columns}
 \end{frame}
 
 % =====================  Slide cuối  =====================

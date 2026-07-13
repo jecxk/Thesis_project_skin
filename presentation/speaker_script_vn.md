@@ -2,7 +2,8 @@
 
 **Sinh viên:** Nguyễn Trọng Bách — 23BI14057
 **Mục tiêu:** ~10 phút thuyết trình + 15 phút trả lời câu hỏi
-**Bám sát:** `slides.pdf` sau khi tái cấu trúc ngày 2026-07-11
+**Bám sát:** `slides.pdf` sau khi tái cấu trúc ngày 2026-07-13 (thêm slide
+Tiền xử lý & Augmentation, chuyển slide Chiến lược huấn luyện xuống phụ lục A28)
 
 Đọc kịch bản một lần, sau đó **nói theo ý, đừng đọc thuộc lòng**. Mỗi slide có
 thời lượng gợi ý; nếu chậm, cắt các câu in nghiêng trước.
@@ -11,27 +12,28 @@ thời lượng gợi ý; nếu chậm, cắt các câu in nghiêng trước.
 
 ## Bảng phân bổ thời gian
 
-| Slide | Nội dung                                     | Đến phút |
-|:-----:|----------------------------------------------|:--------:|
-| 1     | Trang bìa                                     | 0:30     |
-| 2     | Nội dung trình bày                            | 0:45     |
-| 3     | Vấn đề & Mục tiêu                             | 1:45     |
-| 4     | Dữ liệu & Thách thức                          | 2:45     |
-| 5     | Pipeline tổng quan                            | 3:30     |
-| 6     | Bốn kiến trúc so sánh                         | 4:15     |
-| 7     | Chiến lược huấn luyện                         | 5:00     |
-| 8     | Mô hình đơn + Ensemble                        | 6:15     |
-| 9     | Ma trận nhầm lẫn                              | 7:00     |
-| 10    | Ablation                                      | 8:00     |
-| 11    | Grad-CAM + Streamlit                          | 9:00     |
-| 12    | Kết luận + Hướng phát triển                   | 9:45     |
-| 13    | Cảm ơn                                        | 10:00    |
+| Slide | Nội dung                                      | Đến phút |
+|:-----:|-----------------------------------------------|:--------:|
+| 1     | Trang bìa                                      | 0:20     |
+| 2     | Nội dung trình bày                             | 0:35     |
+| 3     | Vấn đề & Mục tiêu                              | 1:35     |
+| 4     | Dữ liệu & Thách thức                           | 2:35     |
+| 5     | Pipeline tổng quan                             | 3:10     |
+| 6     | Tiền xử lý & Augmentation                      | 4:00     |
+| 7     | Bốn kiến trúc so sánh                          | 4:40     |
+| 8     | Mô hình đơn + Ensemble                         | 5:50     |
+| 9     | Ma trận nhầm lẫn                               | 6:30     |
+| 10    | Ablation                                       | 7:25     |
+| 11    | Grad-CAM + Streamlit                           | 8:20     |
+| 12    | Kết luận + Hướng phát triển                    | 9:00     |
+| 13    | Câu hỏi và Thảo luận                           | 9:20     |
 
-Nhắm kết thúc đúng phút 10:00. Nếu chậm, bỏ các câu in nghiêng trước.
+Nhắm kết thúc trước phút 9:30, còn dư ~30 giây dự phòng. Nếu chậm, bỏ các
+câu in nghiêng trước.
 
 ---
 
-## Slide 1 — Trang bìa (30 s)
+## Slide 1 — Trang bìa (20 s)
 
 > "Kính thưa hội đồng, em là Nguyễn Trọng Bách, sinh viên K23 khoa Công nghệ
 > Thông tin và Truyền thông, Trường Đại học Khoa học và Công nghệ Hà Nội.
@@ -81,7 +83,8 @@ góp chính là lộ trình của cả bài.
 
 > "Bộ dữ liệu là ISIC 2018 Task 3, còn gọi là HAM10000: mười nghìn không
 > trăm mười lăm ảnh dermoscopy chia thành bảy lớp tổn thương, chia
-> 70 / 15 / 15 theo phương pháp stratified.
+> 70 / 15 / 15 theo phương pháp stratified — nghĩa là tỉ lệ bảy lớp ở cả ba
+> tập train, val, test đều giống hệt tỉ lệ gốc.
 >
 > Đặc trưng quan trọng nhất là mất cân bằng cực đoan: nốt ruồi lành NV
 > chiếm sáu mươi bảy phần trăm toàn bộ dữ liệu, trong khi dermatofibroma DF
@@ -96,69 +99,72 @@ góp chính là lộ trình của cả bài.
 > Bốn cơ chế đối phó trực tiếp với mất cân bằng: Weighted Sampler cân bằng
 > từng mini-batch, Mixup và CutMix làm mịn ranh giới quyết định, Label
 > Smoothing chống over-confidence, và Macro F1 là tiêu chí chọn checkpoint
-> tốt nhất."
+> tốt nhất. *Công thức chi tiết của bốn kỹ thuật này nằm ở phụ lục A28.*"
 
 **Cách nói:** con số 58:1 là điểm nhấn — nói chậm lại khi tới đó.
 
 ---
 
-## Slide 5 — Pipeline tổng quan (45 s)
+## Slide 5 — Pipeline tổng quan (35 s)
 
-> "Sơ đồ này tóm tắt toàn bộ pipeline trong một hình.
-> Ảnh dermoscopy thô đi qua tiền xử lý về kích thước hai trăm hai mươi tư
-> nhân hai trăm hai mươi tư, sau đó augmentation, rồi tới một trong bốn
-> backbone pretrained ImageNet, cuối cùng là classifier head đưa ra xác
-> suất bảy lớp.
+> "Sơ đồ này tóm tắt toàn bộ pipeline trong một hình: ảnh dermoscopy thô đi
+> qua tiền xử lý và augmentation, rồi tới một trong bốn backbone pretrained
+> ImageNet, cuối cùng là classifier head đưa ra xác suất bảy lớp.
 >
-> Quá trình huấn luyện dùng AdamW với cosine annealing, mixed-precision
-> FP16, gradient clipping và early stopping theo Macro F1. Cùng một công
-> thức được áp dụng cho cả bốn mô hình để giữ so sánh công bằng."
+> Hai slide tiếp theo sẽ đi vào chi tiết hai bước đầu — tiền xử lý dữ liệu
+> và augmentation — trước khi em nói về bốn kiến trúc."
 
-**Cách nói:** chỉ vào từng khối khi gọi tên. Đừng đi sâu — chi tiết ở hai
-slide tiếp theo.
+**Cách nói:** chỉ vào từng khối khi gọi tên. Đừng đi sâu — chi tiết ở slide
+kế tiếp.
 
 ---
 
-## Slide 6 — Bốn kiến trúc so sánh (45 s)
+## Slide 6 — Tiền xử lý & Augmentation (50 s)
+
+> "Trước khi vào mô hình, mỗi ảnh phải qua hai bước.
+>
+> Tiền xử lý áp dụng cho mọi tập — chỉ đơn giản là resize ảnh về hai trăm
+> hai mươi tư nhân hai trăm hai mươi tư, và chuẩn hóa theo mean, độ lệch
+> chuẩn của ImageNet vì cả bốn backbone đều pretrained trên ImageNet.
+>
+> Augmentation thì khác — chỉ áp dụng cho tập train, và chạy động mỗi
+> epoch, không lưu sẵn. Lý do: một số lớp bệnh chỉ có vài chục ảnh — như
+> Dermatofibroma chỉ tám mươi mốt ảnh train — nếu học đi học lại đúng
+> từng ấy ảnh, mô hình sẽ học vẹt thay vì học đặc điểm bệnh lý thật.
+>
+> Nên mỗi epoch, ảnh được biến đổi ngẫu nhiên: xoay, lật ngang dọc, phóng
+> to thu nhỏ một phần ảnh, đổi nhẹ màu sắc và độ sáng, làm mờ nhẹ, và che
+> đi một góc nhỏ. Ảnh minh họa dưới đây là ví dụ thật, chạy trên đúng code
+> của em — mỗi ô là một kỹ thuật riêng biệt.
+>
+> Nhờ vậy, mô hình không bao giờ thấy đúng một ảnh giống hệt hai lần trong
+> suốt quá trình huấn luyện."
+
+**Cách nói:** đây là slide có ảnh minh họa — dành 2-3 giây để hội đồng nhìn
+ảnh trước khi nói tiếp câu cuối. Nếu bị hỏi tại sao không dùng phép biến
+dạng mạnh hơn (shear, warp), trả lời: hình dạng/đường viền tổn thương là
+dấu hiệu chẩn đoán, không nên làm méo.
+
+---
+
+## Slide 7 — Bốn kiến trúc so sánh (40 s)
 
 > "Em so sánh bốn backbone. EfficientNet-B0 chỉ có năm phẩy ba triệu tham
 > số — CNN gọn nhẹ bắt tốt đặc trưng cục bộ. ResNet50 hai mươi lăm triệu
-> tham số — CNN sâu, baseline cổ điển. DenseNet121 tám triệu tham số — CNN
-> tận dụng feature reuse. Và Swin-Tiny hai mươi tám triệu — Vision
+> tham số — CNN sâu, kiến trúc kinh điển. DenseNet121 tám triệu tham số —
+> CNN tận dụng feature reuse. Và Swin-Tiny hai mươi tám triệu — Vision
 > Transformer cung cấp ngữ cảnh toàn cục.
 >
 > Cả bốn đều được fine-tune từ trọng số pretrained ImageNet qua thư viện
-> timm. Đầu ra được thay bằng một lớp Linear bảy đầu ra kèm dropout. Việc
-> chọn hỗn hợp CNN và Transformer là có chủ đích — nó cho ensemble những
-> lỗi không tương quan để khai thác."
+> timm. Việc chọn hỗn hợp CNN và Transformer là có chủ đích — nó cho
+> ensemble những lỗi không tương quan để khai thác."
 
 **Cách nói:** nhấn từ *không tương quan* — đây là lý do ensemble hoạt động.
-Giữ slide này ngắn gọn.
+Giữ slide này ngắn gọn, đừng đọc hết bảng.
 
 ---
 
-## Slide 7 — Chiến lược huấn luyện (45 s)
-
-> "Bên trái là khối chống mất cân bằng: Weighted Sampler với trọng số mỗi
-> mẫu bằng N chia cho C nhân n_c, giúp mỗi mini-batch cân bằng gần đúng.
-> Mixup tạo ảnh ảo bằng cách kết hợp tuyến tính hai ảnh, CutMix dán một
-> patch ngẫu nhiên thay vì trộn, còn Label Smoothing làm mềm nhãn one-hot
-> với epsilon bằng không phẩy một.
->
-> Bên phải là khối tối ưu: AdamW với cosine annealing và linear warmup,
-> mixed-precision FP16 tiết kiệm khoảng bốn mươi phần trăm bộ nhớ GPU,
-> gradient clipping tại norm bằng một, và early stopping với patience mười
-> hai epoch theo Macro F1. Batch size mười sáu, kích thước ảnh
-> hai trăm hai mươi tư.
->
-> *Siêu tham số cụ thể từng backbone — learning rate, weight decay, warmup
-> — nằm ở phụ lục A24.*"
-
-**Cách nói:** nếu còn thời gian thì nhắc câu in nghiêng, không thì bỏ qua.
-
----
-
-## Slide 8 — Mô hình đơn và Ensemble (75 s)
+## Slide 8 — Mô hình đơn và Ensemble (70 s)
 
 > "Đây là những con số chính trên tập test.
 >
@@ -175,8 +181,7 @@ Giữ slide này ngắn gọn.
 > lại toàn bộ pipeline qua năm hạt giống ngẫu nhiên. Ensemble ổn định ở mức
 > **tám mươi chín phẩy chín ba phần trăm, cộng trừ không phẩy sáu sáu**.
 > Kiểm định McNemar xác nhận ensemble vượt mọi backbone với p nhỏ hơn
-> mười mũ trừ bảy so với mô hình mạnh nhất, và nhỏ hơn mười mũ trừ ba mươi
-> tám so với mô hình yếu nhất.
+> mười mũ trừ bảy so với mô hình mạnh nhất.
 >
 > Soft voting hiệu quả ở đây vì các CNN bắt kết cấu cục bộ trong khi Swin
 > bắt cấu trúc toàn cục, nên lỗi của chúng phần lớn không tương quan. Trung
@@ -188,7 +193,7 @@ sau khi nói p-value McNemar. Nhìn hội đồng, đừng nhìn slide.
 
 ---
 
-## Slide 9 — Ma trận nhầm lẫn (45 s)
+## Slide 9 — Ma trận nhầm lẫn (40 s)
 
 > "Ma trận nhầm lẫn xác nhận ba tính chất quan trọng.
 >
@@ -198,25 +203,23 @@ sau khi nói p-value McNemar. Nhìn hội đồng, đừng nhìn slide.
 > hợp với Weighted Sampler.
 >
 > Thứ hai, nhầm lẫn còn lại tập trung ở cụm Melanoma, Nevus và Benign
-> Keratosis — ba lớp thực sự có hình thái tương đồng. Đây là cụm khó nhất
-> của ISIC 2018.
+> Keratosis — ba lớp thực sự có hình thái tương đồng.
 >
-> Thứ ba, và quan trọng nhất: không có lớp nào bị bỏ rơi. Lỗi kinh điển
-> của phân loại mất cân bằng — quên hẳn các lớp minority — không xảy ra
-> ở đây."
+> Thứ ba, và quan trọng nhất: không có lớp nào bị bỏ rơi — lỗi kinh điển
+> của phân loại mất cân bằng không xảy ra ở đây."
 
 **Cách nói:** dùng bút chỉ, dẫn hội đồng đi qua đường chéo ngắn gọn.
 
 ---
 
-## Slide 10 — Ablation (60 s)
+## Slide 10 — Ablation (55 s)
 
 > "Để đo đóng góp của từng thành phần, em bỏ từng thứ một khỏi baseline
 > EfficientNet-B0 rồi huấn luyện lại.
 >
 > Full pipeline đạt Macro F1 không phẩy tám ba một. Bỏ Mixup và CutMix
 > làm F1 giảm bốn phẩy năm phần trăm — đây là đòn bẩy lớn nhất, vì với chỉ
-> tám mươi mốt ảnh DF mô hình sẽ ngay lập tức memorize các mẫu hiếm nếu
+> tám mươi mốt ảnh DF, mô hình sẽ ngay lập tức memorize các mẫu hiếm nếu
 > không có Mixup.
 >
 > Bỏ Label Smoothing thì AUC tăng nhưng F1 giảm ba phẩy một phần trăm —
@@ -226,39 +229,37 @@ sau khi nói p-value McNemar. Nhìn hội đồng, đừng nhìn slide.
 > giảm — các lớp minority đang bị bỏ rơi. Đây chính xác là lý do vì sao em
 > không dùng Accuracy làm tiêu chí chính.
 >
-> Mọi thành phần đều đóng góp dương cho Macro F1 — không có module thừa.
-> *Diễn giải chi tiết từng dòng ablation nằm ở phụ lục A25.*"
+> Mọi thành phần đều đóng góp dương cho Macro F1 — không có module thừa."
 
 **Cách nói:** câu *"Accuracy không phải tiêu chí chính"* là phát biểu
 phương pháp luận cốt lõi — nói chậm lại khi tới câu này.
 
 ---
 
-## Slide 11 — Grad-CAM + Streamlit (60 s)
+## Slide 11 — Grad-CAM + Streamlit (55 s)
 
 > "Khả diễn giải khép lại vòng lặp giữa mô hình và bác sĩ. Grad-CAM tạo
 > heatmap từ lớp convolution cuối, có trọng số theo gradient của lớp được
 > dự đoán — hiển thị đúng những pixel khiến mô hình đưa ra quyết định.
 >
 > Trên ảnh melanoma mẫu này, cả bốn mô hình đều tập trung vào ổ sắc tố
-> trung tâm chứ không phải nền, không phải lông, không phải bọt gel — cơ sở
-> để bác sĩ có thể tin cậy hệ thống. Và quan trọng, em không dừng ở đánh
-> giá định tính: chỉ số focus-ratio của Grad-CAM đều lớn hơn không phẩy sáu
-> trên cả bốn backbone — một minh chứng định lượng.
+> trung tâm chứ không phải nền, không phải lông, không phải bọt gel. Và
+> quan trọng, em không dừng ở đánh giá định tính: chỉ số focus-ratio của
+> Grad-CAM đều lớn hơn không phẩy sáu trên cả bốn backbone — một minh
+> chứng định lượng.
 >
 > Prototype Streamlit đưa toàn bộ điều đó thành một công cụ trực tiếp: bác
 > sĩ upload ảnh, hệ thống trả về xác suất bảy lớp cùng heatmap Grad-CAM
-> trong dưới hai giây. Người dùng có thể chọn mô hình dùng để phân loại
-> và mô hình hiển thị trong heatmap. Ứng dụng đóng vai trò **second opinion**
-> cho bác sĩ — xác suất kèm bằng chứng trực quan, không bao giờ thay thế
-> chẩn đoán."
+> trong dưới hai giây. Người dùng có thể chọn mô hình dùng để phân loại —
+> ensemble hoặc từng backbone riêng — và mô hình hiển thị trong heatmap."
 
-**Cách nói:** cụm *"second opinion, không bao giờ thay thế"* là điểm neo
-đạo đức của toàn khoá luận. Nói chậm lại.
+**Cách nói:** nếu hội đồng hỏi "ứng dụng thực tế có thay thế bác sĩ được
+không", trả lời rõ: đây là công cụ hỗ trợ tham khảo, không thay thế chẩn
+đoán y khoa. Đừng để bị hiểu nhầm là hệ thống chẩn đoán độc lập.
 
 ---
 
-## Slide 12 — Kết luận + Hướng phát triển (45 s)
+## Slide 12 — Kết luận + Hướng phát triển (40 s)
 
 > "Tóm tắt năm đóng góp chính: ensemble đạt tám mươi chín phẩy bốn chín
 > phần trăm Accuracy và không phẩy chín tám AUC — ngang tầm SOTA cho các
@@ -271,20 +272,17 @@ phương pháp luận cốt lõi — nói chậm lại khi tới câu này.
 > Bốn hướng phát triển: domain adaptation cho ảnh smartphone — chủ đề em
 > đã khám phá ở phụ lục A23; open-set detection để mô hình biết đánh dấu
 > input không phải tổn thương da; active learning loop để bác sĩ sửa nhãn
-> sai; và triển khai biên qua ONNX hoặc TensorRT.
->
-> Thông điệp em muốn để lại: một pipeline được điều chuẩn cẩn thận có thể
-> thu hẹp phần lớn khoảng cách giữa mô hình nhẹ và mô hình lớn trên dữ liệu
-> y tế hạn chế."
+> sai; và triển khai biên qua ONNX hoặc TensorRT."
 
 **Cách nói:** đây là đoạn kết — nói với sự tự tin, nhìn từng thành viên
 hội đồng.
 
 ---
 
-## Slide 13 — Cảm ơn (30 s)
+## Slide 13 — Câu hỏi và Thảo luận (20 s)
 
-> "Em xin cảm ơn hội đồng đã lắng nghe. Em sẵn sàng đón nhận các câu hỏi."
+> "Em xin cảm ơn hội đồng đã lắng nghe. Em sẵn sàng đón nhận các câu hỏi và
+> thảo luận thêm."
 
 **Cách nói:** mỉm cười, đứng thẳng, tay thả tự nhiên. Chờ câu hỏi đầu tiên
 — đừng lấp khoảng lặng.
@@ -293,8 +291,8 @@ hội đồng.
 
 ## Kế hoạch dự phòng
 
-- **Nếu chậm (đã qua 8:00 mà mới tới slide 8):** bỏ các câu in nghiêng,
-  rút slide 6 và 7 còn 30 s mỗi cái, vẫn kết thúc slide 12 đúng 10:00.
+- **Nếu chậm (đã qua 7:00 mà mới tới slide 8):** bỏ các câu in nghiêng,
+  rút slide 6 và 7 còn 25 s mỗi cái, vẫn kết thúc slide 12 trước 9:30.
 - **Nếu hội đồng ngắt hỏi giữa bài:** trả lời ngắn gọn và đánh dấu chỗ
   đang trình bày. Đừng làm lại từ đầu phần đó.
 - **Nếu hội đồng yêu cầu demo Streamlit giữa bài:** lịch sự nói *"Em có
@@ -311,6 +309,10 @@ Mười câu hỏi có khả năng nhất, kèm gợi ý trả lời, nằm tron
 - Câu 5: Ảnh ngoài 7 lớp thì sao?
 - Câu 6: Bao nhiêu melanoma bị bỏ sót?
 - Câu 9: Bias về màu da tối — bối cảnh Việt Nam.
+
+Nếu hội đồng hỏi sâu về công thức Mixup/CutMix, Label Smoothing, Weighted
+Sampler, hoặc cấu hình tối ưu (AdamW, mixed-precision, gradient clipping,
+early stopping) — toàn bộ nằm ở **phụ lục A28**, không còn ở slide chính.
 
 ## Hai điều bị cấm
 

@@ -117,7 +117,7 @@
             \item Imbalance-aware training pipeline.
             \item Fair comparison of 3 CNNs + 1 Transformer.
             \item Soft-voting ensemble that beats every single model.
-            \item Grad-CAM + Streamlit demo for clinical trust.
+            \item Grad-CAM visual explanations for clinical trust.
         \end{enumerate}
     \end{columns}
 \end{frame}
@@ -183,65 +183,59 @@
 \end{frame}
 
 \begin{frame}{Methodology}
+    \framesubtitle{Data Preprocessing and Training Augmentation}
+    \footnotesize
+    \begin{columns}[T]
+        \column{0.5\textwidth}
+        \begin{block}{Preprocessing (all splits)}
+            \footnotesize
+            \begin{itemize}
+                \item Resize to $224 \times 224$, normalize with ImageNet mean/std.
+                \item Stratified $70/15/15$ split --- train/val/test keep the same class ratios.
+            \end{itemize}
+        \end{block}
+
+        \column{0.5\textwidth}
+        \begin{block}{Augmentation (train only, online)}
+            \footnotesize
+            \begin{itemize}
+                \item RandomResizedCrop, horizontal $+$ vertical flip, rotation ($\pm 90^\circ$).
+                \item ColorJitter ($0.25$), Gaussian Blur ($p=0.1$), Random Erasing ($p=0.1$).
+            \end{itemize}
+        \end{block}
+    \end{columns}
+    \begin{figure}
+        \centering
+        \includegraphics[height=4.0cm,keepaspectratio]{../thesis/figures/augmentation_examples.png}
+    \end{figure}
+\end{frame}
+
+\begin{frame}{Methodology}
     \framesubtitle{The Four Architectures Compared}
     \scriptsize
     \begin{table}[]
         \centering
-        \begin{tabular}{lcll}
+        \begin{tabular}{lcl}
         \toprule
         \rowcolor{usthblue!25}
-        \textbf{Model} & \textbf{Params} & \textbf{Design principle} & \textbf{Role in the ensemble} \\
+        \textbf{Model} & \textbf{Params} & \textbf{Role in the ensemble} \\
         \midrule
-        EfficientNet-B0 & 5.3M  & MBConv $+$ SE, compound scaling           & Compact CNN, fine local features \\
-        ResNet50        & 25.6M & Bottleneck residual                       & Deep CNN, classical baseline     \\
-        DenseNet121     & 8.0M  & Dense connectivity, feature reuse         & CNN exploiting feature reuse     \\
-        Swin-Tiny       & 28.0M & Shifted-window self-attention             & Vision Transformer, global context \\
+        EfficientNet-B0 & 5.3M  & Compact CNN, fine local features \\
+        ResNet50        & 25.6M & Deep CNN, classical baseline     \\
+        DenseNet121     & 8.0M  & CNN exploiting feature reuse     \\
+        Swin-Tiny       & 28.0M & Vision Transformer, global context \\
         \bottomrule
         \end{tabular}
     \end{table}
 
-    \vspace{0.3cm}
     \footnotesize
-    \begin{itemize}
-        \item All models are \textbf{fine-tuned from ImageNet pretrained weights} through the \texttt{timm} library.
-        \item The output head is replaced by \texttt{Linear($d$, 7)}, with dropout 0.25--0.30 before the classifier.
-        \item The four diverse backbones allow the ensemble to exploit \textbf{uncorrelated errors} between CNNs and the Transformer.
-    \end{itemize}
-\end{frame}
+    All four are \textbf{fine-tuned from ImageNet pretrained weights} via \texttt{timm}; the diverse mix of CNNs and Transformer gives the ensemble \textbf{uncorrelated errors} to exploit.
 
-\begin{frame}{Methodology}
-    \framesubtitle{Training Strategy}
-    \begin{columns}[T]
-        \column{0.5\textwidth}
-        \begin{block}{Mixup \& CutMix\ \footnotesize($p = 0.5$ each)}
-            \scriptsize
-            \textbf{Mixup:} $\tilde{x} = \lambda x_i + (1-\lambda) x_j$ with $\lambda \sim \mathrm{Beta}(0.2, 0.2)$.\\[2pt]
-            \textbf{CutMix:} paste a random patch between two images, the mixed label follows the area ratio.\\[3pt]
-            $\Rightarrow$ prevents memorising rare samples and smooths decision boundaries.
-        \end{block}
-
-        \begin{block}{Label Smoothing\ \footnotesize($\varepsilon = 0.1$)}
-            \scriptsize
-            $y_{\text{smooth}} = (1-\varepsilon) \cdot y_{\text{onehot}} + \varepsilon / C$\\[2pt]
-            $\Rightarrow$ reduces over-confidence, improves calibration.
-        \end{block}
-
-        \column{0.5\textwidth}
-        \begin{block}{Weighted Random Sampler}
-            \scriptsize
-            Per-sample weight: $w_c = \dfrac{N}{C \cdot n_c}$\\[2pt]
-            Each batch is approximately balanced across the 7 classes \textemdash{} boosting exposure to DF/VASC.
-        \end{block}
-
-        \begin{block}{Optimisation setup}
-            \scriptsize
-            \textbf{Optimizer:} AdamW, cosine annealing $+$ linear warmup.\\
-            \textbf{Mixed precision:} FP16 (about $-40\%$ GPU memory).\\
-            \textbf{Gradient clipping:} $\|\nabla\|_{\max} = 1.0$.\\
-            \textbf{Early stopping:} patience $= 12$ epochs on Macro F1.
-        \end{block}
-    \end{columns}
-    \vspace{0.15cm}
+    \begin{figure}
+        \centering
+        \includegraphics[height=3.0cm,keepaspectratio]{../thesis/figures_new/training_loss_all_models.png}
+        \caption*{\scriptsize Swin-Tiny stops earliest (epoch 13/25) --- an early sign of overfitting.}
+    \end{figure}
 \end{frame}
 
 % =========================================================
@@ -342,7 +336,7 @@
 \section{Interpretability and Application}
 % =========================================================
 \begin{frame}{Interpretability and Application}
-    \framesubtitle{Grad-CAM and the Streamlit Demo}
+    \framesubtitle{Grad-CAM --- Visual Explanation}
     \begin{columns}[T]
         \column{0.5\textwidth}
         \begin{figure}
@@ -356,10 +350,9 @@
         \footnotesize
         \textbf{Grad-CAM shows the ``reason'' behind each prediction} --- a heatmap of the last convolutional layer, weighted by the gradient with respect to the predicted class. Heatmaps correctly localise the lesion for all four models, robust against hair, gel bubbles and dark corners.
         \vspace{0.15cm}
-        \begin{block}{Streamlit prototype}
+        \begin{block}{Quantitative validation}
             \scriptsize
-            Upload an image $\Rightarrow$ 7-class probabilities and a Grad-CAM heatmap in $<$2 seconds. The user can pick the backbone used for classification (ensemble or any single model) and the backbone shown in the heatmap.\\[2pt]
-            \texttt{streamlit run app.py} $\rightarrow$ \texttt{localhost:8501}
+            Beyond visual inspection: on the test set, more than \textbf{60\% of each heatmap's ``hottest'' area} falls inside the actual lesion --- for all four models, not on surrounding skin.
         \end{block}
     \end{columns}
 \end{frame}
@@ -377,8 +370,7 @@
                 \item Ensemble reaches \textbf{89.49\%} Accuracy and \textbf{0.980} AUC --- SOTA-level on ISIC 2018 image-only.
                 \item Robust across seeds: \textbf{89.93 $\pm$ 0.66\%}, McNemar $p < 10^{-7}$.
                 \item Every ablated component contributes positively.
-                \item Grad-CAM \texttt{focus\_ratio} $> 0.6$ --- the model attends to the lesion, not artefacts.
-                \item Working Streamlit prototype for clinicians.
+                \item Grad-CAM heatmaps stay focused on the lesion --- over 60\% of the ``hot'' area lands inside it, not on artefacts.
             \end{enumerate}
         \end{block}
 
@@ -392,9 +384,6 @@
                 \item \textbf{Edge deployment} --- ONNX / TensorRT export.
             \end{itemize}
         \end{block}
-        \vspace{0.15cm}
-        \begin{center}
-        \end{center}
     \end{columns}
 \end{frame}
 
@@ -456,6 +445,7 @@
         \item Detailed ablation interpretation
         \item Confusion matrix comparison across all four backbones
         \item Grad-CAM in action --- from image to heatmap
+        \item Training strategy --- Mixup/CutMix, Label Smoothing, Weighted Sampler, optimisation
     \end{enumerate}
     \end{multicols}
 \end{frame}
@@ -1178,6 +1168,40 @@
         Multiply each channel by its $\alpha$ and add them up: $L_c = \mathrm{ReLU}(\sum_k \alpha_c^k A^k)$. ReLU discards the negative parts (only ``evidence for MEL'', never ``evidence against''). Upsample the resulting $7 \times 7$ heatmap back to $224 \times 224$, colour it with JET, blend over the original image.
     \end{block}
 
+\end{frame}
+
+% --- A28 ---
+\begin{frame}{A28. Training Strategy}
+    \begin{columns}[T]
+        \column{0.5\textwidth}
+        \begin{block}{Mixup \& CutMix\ \footnotesize($p = 0.5$ each)}
+            \scriptsize
+            \textbf{Mixup:} $\tilde{x} = \lambda x_i + (1-\lambda) x_j$ with $\lambda \sim \mathrm{Beta}(0.2, 0.2)$.\\[2pt]
+            \textbf{CutMix:} paste a random patch between two images, the mixed label follows the area ratio.\\[3pt]
+            $\Rightarrow$ prevents memorising rare samples and smooths decision boundaries.
+        \end{block}
+
+        \begin{block}{Label Smoothing\ \footnotesize($\varepsilon = 0.1$)}
+            \scriptsize
+            $y_{\text{smooth}} = (1-\varepsilon) \cdot y_{\text{onehot}} + \varepsilon / C$\\[2pt]
+            $\Rightarrow$ reduces over-confidence, improves calibration.
+        \end{block}
+
+        \column{0.5\textwidth}
+        \begin{block}{Weighted Random Sampler}
+            \scriptsize
+            Per-sample weight: $w_c = \dfrac{N}{C \cdot n_c}$\\[2pt]
+            Each batch is approximately balanced across the 7 classes \textemdash{} boosting exposure to DF/VASC.
+        \end{block}
+
+        \begin{block}{Optimisation setup}
+            \scriptsize
+            \textbf{Optimizer:} AdamW, cosine annealing $+$ linear warmup.\\
+            \textbf{Mixed precision:} FP16 (about $-40\%$ GPU memory).\\
+            \textbf{Gradient clipping:} $\|\nabla\|_{\max} = 1.0$.\\
+            \textbf{Early stopping:} patience $= 12$ epochs on Macro F1.
+        \end{block}
+    \end{columns}
 \end{frame}
 
 % =====================  Final slide  =====================

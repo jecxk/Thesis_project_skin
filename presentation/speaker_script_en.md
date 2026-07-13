@@ -2,7 +2,9 @@
 
 **Author:** Nguyen Trong Bach — 23BI14057
 **Target:** ~10 minutes of talk + 15 minutes of Q&A
-**Aligned to:** `slides_en.pdf` after the 2026-07-11 restructure
+**Aligned to:** `slides_en.pdf` after the 2026-07-13 restructure (added a
+Preprocessing & Augmentation slide, moved the Training Strategy slide to
+appendix A28)
 
 Read this once, then **speak the ideas, not the sentences**. Every slide has a
 target duration; if you fall behind, drop the italic sentences first.
@@ -13,25 +15,26 @@ target duration; if you fall behind, drop the italic sentences first.
 
 | Slide | Content                                         | Cumulative |
 |:-----:|-------------------------------------------------|:----------:|
-| 1     | Title                                            | 0:30       |
-| 2     | Outline                                          | 0:45       |
-| 3     | Problem & Objectives                             | 1:45       |
-| 4     | Data & Challenges                                | 2:45       |
-| 5     | Pipeline overview                                | 3:30       |
-| 6     | Four architectures                               | 4:15       |
-| 7     | Training recipe                                  | 5:00       |
-| 8     | Single models + Ensemble                         | 6:15       |
-| 9     | Confusion matrix                                 | 7:00       |
-| 10    | Ablation                                         | 8:00       |
-| 11    | Grad-CAM + Streamlit                             | 9:00       |
-| 12    | Conclusion + Future Work                         | 9:45       |
-| 13    | Thank you                                        | 10:00      |
+| 1     | Title                                            | 0:20       |
+| 2     | Outline                                          | 0:35       |
+| 3     | Problem & Objectives                             | 1:35       |
+| 4     | Data & Challenges                                | 2:35       |
+| 5     | Pipeline overview                                | 3:10       |
+| 6     | Preprocessing & Augmentation                     | 4:00       |
+| 7     | Four architectures                               | 4:40       |
+| 8     | Single models + Ensemble                         | 5:50       |
+| 9     | Confusion matrix                                 | 6:30       |
+| 10    | Ablation                                         | 7:25       |
+| 11    | Grad-CAM + Streamlit                             | 8:20       |
+| 12    | Conclusion + Future Work                         | 9:00       |
+| 13    | Questions and Discussion                         | 9:20       |
 
-Aim to finish at minute 10:00 sharp. If time is tight, cut the italic sentences.
+Aim to finish by 9:30, leaving ~30 seconds of buffer. If time is tight, cut
+the italic sentences first.
 
 ---
 
-## Slide 1 — Title (30 s)
+## Slide 1 — Title (20 s)
 
 > "Good morning, distinguished members of the committee.
 > My name is Nguyen Trong Bach, from cohort K23 of the University of Science
@@ -80,7 +83,8 @@ The four contributions are the roadmap for the rest of the talk.
 
 > "The dataset is ISIC 2018 Task 3, also known as HAM10000: ten thousand
 > fifteen dermoscopy images across seven lesion classes, split 70/15/15 in a
-> stratified manner.
+> stratified manner — meaning the class ratios in train, val and test all
+> match the original distribution.
 >
 > The critical property of this dataset is its extreme imbalance: melanocytic
 > nevi make up sixty-seven percent of all images, while dermatofibroma sits
@@ -94,68 +98,77 @@ The four contributions are the roadmap for the rest of the talk.
 > Four mechanisms address the imbalance directly: a Weighted Sampler to
 > balance each mini-batch, Mixup and CutMix to smooth decision boundaries,
 > Label Smoothing to reduce over-confidence, and Macro F1 as the criterion
-> for selecting the best checkpoint."
+> for selecting the best checkpoint. *The formulas behind these four
+> techniques are in appendix A28.*"
 
 **Delivery:** the 58:1 number is the punchline — slow down when you say it.
 
 ---
 
-## Slide 5 — Pipeline Overview (45 s)
+## Slide 5 — Pipeline Overview (35 s)
 
-> "This diagram summarises the end-to-end pipeline in one picture.
-> A raw dermoscopy image goes through preprocessing at two-twenty-four by
-> two-twenty-four, then augmentation, then one of the four ImageNet-pretrained
-> backbones, then a classifier head that outputs seven class probabilities.
+> "This diagram summarises the end-to-end pipeline in one picture: a raw
+> dermoscopy image goes through preprocessing and augmentation, then one of
+> the four ImageNet-pretrained backbones, then a classifier head that outputs
+> seven class probabilities.
 >
-> Training uses AdamW with cosine annealing, mixed-precision FP16, gradient
-> clipping, and early stopping on Macro F1. The same recipe is applied to
-> all four models to keep the comparison fair."
+> The next slide zooms into the first two steps — preprocessing and
+> augmentation — before I move on to the four architectures."
 
 **Delivery:** point at each block as you name it. Do not go deeper — details
-follow on the next two slides.
+follow on the next slide.
 
 ---
 
-## Slide 6 — Four Architectures (45 s)
+## Slide 6 — Preprocessing & Augmentation (50 s)
+
+> "Before any image reaches the model, it passes through two stages.
+>
+> Preprocessing applies to every split — simply resizing to two-twenty-four
+> by two-twenty-four and normalising with ImageNet statistics, since all four
+> backbones are ImageNet-pretrained.
+>
+> Augmentation is different — it only applies to the training set, and it
+> runs fresh every epoch, nothing is precomputed. The reason: some classes
+> have only a few dozen images — Dermatofibroma has just eighty-one training
+> images — so training on the exact same pixels over and over would make the
+> model memorise those specific images instead of learning the underlying
+> pathology.
+>
+> So every epoch, each image is randomly transformed: rotated, flipped
+> horizontally and vertically, cropped and resized, jittered slightly in
+> colour and brightness, softly blurred, and partially erased. The figure
+> below is generated from the project's actual code — each panel is one
+> isolated technique.
+>
+> As a result, the model never sees the exact same image twice during the
+> entire training run."
+
+**Delivery:** this slide has a figure — give the committee 2-3 seconds to
+look at it before your closing sentence. If asked why no strong geometric
+warping (shear, perspective) is used, answer: the lesion's shape and border
+irregularity is itself a diagnostic signal, so it should not be distorted.
+
+---
+
+## Slide 7 — Four Architectures (40 s)
 
 > "Four backbones are compared. EfficientNet-B0 with only five point three
 > million parameters — a compact CNN that captures fine local features.
-> ResNet50 with twenty-five million — a deeper classical baseline. DenseNet121
+> ResNet50 with twenty-five million — a deeper classical CNN. DenseNet121
 > with eight million — a CNN that exploits feature reuse. And Swin-Tiny with
 > twenty-eight million — a Vision Transformer providing global context.
 >
-> All four are fine-tuned from ImageNet weights through the timm library. The
-> classifier head is replaced with a linear layer of seven outputs plus
-> dropout. The mix of CNN and Transformer architectures is deliberate — it
-> gives the ensemble uncorrelated errors to exploit."
+> All four are fine-tuned from ImageNet weights through the timm library.
+> The mix of CNN and Transformer architectures is deliberate — it gives the
+> ensemble uncorrelated errors to exploit."
 
-**Delivery:** emphasise the word *uncorrelated* — it is the reason the ensemble
-works. Keep this slide brief.
-
----
-
-## Slide 7 — Training Recipe (45 s)
-
-> "On the left, the anti-imbalance block: Weighted Sampler with per-sample
-> weight N over C times n_c, so every mini-batch is approximately balanced.
-> Mixup produces virtual training samples by linearly combining two images,
-> CutMix pastes a random patch instead, and Label Smoothing softens the
-> one-hot target with epsilon zero point one.
->
-> On the right, the optimisation block: AdamW with cosine annealing and
-> linear warmup, mixed-precision FP16 for roughly forty percent less GPU
-> memory, gradient clipping at norm one, and early stopping with patience
-> twelve on Macro F1. Batch size is sixteen and input size is two-twenty-four.
->
-> *Per-backbone hyperparameters — learning rates, weight decay, warmup — are
-> in appendix A24.*"
-
-**Delivery:** if you are on time, mention the italic sentence casually. If
-running behind, skip it entirely.
+**Delivery:** emphasise the word *uncorrelated* — it is the reason the
+ensemble works. Keep this slide brief, do not read the whole table.
 
 ---
 
-## Slide 8 — Single Models and the Ensemble (75 s)
+## Slide 8 — Single Models and the Ensemble (70 s)
 
 > "Here are the headline numbers on the test set.
 >
@@ -173,8 +186,7 @@ running behind, skip it entirely.
 > pipeline across five random seeds. The ensemble stays at
 > **eighty-nine point nine three percent, plus or minus zero point six six**.
 > McNemar's paired test confirms the ensemble beats every single backbone
-> with p less than ten to the minus seven against the strongest, and less
-> than ten to the minus thirty-eight against the weakest.
+> with p less than ten to the minus seven against the strongest model.
 >
 > Soft voting works here because the CNN family captures local textures
 > while Swin captures global structure, so their errors are largely
@@ -186,7 +198,7 @@ after the McNemar p-value. Look at the committee, not the slide.
 
 ---
 
-## Slide 9 — Confusion Matrix (45 s)
+## Slide 9 — Confusion Matrix (40 s)
 
 > "The confusion matrix confirms three important properties.
 >
@@ -197,18 +209,16 @@ after the McNemar p-value. Look at the committee, not the slide.
 >
 > Second, the residual confusion sits in the Melanoma, Nevus and
 > Benign-Keratosis cluster — three classes that genuinely share morphology.
-> This is the hardest cluster in ISIC 2018.
 >
 > Third, and most important: no class collapses. The classic failure mode of
-> imbalanced classification — where the minority classes are simply forgotten
-> — does not happen here."
+> imbalanced classification does not happen here."
 
 **Delivery:** use the pointer, walk the committee across the diagonal
-row by row briefly.
+briefly.
 
 ---
 
-## Slide 10 — Ablation (60 s)
+## Slide 10 — Ablation (55 s)
 
 > "To measure the contribution of each component, I removed one at a time
 > from the EfficientNet-B0 baseline and re-trained.
@@ -226,14 +236,14 @@ row by row briefly.
 > Accuracy is not the primary criterion.
 >
 > Every component contributes positively to Macro F1 — no module is
-> redundant. *The detailed narrative of each ablation is in appendix A25.*"
+> redundant."
 
 **Delivery:** the phrase *"Accuracy is not the primary criterion"* is a key
 methodological statement — slow down when saying it.
 
 ---
 
-## Slide 11 — Grad-CAM + Streamlit (60 s)
+## Slide 11 — Grad-CAM + Streamlit (55 s)
 
 > "Interpretability closes the loop from model back to clinician. Grad-CAM
 > produces a heatmap of the last convolutional layer, weighted by the
@@ -241,24 +251,23 @@ methodological statement — slow down when saying it.
 > pixels made the model decide.
 >
 > On this melanoma sample, all four models attend to the central pigmented
-> region rather than to the background, the hair, or the gel bubbles — a
-> foundation for clinical trust. And critically, I do not stop at
-> qualitative inspection: Grad-CAM focus-ratio is above zero point six for
-> every backbone — a quantitative validation.
+> region rather than to the background, the hair, or the gel bubbles. And
+> critically, I do not stop at qualitative inspection: Grad-CAM focus-ratio
+> is above zero point six for every backbone — a quantitative validation.
 >
 > The Streamlit prototype puts this into a live tool: the clinician uploads
 > an image and receives seven-class probabilities plus a Grad-CAM heatmap in
-> under two seconds. The user can switch which model classifies the image
-> and which model is shown in the heatmap. The application is a **second
-> opinion** for the clinician — probabilities and visual evidence, never a
-> replacement."
+> under two seconds. The user can switch which model classifies the image —
+> the ensemble or any single backbone — and which model is shown in the
+> heatmap."
 
-**Delivery:** the phrase *"second opinion, never a replacement"* is the
-ethical anchor of the whole thesis. Slow it down.
+**Delivery:** if asked whether the tool could replace a clinician, answer
+clearly: it is a reference/support tool, not a replacement for medical
+diagnosis. Do not let it be understood as a standalone diagnostic system.
 
 ---
 
-## Slide 12 — Conclusion + Future Work (45 s)
+## Slide 12 — Conclusion + Future Work (40 s)
 
 > "To summarise the five key contributions: the ensemble reaches
 > eighty-nine point four nine percent Accuracy and zero point nine eight
@@ -272,19 +281,16 @@ ethical anchor of the whole thesis. Slow it down.
 > — a topic I explore in appendix A23; open-set detection so the model can
 > flag inputs that are not skin lesions; an active-learning loop where
 > clinicians correct mispredictions; and edge deployment through ONNX or
-> TensorRT.
->
-> The take-away message is that a carefully tuned pipeline can close most
-> of the gap between light and heavy models on a small medical dataset."
+> TensorRT."
 
 **Delivery:** this is the closing summary — deliver it with confidence, look
 at every committee member in turn.
 
 ---
 
-## Slide 13 — Thank you (30 s)
+## Slide 13 — Questions and Discussion (20 s)
 
-> "Thank you for your attention. I am ready for your questions."
+> "Thank you for your attention. I welcome your questions and discussion."
 
 **Delivery:** smile, stand straight, hands relaxed. Wait for the first
 question — do not fill the silence.
@@ -293,8 +299,8 @@ question — do not fill the silence.
 
 ## Contingency notes
 
-- **Behind schedule (over 8:00 at slide 8):** drop the italic sentences,
-  compress slides 6 and 7 into 30 s each, still finish slide 12 by 10:00.
+- **Behind schedule (over 6:30 at slide 8):** drop the italic sentences,
+  compress slides 6 and 7 into 25 s each, still finish slide 12 by 9:30.
 - **Committee interrupts with questions during the talk:** answer briefly
   and mark where you were. Do not restart the section.
 - **Streamlit demo requested during the talk:** politely say *"I have the
@@ -311,6 +317,11 @@ The ten most likely questions with model answers are in
 - Q5: What about images outside the seven classes?
 - Q6: How many melanoma false negatives?
 - Q9: Bias against darker skin tones — Vietnam context.
+
+If asked for the exact Mixup/CutMix, Label Smoothing, Weighted Sampler
+formulas, or the optimisation setup (AdamW, mixed-precision, gradient
+clipping, early stopping) — all of it now lives in **appendix A28**, not on
+a main slide.
 
 ## Two hard rules
 
