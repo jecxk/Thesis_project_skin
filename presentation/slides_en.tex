@@ -180,7 +180,6 @@
         \includegraphics[width=0.88\textwidth,height=0.72\textheight,keepaspectratio]{../thesis/figures/training_pipeline_cropped.png}
     \end{center}
     \vspace{0.15cm}
-    {\centering \scriptsize \textit{End-to-end pipeline: preprocessing, augmentation, weighted sampler, Mixup/CutMix, fine-tuning from pretrained weights, evaluation on the test set.}\par}
 \end{frame}
 
 \begin{frame}{Methodology}
@@ -243,7 +242,6 @@
         \end{block}
     \end{columns}
     \vspace{0.15cm}
-    {\centering \scriptsize \textit{Per-backbone hyperparameters (learning rate, weight decay, warmup): see appendix A24.}\par}
 \end{frame}
 
 % =========================================================
@@ -338,8 +336,6 @@
         \item \textbf{Mixup/CutMix} is the largest single lever ($-4.5$\% when removed).
         \item Bottom two rows show textbook \textbf{trade-offs}: dropping smoothing raises AUC, dropping augmentation raises Accuracy --- but Macro F1 always drops.
     \end{itemize}
-    \vspace{0.05cm}
-    {\centering \scriptsize \textit{Detailed interpretation of each ablation: see appendix A25.}\par}
 \end{frame}
 
 % =========================================================
@@ -365,8 +361,6 @@
             Upload an image $\Rightarrow$ 7-class probabilities and a Grad-CAM heatmap in $<$2 seconds. The user can pick the backbone used for classification (ensemble or any single model) and the backbone shown in the heatmap.\\[2pt]
             \texttt{streamlit run app.py} $\rightarrow$ \texttt{localhost:8501}
         \end{block}
-        \vspace{0.05cm}
-        {\scriptsize \textit{Role: a \textbf{second opinion} for clinicians --- probabilities plus visual evidence, never a replacement.}}
     \end{columns}
 \end{frame}
 
@@ -400,7 +394,6 @@
         \end{block}
         \vspace{0.15cm}
         \begin{center}
-        \scriptsize \textcolor{usthdark}{\textbf{Message:} a careful pipeline can close most of the gap between light and heavy models on a small medical dataset.}
         \end{center}
     \end{columns}
 \end{frame}
@@ -410,11 +403,10 @@
     \centering
     \vspace{1cm}
     {\Huge \textbf{\textcolor{usthblue}{Thank you for your attention!}}}\\[1cm]
-    {\Large \textcolor{usthdark}{I am ready for your questions}}\\[0.6cm]
+    {\Large \textcolor{usthdark}{Questions and Discussion}}\\[0.6cm]
     \begin{tikzpicture}
         \draw[usthblue, line width=1.5pt] (0,0) -- (8,0);
     \end{tikzpicture}\\[0.5cm]
-    \footnotesize \textit{A live demo of the Streamlit prototype is available on request.}\\[0.6cm]
     \includegraphics[height=1.5cm]{../thesis/figures/logo.png}
 \end{frame}
 
@@ -431,7 +423,6 @@
     \begin{tikzpicture}
         \draw[usthblue, line width=1.5pt] (0,0) -- (8,0);
     \end{tikzpicture}\\[0.5cm]
-    \footnotesize \textit{Reference slides for the Q\&A session.}
 \end{frame}
 
 \begin{frame}{Appendix --- Contents}
@@ -489,7 +480,6 @@
         \end{tabular}
     \end{table}
     \vspace{0.2cm}
-    \textit{In clinical practice the two priorities are: (1) detect MEL early and (2) distinguish BCC from benign lesions.}
 \end{frame}
 
 % --- A2 ---
@@ -795,7 +785,6 @@
             \item \textbf{DenseNet121:} the slowest to converge, best at epoch 49.
             \item \textbf{Swin-Tiny:} val loss climbs back up after epoch 13 while train loss keeps falling $\Rightarrow$ a textbook overfit.
         \end{itemize}
-        \textit{Early stopping with patience $= 12$ selects a checkpoint before the val-loss rebound.}
     \end{columns}
 \end{frame}
 
@@ -874,7 +863,6 @@
         \bottomrule
         \end{tabular}
     \end{table}
-    \textit{Lower Expected Calibration Error (ECE) $\Rightarrow$ probabilities are more trustworthy for clinical decisions.}
 \end{frame}
 
 % --- A17 ---
@@ -924,7 +912,6 @@
         \end{tabular}
     \end{table}
 
-    \textit{A real deployment lets clinicians pick a "high sensitivity" mode --- catch every suspicious MEL at the cost of more false alarms.}
 \end{frame}
 
 % --- A19 ---
@@ -1163,7 +1150,6 @@
         \includegraphics[width=\linewidth,height=3.4cm,keepaspectratio]{../thesis/figures/swin_confusion_matrix.png}
     \end{columns}
     \vspace{0.15cm}
-    \scriptsize \textit{Every model shares the same failure mode --- confusion inside the \textbf{MEL $\leftrightarrow$ NV $\leftrightarrow$ BKL} cluster --- but each fails differently, which is exactly why the soft-voting ensemble improves over any single one.}
 \end{frame}
 
 % --- A27 ---
@@ -1192,8 +1178,6 @@
         Multiply each channel by its $\alpha$ and add them up: $L_c = \mathrm{ReLU}(\sum_k \alpha_c^k A^k)$. ReLU discards the negative parts (only ``evidence for MEL'', never ``evidence against''). Upsample the resulting $7 \times 7$ heatmap back to $224 \times 224$, colour it with JET, blend over the original image.
     \end{block}
 
-    \vspace{0.1cm}
-    {\centering \scriptsize \textbf{One-line summary:} the heatmap answers ``\textit{which pixels, if brightened, would make the model more confident about the predicted class}''.\par}
 \end{frame}
 
 % =====================  Final slide  =====================
@@ -1204,7 +1188,6 @@
     \begin{tikzpicture}
         \draw[usthblue, line width=1.5pt] (0,0) -- (8,0);
     \end{tikzpicture}\\[1cm]
-    \footnotesize \textit{Nguyen Trong Bach --- 23BI14057 --- USTH ICT 2026}
 \end{frame}
 
 \end{document}

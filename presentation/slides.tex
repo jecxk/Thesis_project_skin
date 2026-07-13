@@ -184,7 +184,6 @@
         \includegraphics[width=0.88\textwidth,height=0.72\textheight,keepaspectratio]{../thesis/figures/training_pipeline_cropped.png}
     \end{center}
     \vspace{0.15cm}
-    {\centering \scriptsize \textit{Sơ đồ pipeline: tiền xử lý ảnh, augmentation, weighted sampler, Mixup/CutMix, fine-tune mô hình pretrained, đánh giá trên test set.}\par}
 \end{frame}
 
 \begin{frame}{Phương pháp}
@@ -247,7 +246,6 @@
         \end{block}
     \end{columns}
     \vspace{0.15cm}
-    {\centering \scriptsize \textit{Siêu tham số cụ thể từng backbone (learning rate, weight decay, warmup): xem phụ lục A24.}\par}
 \end{frame}
 
 % =========================================================
@@ -342,8 +340,6 @@
         \item \textbf{Mixup/CutMix} là đòn bẩy lớn nhất (giảm $-4.5$\% F1 khi bỏ).
         \item Hai hàng cuối là \textbf{trade-off kinh điển}: bỏ smoothing tăng AUC, bỏ aug mạnh tăng Accuracy --- nhưng Macro F1 luôn giảm.
     \end{itemize}
-    \vspace{0.05cm}
-    {\centering \scriptsize \textit{Diễn giải chi tiết từng dòng ablation: xem phụ lục A25.}\par}
 \end{frame}
 
 % =========================================================
@@ -369,8 +365,6 @@
             Upload ảnh $\Rightarrow$ xác suất 7 lớp và Grad-CAM trong $<$2 giây. Người dùng có thể chọn backbone dùng để phân loại (ensemble hoặc từng mô hình đơn) và backbone hiển thị Grad-CAM.\\[2pt]
             \texttt{streamlit run app.py} $\rightarrow$ \texttt{localhost:8501}
         \end{block}
-        \vspace{0.05cm}
-        {\scriptsize \textit{Vai trò: \textbf{second opinion} cho bác sĩ --- xác suất kèm bằng chứng trực quan, không thay thế chẩn đoán.}}
     \end{columns}
 \end{frame}
 
@@ -404,7 +398,6 @@
         \end{block}
         \vspace{0.15cm}
         \begin{center}
-        \scriptsize \textcolor{usthdark}{\textbf{Thông điệp:} pipeline được điều chuẩn cẩn thận có thể thu hẹp phần lớn khoảng cách giữa mô hình nhẹ và mô hình lớn trên dữ liệu y tế hạn chế.}
         \end{center}
     \end{columns}
 \end{frame}
@@ -414,11 +407,10 @@
     \centering
     \vspace{1cm}
     {\Huge \textbf{\textcolor{usthblue}{Cảm ơn các thầy cô đã lắng nghe!}}}\\[1cm]
-    {\Large \textcolor{usthdark}{Em xin sẵn sàng đón nhận các câu hỏi}}\\[0.6cm]
+    {\Large \textcolor{usthdark}{Câu hỏi và Thảo luận}}\\[0.6cm]
     \begin{tikzpicture}
         \draw[usthblue, line width=1.5pt] (0,0) -- (8,0);
     \end{tikzpicture}\\[0.5cm]
-    \footnotesize \textit{Demo trực tiếp prototype Streamlit có thể được trình diễn theo yêu cầu.}\\[0.6cm]
     \includegraphics[height=1.5cm]{../thesis/figures/logo.png}
 \end{frame}
 
@@ -435,7 +427,6 @@
     \begin{tikzpicture}
         \draw[usthblue, line width=1.5pt] (0,0) -- (8,0);
     \end{tikzpicture}\\[0.5cm]
-    \footnotesize \textit{Các slide tham chiếu cho phần hỏi đáp.}
 \end{frame}
 
 \begin{frame}{Phụ lục --- Mục lục}
@@ -493,7 +484,6 @@
         \end{tabular}
     \end{table}
     \vspace{0.2cm}
-    \textit{Trong lâm sàng, hai mục tiêu ưu tiên là: (1) phát hiện sớm MEL và (2) phân biệt BCC khỏi tổn thương lành.}
 \end{frame}
 
 % --- A2 ---
@@ -799,7 +789,6 @@
             \item \textbf{DenseNet121:} hội tụ chậm nhất, best ở epoch 49.
             \item \textbf{Swin-Tiny:} val loss tăng lại sau epoch 13 dù train loss vẫn giảm $\Rightarrow$ overfit kinh điển.
         \end{itemize}
-        \textit{Early stopping với patience $= 12$ chọn checkpoint trước khi val loss bứt tăng.}
     \end{columns}
 \end{frame}
 
@@ -878,7 +867,6 @@
         \bottomrule
         \end{tabular}
     \end{table}
-    \textit{Expected Calibration Error (ECE) thấp hơn $\Rightarrow$ probability tin cậy hơn cho clinical decision.}
 \end{frame}
 
 % --- A17 ---
@@ -928,7 +916,6 @@
         \end{tabular}
     \end{table}
 
-    \textit{Triển khai thực tế cho phép bác sĩ chọn chế độ "high sensitivity" --- bắt mọi MEL khả nghi, chấp nhận thêm false alarm.}
 \end{frame}
 
 % --- A19 ---
@@ -1166,7 +1153,6 @@
         \includegraphics[width=\linewidth,height=3.4cm,keepaspectratio]{../thesis/figures/swin_confusion_matrix.png}
     \end{columns}
     \vspace{0.15cm}
-    \scriptsize \textit{Cả bốn mô hình đều có cùng kiểu lỗi --- nhầm lẫn trong cụm \textbf{MEL $\leftrightarrow$ NV $\leftrightarrow$ BKL} --- nhưng mỗi mô hình sai theo cách khác nhau, và đó chính là lý do soft-voting ensemble vượt mọi mô hình đơn lẻ.}
 \end{frame}
 
 % --- A27 ---
@@ -1195,8 +1181,6 @@
         Nhân mỗi kênh với $\alpha$ của nó rồi cộng lại: $L_c = \mathrm{ReLU}(\sum_k \alpha_c^k A^k)$. ReLU vứt phần âm (chỉ giữ ``bằng chứng ủng hộ MEL'', không giữ ``bằng chứng phản đối''). Phóng to heatmap $7 \times 7$ về $224 \times 224$, tô màu JET, overlay lên ảnh gốc.
     \end{block}
 
-    \vspace{0.1cm}
-    {\centering \scriptsize \textbf{Tóm gọn:} heatmap trả lời câu hỏi ``\textit{nếu làm sáng những pixel nào lên, mô hình sẽ tự tin hơn về lớp được dự đoán}''.\par}
 \end{frame}
 
 % =====================  Slide cuối  =====================
@@ -1207,7 +1191,6 @@
     \begin{tikzpicture}
         \draw[usthblue, line width=1.5pt] (0,0) -- (8,0);
     \end{tikzpicture}\\[1cm]
-    \footnotesize \textit{Nguyễn Trọng Bách --- 23BI14057 --- USTH ICT 2026}
 \end{frame}
 
 \end{document}
