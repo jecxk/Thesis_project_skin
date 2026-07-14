@@ -450,6 +450,7 @@
         \item So sánh ma trận nhầm lẫn giữa 4 backbone
         \item Grad-CAM hoạt động ra sao --- từ ảnh đến heatmap
         \item Chiến lược huấn luyện --- Mixup/CutMix, Label Smoothing, Weighted Sampler, tối ưu hóa
+        \item Cách tính Robustness và McNemar --- ví dụ số thật
     \end{enumerate}
     \end{multicols}
 \end{frame}
@@ -1205,6 +1206,40 @@
             \textbf{Early stopping:} patience $= 12$ epoch theo Macro F1.
         \end{block}
     \end{columns}
+\end{frame}
+
+% --- A29 ---
+\begin{frame}{A29. Cách tính Robustness và McNemar (ví dụ số thật)}
+    \scriptsize
+    \begin{columns}[T]
+        \column{0.5\textwidth}
+        \begin{block}{Robustness qua 5 seed --- Mean/Std}
+            \scriptsize
+            5 giá trị Accuracy Ensemble thật: 88.89, 89.82, 90.69, 90.09, 90.15\%\\[3pt]
+            \textbf{Mean:} $(88.89{+}89.82{+}90.69{+}90.09{+}90.15)/5 = 89.93\%$\\[3pt]
+            \textbf{Std (mẫu, chia $n{-}1{=}4$):}\\
+            Độ lệch: $-1.04, -0.11, +0.76, +0.16, +0.22$\\
+            $\sum (\text{độ lệch})^2 = 1.746$\\
+            $\mathrm{Std} = \sqrt{1.746/4} \approx 0.66\%$
+        \end{block}
+
+        \column{0.5\textwidth}
+        \begin{block}{McNemar --- ví dụ seed 42, vs.\ Swin-Tiny}
+            \scriptsize
+            $n_{ab}$ (Ens.\ đúng, Swin sai) $=33$\\
+            $n_{ba}$ (Ens.\ sai, Swin đúng) $=93$\\[3pt]
+            $\text{statistic} = \dfrac{(|n_{ab}-n_{ba}|-1)^2}{n_{ab}+n_{ba}} = \dfrac{59^2}{126} \approx 27.63$\\[3pt]
+            $p = \chi^2_{\text{sf}}(27.63, df{=}1) \approx 1.47{\times}10^{-7}$
+        \end{block}
+    \end{columns}
+
+    \vspace{0.2cm}
+    \begin{block}{Gộp 5 seed bằng Fisher's method}
+        \scriptsize
+        $\chi^2_{\text{combined}} = -2\sum_{i=1}^{5}\ln(p_i) = -2(-25.90) = 51.80$, $df=2{\times}5=10$\\
+        $p_{\text{final}} = \chi^2_{\text{sf}}(51.80, df{=}10) \approx 1.24{\times}10^{-7}$ --- khớp đúng số ở A21.\\
+        \textit{Lưu ý: chỉ 3/5 seed có $p$ riêng $<0.05$, nhưng ensemble thắng 5/5 seed --- Fisher's method gộp bằng chứng nhất quán đó thành 1 kết luận rất chắc chắn.}
+    \end{block}
 \end{frame}
 
 % =====================  Slide cuối  =====================
