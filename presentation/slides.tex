@@ -154,7 +154,8 @@
         \end{table}
         \vspace{0.1cm}
         \centering
-        \textcolor{usthred}{\footnotesize Mất cân bằng cực đoan: \textbf{NV : DF $\approx$ 58 : 1}}
+        \textcolor{usthred}{\footnotesize Mất cân bằng cực đoan: \textbf{NV : DF $\approx$ 58 : 1}} \\[3pt]
+        \footnotesize Chia stratified \textbf{70/15/15} --- train/val/test giữ đúng tỷ lệ các lớp.
 
         \column{0.5\textwidth}
         \begin{block}{Vì sao đây là vấn đề}
@@ -181,7 +182,7 @@
     \framesubtitle{Pipeline tổng quan}
     \vspace{0.1cm}
     \begin{center}
-        \includegraphics[width=0.88\textwidth,height=0.72\textheight,keepaspectratio]{../thesis/figures/training_pipeline_cropped.png}
+        \includegraphics[width=0.97\textwidth,height=0.85\textheight,keepaspectratio]{../thesis/figures/pipeline_overview.png}
     \end{center}
     \vspace{0.15cm}
 \end{frame}
@@ -190,35 +191,37 @@
     \framesubtitle{Tiền xử lý Dữ liệu và Tăng cường khi Huấn luyện}
     \footnotesize
     \begin{columns}[T]
-        \column{0.5\textwidth}
+        \column{0.36\textwidth}
         \begin{block}{Tiền xử lý (mọi tập)}
             \footnotesize
             \begin{itemize}
                 \item Resize về $224 \times 224$, chuẩn hóa theo mean/std ImageNet.
-                \item Chia stratified $70/15/15$ --- train/val/test giữ đúng tỷ lệ các lớp.
             \end{itemize}
         \end{block}
-
-        \column{0.5\textwidth}
-        \begin{block}{Tăng cường dữ liệu (chỉ tập train, online)}
+        \vspace{0.15cm}
+        \begin{block}{Tăng cường dữ liệu}
             \footnotesize
             \begin{itemize}
                 \item RandomResizedCrop, lật ngang $+$ dọc, xoay ($\pm 90^\circ$).
                 \item ColorJitter ($0.25$), Gaussian Blur ($p=0.1$), Random Erasing ($p=0.1$).
             \end{itemize}
         \end{block}
+
+        \column{0.62\textwidth}
+        \begin{figure}
+            \centering
+            \includegraphics[width=\linewidth,height=5.8cm,keepaspectratio]{../thesis/figures/augmentation_examples.png}
+        \end{figure}
     \end{columns}
-    \begin{figure}
-        \centering
-        \includegraphics[height=4.1cm,keepaspectratio]{../thesis/figures/augmentation_examples.png}
-    \end{figure}
 \end{frame}
 
 \begin{frame}{Phương pháp}
     \framesubtitle{Bốn kiến trúc được so sánh}
     \scriptsize
+    \renewcommand{\arraystretch}{0.78}
     \begin{table}[]
         \centering
+        \setlength{\tabcolsep}{4pt}
         \begin{tabular}{lcl}
         \toprule
         \rowcolor{usthblue!25}
@@ -231,13 +234,9 @@
         \bottomrule
         \end{tabular}
     \end{table}
-
-    \footnotesize
-    Cả 4 mô hình đều \textbf{fine-tune từ ImageNet pretrained} qua thư viện \texttt{timm}; việc trộn CNN và Transformer giúp ensemble khai thác \textbf{lỗi không tương quan}.
-
     \begin{figure}
         \centering
-        \includegraphics[height=3.0cm,keepaspectratio]{../thesis/figures_new/training_loss_all_models.png}
+        \includegraphics[width=0.65\textwidth,keepaspectratio]{../thesis/figures_new/training_loss_all_models.png}
         \caption*{\scriptsize Swin-Tiny dừng sớm nhất (epoch 13/25) --- dấu hiệu overfit sớm.}
     \end{figure}
 \end{frame}

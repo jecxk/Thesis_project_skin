@@ -150,7 +150,8 @@
         \end{table}
         \vspace{0.1cm}
         \centering
-        \textcolor{usthred}{\footnotesize Extreme imbalance: \textbf{NV : DF $\approx$ 58 : 1}}
+        \textcolor{usthred}{\footnotesize Extreme imbalance: \textbf{NV : DF $\approx$ 58 : 1}} \\[3pt]
+        \footnotesize Stratified \textbf{70/15/15} split --- train/val/test keep the same class ratios.
 
         \column{0.5\textwidth}
         \begin{block}{Why this matters}
@@ -177,7 +178,7 @@
     \framesubtitle{Pipeline Overview}
     \vspace{0.1cm}
     \begin{center}
-        \includegraphics[width=0.88\textwidth,height=0.72\textheight,keepaspectratio]{../thesis/figures/training_pipeline_cropped.png}
+        \includegraphics[width=0.97\textwidth,height=0.85\textheight,keepaspectratio]{../thesis/figures/pipeline_overview.png}
     \end{center}
     \vspace{0.15cm}
 \end{frame}
@@ -186,35 +187,37 @@
     \framesubtitle{Data Preprocessing and Training Augmentation}
     \footnotesize
     \begin{columns}[T]
-        \column{0.5\textwidth}
+        \column{0.36\textwidth}
         \begin{block}{Preprocessing (all splits)}
             \footnotesize
             \begin{itemize}
                 \item Resize to $224 \times 224$, normalize with ImageNet mean/std.
-                \item Stratified $70/15/15$ split --- train/val/test keep the same class ratios.
             \end{itemize}
         \end{block}
-
-        \column{0.5\textwidth}
-        \begin{block}{Augmentation (train only, online)}
+        \vspace{0.15cm}
+        \begin{block}{Augmentation}
             \footnotesize
             \begin{itemize}
                 \item RandomResizedCrop, horizontal $+$ vertical flip, rotation ($\pm 90^\circ$).
                 \item ColorJitter ($0.25$), Gaussian Blur ($p=0.1$), Random Erasing ($p=0.1$).
             \end{itemize}
         \end{block}
+
+        \column{0.62\textwidth}
+        \begin{figure}
+            \centering
+            \includegraphics[width=\linewidth,height=5.8cm,keepaspectratio]{../thesis/figures/augmentation_examples.png}
+        \end{figure}
     \end{columns}
-    \begin{figure}
-        \centering
-        \includegraphics[height=4.0cm,keepaspectratio]{../thesis/figures/augmentation_examples.png}
-    \end{figure}
 \end{frame}
 
 \begin{frame}{Methodology}
     \framesubtitle{The Four Architectures Compared}
     \scriptsize
+    \renewcommand{\arraystretch}{0.78}
     \begin{table}[]
         \centering
+        \setlength{\tabcolsep}{4pt}
         \begin{tabular}{lcl}
         \toprule
         \rowcolor{usthblue!25}
@@ -227,13 +230,9 @@
         \bottomrule
         \end{tabular}
     \end{table}
-
-    \footnotesize
-    All four are \textbf{fine-tuned from ImageNet pretrained weights} via \texttt{timm}; the diverse mix of CNNs and Transformer gives the ensemble \textbf{uncorrelated errors} to exploit.
-
     \begin{figure}
         \centering
-        \includegraphics[height=3.0cm,keepaspectratio]{../thesis/figures_new/training_loss_all_models.png}
+        \includegraphics[width=0.65\textwidth,keepaspectratio]{../thesis/figures_new/training_loss_all_models.png}
         \caption*{\scriptsize Swin-Tiny stops earliest (epoch 13/25) --- an early sign of overfitting.}
     \end{figure}
 \end{frame}
